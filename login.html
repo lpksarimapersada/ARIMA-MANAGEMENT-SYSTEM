@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Login — ARIMA MANAGEMENT SYSTEM</title>
+<link rel="icon" href="assets/logo.webp">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body class="login-page">
+<main class="login-card">
+  <img class="brand-logo" src="assets/logo.webp" alt="LPKS Arima Persada">
+  <div class="eyebrow">ARIMA MANAGEMENT SYSTEM</div>
+  <h1>Selamat datang</h1>
+  <p class="muted">Kelola siswa, Sensei, absensi, tagihan, pembayaran, dan payroll dalam satu sistem.</p>
+  <form id="loginForm">
+    <label>ID Pengguna<input id="userId" autocomplete="username" required></label>
+    <label>Password<input id="password" type="password" autocomplete="current-password" required></label>
+    <button class="btn btn-primary" type="submit">Masuk</button>
+    <div id="loginError" class="alert error hidden"></div>
+  </form>
+  <p class="tiny">LPKS Arima Persada · Menjembatani Kompetensi, Membuka Gerbang Karier ke Jepang</p>
+</main>
+<script src="js/config.js"></script>
+<script src="js/api.js"></script>
+<script src="js/auth.js"></script>
+<script>
+document.getElementById('loginForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const err = document.getElementById('loginError'); err.classList.add('hidden');
+  try {
+    const result = await API.login(document.getElementById('userId').value.trim(), document.getElementById('password').value);
+    if (!result || !result.success) throw new Error(result?.message || 'Login gagal.');
+    localStorage.setItem('arima_session', JSON.stringify(result.user));
+    location.href = 'dashboard.html';
+  } catch (ex) { err.textContent = ex.message; err.classList.remove('hidden'); }
+});
+</script>
+</body>
+</html>
