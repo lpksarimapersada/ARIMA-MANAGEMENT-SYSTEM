@@ -1446,7 +1446,7 @@ const FORM_CONFIG = {
    * =========================================================
    */
 
-async function renderDashboard(el) {
+  async function renderDashboard(el) {
 
   try {
 
@@ -1454,22 +1454,50 @@ async function renderDashboard(el) {
 
     const data = response.data || {};
 
-    const number = function (value) {
-      return formatNumber(Number(value) || 0);
+    /*
+     * ================================
+     * FORMAT NUMBER
+     * ================================
+     */
+
+    const num = function (value) {
+
+      return new Intl.NumberFormat(
+        "id-ID"
+      ).format(
+        Number(value) || 0
+      );
+
     };
+
+
+    /*
+     * ================================
+     * FORMAT RUPIAH
+     * ================================
+     */
 
     const rupiah = function (value) {
 
-      const amount = Number(value) || 0;
-
-      return new Intl.NumberFormat("id-ID", {
-        style: "currency",
-        currency: "IDR",
-        maximumFractionDigits: 0
-      }).format(amount);
+      return new Intl.NumberFormat(
+        "id-ID",
+        {
+          style: "currency",
+          currency: "IDR",
+          maximumFractionDigits: 0
+        }
+      ).format(
+        Number(value) || 0
+      );
 
     };
 
+
+    /*
+     * ================================
+     * DASHBOARD
+     * ================================
+     */
 
     el.innerHTML = `
 
@@ -1477,7 +1505,9 @@ async function renderDashboard(el) {
 
         <div>
 
-          <h1>Dashboard</h1>
+          <h1>
+            Dashboard
+          </h1>
 
           <p>
             Ringkasan operasional
@@ -1489,60 +1519,84 @@ async function renderDashboard(el) {
       </div>
 
 
-      <!-- ======================================
+      <!-- =================================
            STATISTIK UTAMA
-      ======================================= -->
+      ================================== -->
 
       <div class="cards">
 
 
+        <!-- SISWA -->
+
         <div class="card">
 
           <div class="muted">
-            Siswa Aktif
+            SISWA AKTIF
           </div>
 
           <div class="metric">
-            ${number(data.students)}
+
+            ${num(
+              data.students
+            )}
+
           </div>
 
         </div>
 
 
+        <!-- SENSEI -->
+
         <div class="card">
 
           <div class="muted">
-            Sensei Aktif
+            SENSEI AKTIF
           </div>
 
           <div class="metric">
-            ${number(data.sensei)}
+
+            ${num(
+              data.sensei
+            )}
+
           </div>
 
         </div>
 
 
+        <!-- KEHADIRAN -->
+
         <div class="card">
 
           <div class="muted">
-            Kehadiran
+            KEHADIRAN
           </div>
 
           <div class="metric">
-            ${number(data.attendance)}%
+
+            ${num(
+              data.attendance
+            )}%
+
           </div>
 
         </div>
 
 
+        <!-- TAGIHAN -->
+
         <div class="card">
 
           <div class="muted">
-            Tagihan Pending
+            TAGIHAN PENDING
           </div>
 
           <div class="metric">
-            ${number(data.pendingBilling)}
+
+            ${num(
+              data.pendingBilling
+            )}
+
           </div>
 
         </div>
@@ -1551,9 +1605,9 @@ async function renderDashboard(el) {
       </div>
 
 
-      <!-- ======================================
+      <!-- =================================
            TOTAL DATA
-      ======================================= -->
+      ================================== -->
 
       <div class="section">
 
@@ -1561,10 +1615,12 @@ async function renderDashboard(el) {
 
           <div>
 
-            <h2>Total Data</h2>
+            <h2>
+              TOTAL DATA
+            </h2>
 
             <p class="muted">
-              Ringkasan seluruh data dalam sistem.
+              Rekap seluruh data sistem.
             </p>
 
           </div>
@@ -1575,6 +1631,8 @@ async function renderDashboard(el) {
         <div class="cards">
 
 
+          <!-- TOTAL SISWA -->
+
           <div class="card">
 
             <div class="muted">
@@ -1582,11 +1640,17 @@ async function renderDashboard(el) {
             </div>
 
             <div class="metric">
-              ${number(data.totalStudents)}
+
+              ${num(
+                data.totalStudents
+              )}
+
             </div>
 
           </div>
 
+
+          <!-- TOTAL SENSEI -->
 
           <div class="card">
 
@@ -1595,11 +1659,17 @@ async function renderDashboard(el) {
             </div>
 
             <div class="metric">
-              ${number(data.totalSensei)}
+
+              ${num(
+                data.totalSensei
+              )}
+
             </div>
 
           </div>
 
+
+          <!-- TOTAL ABSENSI -->
 
           <div class="card">
 
@@ -1608,11 +1678,17 @@ async function renderDashboard(el) {
             </div>
 
             <div class="metric">
-              ${number(data.totalAttendance)}
+
+              ${num(
+                data.totalAttendance
+              )}
+
             </div>
 
           </div>
 
+
+          <!-- TOTAL TAGIHAN -->
 
           <div class="card">
 
@@ -1621,11 +1697,17 @@ async function renderDashboard(el) {
             </div>
 
             <div class="metric">
-              ${number(data.totalBilling)}
+
+              ${num(
+                data.totalBilling
+              )}
+
             </div>
 
           </div>
 
+
+          <!-- TOTAL PEMBAYARAN -->
 
           <div class="card">
 
@@ -1634,7 +1716,11 @@ async function renderDashboard(el) {
             </div>
 
             <div class="metric">
-              ${number(data.totalPayments)}
+
+              ${num(
+                data.totalPayments
+              )}
+
             </div>
 
           </div>
@@ -1645,9 +1731,9 @@ async function renderDashboard(el) {
       </div>
 
 
-      <!-- ======================================
+      <!-- =================================
            KEUANGAN
-      ======================================= -->
+      ================================== -->
 
       <div class="section">
 
@@ -1655,7 +1741,9 @@ async function renderDashboard(el) {
 
           <div>
 
-            <h2>Keuangan</h2>
+            <h2>
+              KEUANGAN
+            </h2>
 
             <p class="muted">
               Ringkasan tagihan dan pembayaran.
@@ -1669,10 +1757,12 @@ async function renderDashboard(el) {
         <div class="cards">
 
 
+          <!-- TAGIHAN PENDING -->
+
           <div class="card">
 
             <div class="muted">
-              Tagihan Pending
+              Tagihan pending
             </div>
 
             <div class="metric">
@@ -1683,18 +1773,15 @@ async function renderDashboard(el) {
 
             </div>
 
-            <p class="muted">
-              ${number(data.pendingBilling)}
-              tagihan belum selesai
-            </p>
-
           </div>
 
+
+          <!-- TOTAL PEMBAYARAN -->
 
           <div class="card">
 
             <div class="muted">
-              Total Pembayaran
+              Total pembayaran
             </div>
 
             <div class="metric">
@@ -1705,11 +1792,6 @@ async function renderDashboard(el) {
 
             </div>
 
-            <p class="muted">
-              ${number(data.totalPayments)}
-              transaksi pembayaran
-            </p>
-
           </div>
 
 
@@ -1718,9 +1800,9 @@ async function renderDashboard(el) {
       </div>
 
 
-      <!-- ======================================
+      <!-- =================================
            PAYROLL
-      ======================================= -->
+      ================================== -->
 
       <div class="section">
 
@@ -1728,10 +1810,12 @@ async function renderDashboard(el) {
 
           <div>
 
-            <h2>Payroll</h2>
+            <h2>
+              PAYROLL
+            </h2>
 
             <p class="muted">
-              Status pembayaran payroll Sensei.
+              Ringkasan status payroll Sensei.
             </p>
 
           </div>
@@ -1742,30 +1826,19 @@ async function renderDashboard(el) {
         <div class="cards">
 
 
-          <div class="card">
-
-            <div class="muted">
-              Total Data Payroll
-            </div>
-
-            <div class="metric">
-
-              ${number(data.totalSalary)}
-
-            </div>
-
-          </div>
-
+          <!-- PAYROLL PENDING -->
 
           <div class="card">
 
             <div class="muted">
-              Payroll Pending
+              Payroll pending
             </div>
 
             <div class="metric">
 
-              ${number(data.pendingSalary)}
+              ${num(
+                data.pendingSalary
+              )}
 
             </div>
 
@@ -1777,9 +1850,9 @@ async function renderDashboard(el) {
       </div>
 
 
-      <!-- ======================================
+      <!-- =================================
            WELCOME
-      ======================================= -->
+      ================================== -->
 
       <div class="section">
 
@@ -1791,8 +1864,11 @@ async function renderDashboard(el) {
           </strong>
 
           <p class="muted">
+
             Gunakan menu di sebelah kiri
-            untuk mengelola sistem.
+            untuk mengelola sistem
+            ARIMA Management.
+
           </p>
 
         </div>
@@ -1803,6 +1879,11 @@ async function renderDashboard(el) {
 
 
   } catch (error) {
+
+    console.error(
+      "Dashboard error:",
+      error
+    );
 
     renderError(
       el,
