@@ -1446,32 +1446,160 @@ const FORM_CONFIG = {
    * =========================================================
    */
 
-  async function renderDashboard(
-    el
-  ) {
+async function renderDashboard(el) {
 
-    try {
+  try {
 
-      const response =
-        await API.dashboard();
+    const response = await API.dashboard();
 
-      const data =
-        response.data || {};
+    const data = response.data || {};
+
+    const money = function (value) {
+
+      const number = Number(value) || 0;
+
+      return new Intl.NumberFormat(
+        "id-ID",
+        {
+          style: "currency",
+          currency: "IDR",
+          maximumFractionDigits: 0
+        }
+      ).format(number);
+
+    };
 
 
-      el.innerHTML = `
+    el.innerHTML = `
+
+      <div class="page-title">
+
+        <div>
+
+          <h1>
+            Dashboard
+          </h1>
+
+          <p>
+            Ringkasan operasional
+            LPKS Arima Persada.
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <!-- =========================================
+           STATISTIK UTAMA
+      ========================================== -->
+
+      <div class="cards">
+
+
+        <div class="card">
+
+          <div class="muted">
+            Siswa Aktif
+          </div>
+
+          <div class="metric">
+            ${formatNumber(
+              data.students || 0
+            )}
+          </div>
+
+          <div class="muted">
+            dari ${formatNumber(
+              data.totalStudents || 0
+            )} total siswa
+          </div>
+
+        </div>
+
+
+        <div class="card">
+
+          <div class="muted">
+            Sensei Aktif
+          </div>
+
+          <div class="metric">
+            ${formatNumber(
+              data.sensei || 0
+            )}
+          </div>
+
+          <div class="muted">
+            dari ${formatNumber(
+              data.totalSensei || 0
+            )} total sensei
+          </div>
+
+        </div>
+
+
+        <div class="card">
+
+          <div class="muted">
+            Kehadiran
+          </div>
+
+          <div class="metric">
+            ${formatNumber(
+              data.attendance || 0
+            )}%
+          </div>
+
+          <div class="muted">
+            ${formatNumber(
+              data.totalAttendance || 0
+            )} data absensi
+          </div>
+
+        </div>
+
+
+        <div class="card">
+
+          <div class="muted">
+            Tagihan Pending
+          </div>
+
+          <div class="metric">
+            ${formatNumber(
+              data.pendingBilling || 0
+            )}
+          </div>
+
+          <div class="muted">
+            ${money(
+              data.pendingBillingAmount || 0
+            )}
+          </div>
+
+        </div>
+
+
+      </div>
+
+
+      <!-- =========================================
+           DATA OPERASIONAL
+      ========================================== -->
+
+      <div class="section">
 
         <div class="page-title">
 
           <div>
 
-            <h1>
-              Dashboard
-            </h1>
+            <h2>
+              Ringkasan Data
+            </h2>
 
-            <p>
-              Ringkasan operasional
-              LPKS Arima Persada.
+            <p class="muted">
+              Data aktual dari Google Spreadsheet.
             </p>
 
           </div>
@@ -1481,16 +1609,19 @@ const FORM_CONFIG = {
 
         <div class="cards">
 
+
           <div class="card">
 
             <div class="muted">
-              Siswa Aktif
+              Total Siswa
             </div>
 
             <div class="metric">
+
               ${formatNumber(
-                data.students
+                data.totalStudents || 0
               )}
+
             </div>
 
           </div>
@@ -1499,13 +1630,15 @@ const FORM_CONFIG = {
           <div class="card">
 
             <div class="muted">
-              Sensei
+              Total Sensei
             </div>
 
             <div class="metric">
+
               ${formatNumber(
-                data.sensei
+                data.totalSensei || 0
               )}
+
             </div>
 
           </div>
@@ -1514,68 +1647,225 @@ const FORM_CONFIG = {
           <div class="card">
 
             <div class="muted">
-              Kehadiran
+              Total Absensi
             </div>
 
             <div class="metric">
+
               ${formatNumber(
-                data.attendance
-              )}%
-            </div>
-
-          </div>
-
-
-          <div class="card">
-
-            <div class="muted">
-              Tagihan Pending
-            </div>
-
-            <div class="metric">
-              ${formatNumber(
-                data.pendingBilling
+                data.totalAttendance || 0
               )}
+
             </div>
 
           </div>
+
+
+          <div class="card">
+
+            <div class="muted">
+              Total Tagihan
+            </div>
+
+            <div class="metric">
+
+              ${formatNumber(
+                data.totalBilling || 0
+              )}
+
+            </div>
+
+          </div>
+
 
         </div>
 
+      </div>
 
-        <div class="section">
 
-          <div class="card">
+      <!-- =========================================
+           KEUANGAN
+      ========================================== -->
 
-            <strong>
-              Selamat datang,
-              ${esc(
-                user.name
-              )}
-            </strong>
+      <div class="section">
+
+        <div class="page-title">
+
+          <div>
+
+            <h2>
+              Ringkasan Keuangan
+            </h2>
 
             <p class="muted">
-              Gunakan menu di sebelah kiri
-              untuk mengelola sistem.
+              Rekap berdasarkan data pembayaran
+              dan tagihan.
             </p>
 
           </div>
 
         </div>
 
-      `;
 
-    } catch (error) {
+        <div class="cards">
 
-      renderError(
-        el,
-        error
-      );
 
-    }
+          <div class="card">
+
+            <div class="muted">
+              Total Transaksi Pembayaran
+            </div>
+
+            <div class="metric">
+
+              ${formatNumber(
+                data.totalPayments || 0
+              )}
+
+            </div>
+
+          </div>
+
+
+          <div class="card">
+
+            <div class="muted">
+              Total Pembayaran
+            </div>
+
+            <div class="metric">
+
+              ${money(
+                data.totalPaymentsAmount || 0
+              )}
+
+            </div>
+
+          </div>
+
+
+          <div class="card">
+
+            <div class="muted">
+              Tagihan Belum Lunas
+            </div>
+
+            <div class="metric">
+
+              ${money(
+                data.pendingBillingAmount || 0
+              )}
+
+            </div>
+
+          </div>
+
+
+        </div>
+
+      </div>
+
+
+      <!-- =========================================
+           PAYROLL
+      ========================================== -->
+
+      <div class="section">
+
+        <div class="page-title">
+
+          <div>
+
+            <h2>
+              Payroll Sensei
+            </h2>
+
+            <p class="muted">
+              Status pembayaran payroll sensei.
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <div class="cards">
+
+
+          <div class="card">
+
+            <div class="muted">
+              Total Data Payroll
+            </div>
+
+            <div class="metric">
+
+              ${formatNumber(
+                data.totalSalary || 0
+              )}
+
+            </div>
+
+          </div>
+
+
+          <div class="card">
+
+            <div class="muted">
+              Payroll Pending
+            </div>
+
+            <div class="metric">
+
+              ${formatNumber(
+                data.pendingSalary || 0
+              )}
+
+            </div>
+
+          </div>
+
+
+        </div>
+
+      </div>
+
+
+      <!-- =========================================
+           WELCOME
+      ========================================== -->
+
+      <div class="section">
+
+        <div class="card">
+
+          <strong>
+            Selamat datang,
+            ${esc(user.name)}
+          </strong>
+
+          <p class="muted">
+            Gunakan menu di sebelah kiri
+            untuk mengelola sistem ARIMA
+            Management.
+          </p>
+
+        </div>
+
+      </div>
+
+    `;
+
+  } catch (error) {
+
+    renderError(
+      el,
+      error
+    );
 
   }
 
+}
 
   /*
    * =========================================================
