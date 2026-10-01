@@ -24,478 +24,554 @@ window.App = (() => {
    * ARIMA-MANAGEMENT-SYSTEM.
    */
 
-  const FORM_CONFIG = {
+const FORM_CONFIG = {
 
-    students: {
-      title: "Tambah Siswa",
-      editTitle: "Edit Siswa",
-      action: "studentSave",
-      deleteAction: "studentDelete",
-      idField: "ID_SISWA",
+  students: {
+    title: "Tambah Siswa",
+    editTitle: "Edit Siswa",
+    idField: "ID_SISWA",
 
-      fields: [
-        {
-          key: "ID_SISWA",
-          label: "ID Siswa",
-          type: "text",
-          required: false,
-          placeholder: "Kosongkan untuk ID otomatis"
-        },
+    fields: [
+      {
+        key: "ID_SISWA",
+        label: "ID Siswa",
+        type: "text",
+        required: false,
+        placeholder: "Kosongkan untuk ID otomatis"
+      },
 
-        {
-          key: "NAMA",
-          label: "Nama Siswa",
-          type: "text",
-          required: true
-        },
+      {
+        key: "NAMA",
+        label: "Nama Siswa",
+        type: "text",
+        required: true,
+        placeholder: "Nama lengkap siswa"
+      },
 
-        {
-          key: "NIK",
-          label: "NIK",
-          type: "text"
-        },
+      {
+        key: "NIK",
+        label: "NIK",
+        type: "text",
+        required: false,
+        placeholder: "Nomor Induk Kependudukan"
+      },
 
-        {
-          key: "NO_WA",
-          label: "No. WhatsApp",
-          type: "text"
-        },
+      {
+        key: "NO_WA",
+        label: "No. WhatsApp",
+        type: "text",
+        required: true,
+        placeholder: "08xxxxxxxxxx"
+      },
 
-        {
-          key: "NAMA_ORANG_TUA",
-          label: "Nama Orang Tua / Wali",
-          type: "text"
-        },
+      {
+        key: "NAMA_ORANG_TUA",
+        label: "Nama Orang Tua / Wali",
+        type: "text",
+        required: true,
+        placeholder: "Nama orang tua / wali"
+      },
 
-        {
-          key: "NO_WA_ORANG_TUA",
-          label: "No. WhatsApp Orang Tua / Wali",
-          type: "text"
-        },
+      {
+        key: "NO_WA_ORANG_TUA",
+        label: "No. WhatsApp Orang Tua / Wali",
+        type: "text",
+        required: false,
+        placeholder: "08xxxxxxxxxx"
+      },
 
-        {
-          key: "PROGRAM",
-          label: "Program",
-          type: "select",
-          options: [
-            "MAGANG",
-            "SSW",
-            "TOKUTEI GINOU",
-            "ENGINEERING",
-            "ENGINEER"
-          ]
-        },
+      {
+        key: "PROGRAM",
+        label: "Program",
+        type: "select",
+        required: true,
+        options: [
+          "MAGANG",
+          "SSW",
+          "ENGINEERING",
+          "ENGINEER"
+        ]
+      },
 
-        {
-          key: "ASRAMA",
-          label: "Asrama",
-          type: "select",
-          options: [
-            "YA",
-            "TIDAK"
-          ]
-        },
+      {
+        key: "ASRAMA",
+        label: "Asrama",
+        type: "select",
+        required: true,
+        options: [
+          "YA",
+          "TIDAK"
+        ]
+      },
 
-        {
-          key: "TANGGAL_MASUK",
-          label: "Tanggal Masuk",
-          type: "date"
-        },
+      {
+        key: "TANGGAL_MASUK",
+        label: "Tanggal Masuk",
+        type: "date",
+        required: true
+      },
 
-        {
-          key: "STATUS",
-          label: "Status",
-          type: "select",
-          options: [
-            "AKTIF",
-            "NONAKTIF",
-            "LULUS",
-            "BERANGKAT",
-            "KELUAR"
-          ]
-        }
-      ]
-    },
+      {
+        key: "STATUS",
+        label: "Status",
+        type: "select",
+        required: true,
+        options: [
+          "AKTIF",
+          "NONAKTIF",
+          "LULUS",
+          "KELUAR"
+        ]
+      }
+    ]
+  },
 
-    sensei: {
-      title: "Tambah Sensei",
-      editTitle: "Edit Sensei",
-      action: "senseiSave",
-      deleteAction: "senseiDelete",
-      idField: "ID_SENSEI",
 
-      fields: [
-        {
-          key: "ID_SENSEI",
-          label: "ID Sensei",
-          type: "text",
-          required: false,
-          placeholder: "Kosongkan untuk ID otomatis"
-        },
+  sensei: {
 
-        {
-          key: "NAMA",
-          label: "Nama Sensei",
-          type: "text",
-          required: true
-        },
+    title: "Tambah Sensei",
 
-        {
-          key: "NO_WA",
-          label: "No. WhatsApp",
-          type: "text"
-        },
+    editTitle: "Edit Sensei",
 
-        {
-          key: "EMAIL",
-          label: "Email",
-          type: "email"
-        },
+    idField: "ID_SENSEI",
 
-        {
-          key: "TARIF_PER_PERTEMUAN",
-          label: "Tarif per Pertemuan",
-          type: "number"
-        },
+    fields: [
 
-        {
-          key: "TARIF_PER_JAM",
-          label: "Tarif per Jam",
-          type: "number"
-        },
+      {
+        key: "ID_SENSEI",
+        label: "ID Sensei",
+        type: "text",
+        required: false,
+        placeholder: "Kosongkan untuk ID otomatis"
+      },
 
-        {
-          key: "STATUS",
-          label: "Status",
-          type: "select",
-          options: [
-            "AKTIF",
-            "NONAKTIF"
-          ]
-        }
-      ]
-    },
+      {
+        key: "NAMA",
+        label: "Nama Sensei",
+        type: "text",
+        required: true,
+        placeholder: "Nama lengkap sensei"
+      },
 
-    attendance: {
-      title: "Catat Absensi",
-      editTitle: "Edit Absensi",
-      action: "attendanceSave",
-      idField: "ATTENDANCE_ID",
+      {
+        key: "NO_WA",
+        label: "No. WhatsApp",
+        type: "text",
+        required: false,
+        placeholder: "08xxxxxxxxxx"
+      },
 
-      fields: [
-        {
-          key: "ATTENDANCE_ID",
-          label: "ID Absensi",
-          type: "text",
-          required: false,
-          placeholder: "Kosongkan untuk ID otomatis"
-        },
+      {
+        key: "EMAIL",
+        label: "Email",
+        type: "email",
+        required: false,
+        placeholder: "email@example.com"
+      },
 
-        {
-          key: "ACTOR_ID",
-          label: "ID Siswa / Sensei",
-          type: "text",
-          required: true
-        },
+      {
+        key: "TARIF_PER_PERTEMUAN",
+        label: "Tarif per Pertemuan",
+        type: "number",
+        required: false,
+        placeholder: "0"
+      },
 
-        {
-          key: "ACTOR_TYPE",
-          label: "Tipe",
-          type: "select",
-          required: true,
-          options: [
-            "SISWA",
-            "SENSEI"
-          ]
-        },
+      {
+        key: "TARIF_PER_JAM",
+        label: "Tarif per Jam",
+        type: "number",
+        required: false,
+        placeholder: "0"
+      },
 
-        {
-          key: "SESSION_ID",
-          label: "ID Sesi",
-          type: "text"
-        },
+      {
+        key: "STATUS",
+        label: "Status",
+        type: "select",
+        required: true,
+        options: [
+          "AKTIF",
+          "NONAKTIF"
+        ]
+      }
 
-        {
-          key: "CLASS_ID",
-          label: "ID Kelas",
-          type: "text"
-        },
+    ]
 
-        {
-          key: "TANGGAL",
-          label: "Tanggal",
-          type: "date",
-          required: true
-        },
+  },
 
-        {
-          key: "JAM_MASUK",
-          label: "Jam Masuk",
-          type: "time"
-        },
 
-        {
-          key: "JAM_KELUAR",
-          label: "Jam Keluar",
-          type: "time"
-        },
+  attendance: {
 
-        {
-          key: "STATUS",
-          label: "Status Kehadiran",
-          type: "select",
-          required: true,
-          options: [
-            "HADIR",
-            "IZIN",
-            "SAKIT",
-            "ALPA",
-            "TERLAMBAT"
-          ]
-        },
+    title: "Catat Absensi",
 
-        {
-          key: "CATATAN",
-          label: "Catatan",
-          type: "textarea"
-        }
-      ]
-    },
+    editTitle: "Edit Absensi",
 
-    billing: {
-      title: "Buat Tagihan",
-      editTitle: "Edit Tagihan",
-      action: "billingSave",
-      idField: "BILLING_ID",
+    idField: "ATTENDANCE_ID",
 
-      fields: [
-        {
-          key: "BILLING_ID",
-          label: "ID Tagihan",
-          type: "text",
-          required: false,
-          placeholder: "Kosongkan untuk ID otomatis"
-        },
+    fields: [
 
-        {
-          key: "ID_SISWA",
-          label: "ID Siswa",
-          type: "text",
-          required: true
-        },
+      {
+        key: "ATTENDANCE_ID",
+        label: "ID Absensi",
+        type: "text",
+        required: false,
+        placeholder: "Kosongkan untuk ID otomatis"
+      },
 
-        {
-          key: "DESCRIPTION",
-          label: "Keterangan",
-          type: "text",
-          required: true
-        },
+      {
+        key: "ACTOR_ID",
+        label: "ID Siswa / Sensei",
+        type: "text",
+        required: true,
+        placeholder: "Contoh: SISWA001"
+      },
 
-        {
-          key: "CATEGORY",
-          label: "Kategori",
-          type: "select",
-          options: [
-            "BIAYA BELAJAR",
-            "JFT",
-            "SSW",
-            "JLPT",
-            "KEGIATAN",
-            "LAINNYA"
-          ]
-        },
+      {
+        key: "ACTOR_TYPE",
+        label: "Tipe",
+        type: "select",
+        required: true,
+        options: [
+          "SISWA",
+          "SENSEI"
+        ]
+      },
 
-        {
-          key: "AMOUNT",
-          label: "Jumlah Tagihan",
-          type: "number",
-          required: true
-        },
+      {
+        key: "SESSION_ID",
+        label: "Session ID",
+        type: "text",
+        required: false
+      },
 
-        {
-          key: "DUE_DATE",
-          label: "Jatuh Tempo",
-          type: "date"
-        },
+      {
+        key: "CLASS_ID",
+        label: "Class ID",
+        type: "text",
+        required: false
+      },
 
-        {
-          key: "STATUS",
-          label: "Status",
-          type: "select",
-          options: [
-            "PENDING",
-            "LUNAS",
-            "SEBAGIAN",
-            "BATAL"
-          ]
-        },
+      {
+        key: "TANGGAL",
+        label: "Tanggal",
+        type: "date",
+        required: true
+      },
 
-        {
-          key: "NOTES",
-          label: "Catatan",
-          type: "textarea"
-        }
-      ]
-    },
+      {
+        key: "JAM_MASUK",
+        label: "Jam Masuk",
+        type: "time",
+        required: false
+      },
 
-    payments: {
-      title: "Input Pembayaran",
-      editTitle: "Edit Pembayaran",
-      action: "paymentSave",
-      idField: "PAYMENT_ID",
+      {
+        key: "JAM_KELUAR",
+        label: "Jam Keluar",
+        type: "time",
+        required: false
+      },
 
-      fields: [
-        {
-          key: "PAYMENT_ID",
-          label: "ID Pembayaran",
-          type: "text",
-          required: false,
-          placeholder: "Kosongkan untuk ID otomatis"
-        },
+      {
+        key: "STATUS",
+        label: "Status",
+        type: "select",
+        required: true,
+        options: [
+          "HADIR",
+          "IZIN",
+          "SAKIT",
+          "ALPA",
+          "TERLAMBAT"
+        ]
+      },
 
-        {
-          key: "BILLING_ID",
-          label: "ID Tagihan",
-          type: "text",
-          required: true
-        },
+      {
+        key: "CATATAN",
+        label: "Catatan",
+        type: "textarea",
+        required: false
+      }
 
-        {
-          key: "ID_SISWA",
-          label: "ID Siswa",
-          type: "text"
-        },
+    ]
 
-        {
-          key: "PAYMENT_DATE",
-          label: "Tanggal Pembayaran",
-          type: "date",
-          required: true
-        },
+  },
 
-        {
-          key: "AMOUNT",
-          label: "Jumlah Pembayaran",
-          type: "number",
-          required: true
-        },
 
-        {
-          key: "PAYMENT_METHOD",
-          label: "Metode",
-          type: "select",
-          options: [
-            "CASH",
-            "TRANSFER",
-            "QRIS",
-            "LAINNYA"
-          ]
-        },
+  billing: {
 
-        {
-          key: "REFERENCE_NO",
-          label: "No. Referensi",
-          type: "text"
-        },
+    title: "Buat Tagihan",
 
-        {
-          key: "NOTES",
-          label: "Catatan",
-          type: "textarea"
-        }
-      ]
-    },
+    editTitle: "Edit Tagihan",
 
-    salary: {
-      title: "Rekap Payroll Sensei",
-      editTitle: "Edit Payroll",
-      action: "salarySave",
-      idField: "SALARY_ID",
+    idField: "BILLING_ID",
 
-      fields: [
-        {
-          key: "SALARY_ID",
-          label: "ID Payroll",
-          type: "text",
-          required: false,
-          placeholder: "Kosongkan untuk ID otomatis"
-        },
+    fields: [
 
-        {
-          key: "ID_SENSEI",
-          label: "ID Sensei",
-          type: "text",
-          required: true
-        },
+      {
+        key: "BILLING_ID",
+        label: "ID Tagihan",
+        type: "text",
+        required: false,
+        placeholder: "Kosongkan untuk ID otomatis"
+      },
 
-        {
-          key: "PERIOD",
-          label: "Periode",
-          type: "text",
-          required: true,
-          placeholder: "Contoh: 2026-10"
-        },
+      {
+        key: "ID_SISWA",
+        label: "ID Siswa",
+        type: "text",
+        required: true,
+        placeholder: "Contoh: SISWA001"
+      },
 
-        {
-          key: "MEETING_COUNT",
-          label: "Jumlah Pertemuan",
-          type: "number"
-        },
+      {
+        key: "DESCRIPTION",
+        label: "Deskripsi",
+        type: "text",
+        required: true,
+        placeholder: "Contoh: Biaya belajar bulan Oktober"
+      },
 
-        {
-          key: "HOUR_COUNT",
-          label: "Jumlah Jam",
-          type: "number"
-        },
+      {
+        key: "CATEGORY",
+        label: "Kategori",
+        type: "select",
+        required: true,
+        options: [
+          "BIAYA_BELAJAR",
+          "JFT",
+          "SSW",
+          "JLPT",
+          "MAGANG",
+          "DOKUMEN",
+          "LAINNYA"
+        ]
+      },
 
-        {
-          key: "BASE_AMOUNT",
-          label: "Gaji Pokok",
-          type: "number"
-        },
+      {
+        key: "AMOUNT",
+        label: "Jumlah Tagihan",
+        type: "number",
+        required: true,
+        placeholder: "0"
+      },
 
-        {
-          key: "BONUS",
-          label: "Bonus",
-          type: "number"
-        },
+      {
+        key: "DUE_DATE",
+        label: "Jatuh Tempo",
+        type: "date",
+        required: true
+      },
 
-        {
-          key: "DEDUCTION",
-          label: "Potongan",
-          type: "number"
-        },
+      {
+        key: "STATUS",
+        label: "Status",
+        type: "select",
+        required: true,
+        options: [
+          "PENDING",
+          "SEBAGIAN",
+          "LUNAS",
+          "TERLAMBAT",
+          "BATAL"
+        ]
+      },
 
-        {
-          key: "NET_SALARY",
-          label: "Gaji Bersih",
-          type: "number"
-        },
+      {
+        key: "NOTES",
+        label: "Catatan",
+        type: "textarea",
+        required: false
+      }
 
-        {
-          key: "PAYMENT_DATE",
-          label: "Tanggal Pembayaran",
-          type: "date"
-        },
+    ]
 
-        {
-          key: "PAYMENT_STATUS",
-          label: "Status Pembayaran",
-          type: "select",
-          options: [
-            "PENDING",
-            "DIBAYAR"
-          ]
-        },
+  },
 
-        {
-          key: "NOTES",
-          label: "Catatan",
-          type: "textarea"
-        }
-      ]
-    }
-  };
+
+  payments: {
+
+    title: "Input Pembayaran",
+
+    editTitle: "Edit Pembayaran",
+
+    idField: "PAYMENT_ID",
+
+    fields: [
+
+      {
+        key: "PAYMENT_ID",
+        label: "ID Pembayaran",
+        type: "text",
+        required: false,
+        placeholder: "Kosongkan untuk ID otomatis"
+      },
+
+      {
+        key: "BILLING_ID",
+        label: "ID Tagihan",
+        type: "text",
+        required: true
+      },
+
+      {
+        key: "ID_SISWA",
+        label: "ID Siswa",
+        type: "text",
+        required: true
+      },
+
+      {
+        key: "PAYMENT_DATE",
+        label: "Tanggal Pembayaran",
+        type: "date",
+        required: true
+      },
+
+      {
+        key: "AMOUNT",
+        label: "Jumlah Pembayaran",
+        type: "number",
+        required: true
+      },
+
+      {
+        key: "PAYMENT_METHOD",
+        label: "Metode Pembayaran",
+        type: "select",
+        required: true,
+        options: [
+          "CASH",
+          "TRANSFER",
+          "QRIS",
+          "LAINNYA"
+        ]
+      },
+
+      {
+        key: "REFERENCE_NO",
+        label: "Nomor Referensi",
+        type: "text",
+        required: false
+      },
+
+      {
+        key: "NOTES",
+        label: "Catatan",
+        type: "textarea",
+        required: false
+      }
+
+    ]
+
+  },
+
+
+  salary: {
+
+    title: "Rekap Payroll Sensei",
+
+    editTitle: "Edit Payroll Sensei",
+
+    idField: "SALARY_ID",
+
+    fields: [
+
+      {
+        key: "SALARY_ID",
+        label: "ID Payroll",
+        type: "text",
+        required: false,
+        placeholder: "Kosongkan untuk ID otomatis"
+      },
+
+      {
+        key: "ID_SENSEI",
+        label: "ID Sensei",
+        type: "text",
+        required: true
+      },
+
+      {
+        key: "PERIOD",
+        label: "Periode",
+        type: "month",
+        required: true
+      },
+
+      {
+        key: "MEETING_COUNT",
+        label: "Jumlah Pertemuan",
+        type: "number",
+        required: false
+      },
+
+      {
+        key: "HOUR_COUNT",
+        label: "Jumlah Jam",
+        type: "number",
+        required: false
+      },
+
+      {
+        key: "BASE_AMOUNT",
+        label: "Gaji Pokok",
+        type: "number",
+        required: true
+      },
+
+      {
+        key: "BONUS",
+        label: "Bonus",
+        type: "number",
+        required: false
+      },
+
+      {
+        key: "DEDUCTION",
+        label: "Potongan",
+        type: "number",
+        required: false
+      },
+
+      {
+        key: "NET_SALARY",
+        label: "Gaji Bersih",
+        type: "number",
+        required: false
+      },
+
+      {
+        key: "PAYMENT_DATE",
+        label: "Tanggal Pembayaran",
+        type: "date",
+        required: false
+      },
+
+      {
+        key: "PAYMENT_STATUS",
+        label: "Status Pembayaran",
+        type: "select",
+        required: true,
+        options: [
+          "PENDING",
+          "DIBAYAR"
+        ]
+      },
+
+      {
+        key: "NOTES",
+        label: "Catatan",
+        type: "textarea",
+        required: false
+      }
+
+    ]
+
+  }
+
+};  
 
   /*
    * =========================================================
@@ -910,12 +986,12 @@ window.App = (() => {
             "billing"
           ),
 
-      payments:
-        () =>
-          renderCrudPage(
-            el,
-            "payments"
-          ),
+                payments:
+            () =>
+              renderCrudPage(
+                el,
+                "payments"
+              ),
 
       salary:
         () =>
@@ -925,55 +1001,441 @@ window.App = (() => {
           ),
 
       reports:
-        () =>
-          renderReports(el),
+        renderReports,
 
       settings:
-        () =>
-          renderSettings(el)
+        renderSettings
 
     };
 
 
-    try {
+    const renderer =
+      map[page] || renderDashboard;
 
-      const renderer =
-        map[page] ||
-        map.dashboard;
+    await renderer(el);
 
-      await renderer();
+  }
 
-    } catch (error) {
 
-      console.error(
-        "LOAD ERROR:",
-        error
-      );
+  /*
+   * =========================================================
+   * UTILITY
+   * =========================================================
+   */
 
-      el.innerHTML = `
-        <div class="card">
+  const esc = value => {
 
-          <div
-            style="
-              color:#b00020;
-              font-weight:700;
-              margin-bottom:8px
-            "
+    return String(
+      value ?? ""
+    ).replace(
+      /[&<>"']/g,
+      character => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+      }[character])
+    );
+
+  };
+
+
+  function formatNumber(value) {
+
+    const number =
+      Number(value || 0);
+
+    if (
+      !Number.isFinite(number)
+    ) {
+      return "0";
+    }
+
+    return new Intl.NumberFormat(
+      "id-ID"
+    ).format(number);
+
+  }
+
+
+  function formatCurrency(value) {
+
+    const number =
+      Number(value || 0);
+
+    if (
+      !Number.isFinite(number)
+    ) {
+      return "Rp 0";
+    }
+
+    return new Intl.NumberFormat(
+      "id-ID",
+      {
+        style: "currency",
+        currency: "IDR",
+        maximumFractionDigits: 0
+      }
+    ).format(number);
+
+  }
+
+
+  function formatDate(value) {
+
+    if (!value) {
+      return "";
+    }
+
+    const date =
+      new Date(value);
+
+    if (
+      Number.isNaN(
+        date.getTime()
+      )
+    ) {
+      return String(value);
+    }
+
+    return new Intl.DateTimeFormat(
+      "id-ID",
+      {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric"
+      }
+    ).format(date);
+
+  }
+
+
+  function fieldLabel(
+    key
+  ) {
+
+    const labels = {
+
+      ID_SISWA:
+        "ID Siswa",
+
+      ID_SENSEI:
+        "ID Sensei",
+
+      NAMA:
+        "Nama",
+
+      NIK:
+        "NIK",
+
+      NO_WA:
+        "No. WhatsApp",
+
+      NAMA_ORANG_TUA:
+        "Nama Orang Tua / Wali",
+
+      NO_WA_ORANG_TUA:
+        "No. WhatsApp Orang Tua / Wali",
+
+      PROGRAM:
+        "Program",
+
+      ASRAMA:
+        "Asrama",
+
+      TANGGAL_MASUK:
+        "Tanggal Masuk",
+
+      STATUS:
+        "Status",
+
+      EMAIL:
+        "Email",
+
+      TARIF_PER_PERTEMUAN:
+        "Tarif per Pertemuan",
+
+      TARIF_PER_JAM:
+        "Tarif per Jam",
+
+      ATTENDANCE_ID:
+        "ID Absensi",
+
+      ACTOR_ID:
+        "ID Siswa / Sensei",
+
+      ACTOR_TYPE:
+        "Tipe",
+
+      SESSION_ID:
+        "Session ID",
+
+      CLASS_ID:
+        "Class ID",
+
+      TANGGAL:
+        "Tanggal",
+
+      JAM_MASUK:
+        "Jam Masuk",
+
+      JAM_KELUAR:
+        "Jam Keluar",
+
+      CATATAN:
+        "Catatan",
+
+      BILLING_ID:
+        "ID Tagihan",
+
+      DESCRIPTION:
+        "Deskripsi",
+
+      CATEGORY:
+        "Kategori",
+
+      AMOUNT:
+        "Jumlah",
+
+      DUE_DATE:
+        "Jatuh Tempo",
+
+      NOTES:
+        "Catatan",
+
+      PAYMENT_ID:
+        "ID Pembayaran",
+
+      PAYMENT_DATE:
+        "Tanggal Pembayaran",
+
+      PAYMENT_METHOD:
+        "Metode Pembayaran",
+
+      REFERENCE_NO:
+        "Nomor Referensi",
+
+      SALARY_ID:
+        "ID Payroll",
+
+      PERIOD:
+        "Periode",
+
+      MEETING_COUNT:
+        "Jumlah Pertemuan",
+
+      HOUR_COUNT:
+        "Jumlah Jam",
+
+      BASE_AMOUNT:
+        "Gaji Pokok",
+
+      BONUS:
+        "Bonus",
+
+      DEDUCTION:
+        "Potongan",
+
+      NET_SALARY:
+        "Gaji Bersih",
+
+      PAYMENT_STATUS:
+        "Status Pembayaran"
+
+    };
+
+
+    return (
+      labels[key] ||
+      key
+        .replaceAll(
+          "_",
+          " "
+        )
+    );
+
+  }
+
+
+  /*
+   * =========================================================
+   * TABLE
+   * =========================================================
+   */
+
+  function table(
+    rows,
+    columns,
+    options = {}
+  ) {
+
+    const {
+      editable = false
+    } = options;
+
+
+    const safeRows =
+      Array.isArray(rows)
+        ? rows
+        : [];
+
+
+    let html = `
+      <div class="table-wrap">
+
+        <table class="table">
+
+          <thead>
+
+            <tr>
+
+              ${columns
+                .map(
+                  column => `
+                    <th>
+                      ${esc(
+                        fieldLabel(
+                          column
+                        )
+                      )}
+                    </th>
+                  `
+                )
+                .join("")}
+
+              ${
+                editable
+                  ? `<th>Aksi</th>`
+                  : ""
+              }
+
+            </tr>
+
+          </thead>
+
+          <tbody>
+    `;
+
+
+    if (
+      safeRows.length === 0
+    ) {
+
+      html += `
+        <tr>
+
+          <td
+            colspan="${
+              columns.length +
+              (editable ? 1 : 0)
+            }"
+            class="muted"
           >
-            Terjadi kesalahan
-          </div>
+            Belum ada data.
+          </td>
 
-          <div class="muted">
-            ${esc(
-              error.message ||
-              "Gagal memuat data."
-            )}
-          </div>
-
-        </div>
+        </tr>
       `;
 
+    } else {
+
+      safeRows.forEach(
+        (row, index) => {
+
+          html += `
+            <tr>
+
+              ${columns
+                .map(
+                  column => {
+
+                    let value =
+                      row[column];
+
+                    if (
+                      column.includes(
+                        "AMOUNT"
+                      ) ||
+                      column.includes(
+                        "SALARY"
+                      ) ||
+                      column.includes(
+                        "BONUS"
+                      ) ||
+                      column.includes(
+                        "DEDUCTION"
+                      )
+                    ) {
+
+                      value =
+                        formatCurrency(
+                          value
+                        );
+
+                    }
+
+                    return `
+                      <td>
+                        ${esc(
+                          value
+                        )}
+                      </td>
+                    `;
+
+                  }
+                )
+                .join("")}
+
+              ${
+                editable
+                  ? `
+                    <td>
+
+                      <div
+                        class="table-actions"
+                      >
+
+                        <button
+                          class="btn btn-light btn-edit"
+                          data-index="${index}"
+                        >
+                          Edit
+                        </button>
+
+                        <button
+                          class="btn btn-danger btn-delete"
+                          data-index="${index}"
+                        >
+                          Hapus
+                        </button>
+
+                      </div>
+
+                    </td>
+                  `
+                  : ""
+              }
+
+            </tr>
+          `;
+
+        }
+      );
+
     }
+
+
+    html += `
+          </tbody>
+
+        </table>
+
+      </div>
+    `;
+
+
+    return html;
 
   }
 
@@ -984,99 +1446,133 @@ window.App = (() => {
    * =========================================================
    */
 
-  async function renderDashboard() {
+  async function renderDashboard(
+    el
+  ) {
 
-    const el =
-      document.getElementById("page");
+    try {
 
-    const result =
-      await API.dashboard();
+      const response =
+        await API.dashboard();
 
-    const d =
-      result.data || {};
+      const data =
+        response.data || {};
 
 
-    el.innerHTML = `
+      el.innerHTML = `
 
-      <div class="page-title">
+        <div class="page-title">
 
-        <div>
+          <div>
 
-          <h1>
-            Dashboard
-          </h1>
+            <h1>
+              Dashboard
+            </h1>
 
-          <p>
-            Ringkasan operasional
-            LPKS Arima Persada.
-          </p>
+            <p>
+              Ringkasan operasional
+              LPKS Arima Persada.
+            </p>
+
+          </div>
 
         </div>
 
-      </div>
 
-
-      <div class="cards">
-
-        ${[
-          [
-            "Siswa Aktif",
-            d.students ?? 0
-          ],
-
-          [
-            "Sensei",
-            d.sensei ?? 0
-          ],
-
-          [
-            "Kehadiran",
-            `${d.attendance ?? 0}%`
-          ],
-
-          [
-            "Tagihan Pending",
-            d.pendingBilling ?? 0
-          ]
-
-        ].map(x => `
+        <div class="cards">
 
           <div class="card">
 
             <div class="muted">
-              ${esc(x[0])}
+              Siswa Aktif
             </div>
 
             <div class="metric">
-              ${esc(x[1])}
+              ${formatNumber(
+                data.students
+              )}
             </div>
 
           </div>
 
-        `).join("")}
 
-      </div>
+          <div class="card">
+
+            <div class="muted">
+              Sensei
+            </div>
+
+            <div class="metric">
+              ${formatNumber(
+                data.sensei
+              )}
+            </div>
+
+          </div>
 
 
-      <div class="section">
+          <div class="card">
 
-        <div class="card">
+            <div class="muted">
+              Kehadiran
+            </div>
 
-          <strong>
-            Selamat datang,
-            ${esc(user.name)}
-          </strong>
+            <div class="metric">
+              ${formatNumber(
+                data.attendance
+              )}%
+            </div>
 
-          <p class="muted">
-            Gunakan menu di sebelah kiri
-            untuk mengelola sistem.
-          </p>
+          </div>
+
+
+          <div class="card">
+
+            <div class="muted">
+              Tagihan Pending
+            </div>
+
+            <div class="metric">
+              ${formatNumber(
+                data.pendingBilling
+              )}
+            </div>
+
+          </div>
 
         </div>
 
-      </div>
 
-    `;
+        <div class="section">
+
+          <div class="card">
+
+            <strong>
+              Selamat datang,
+              ${esc(
+                user.name
+              )}
+            </strong>
+
+            <p class="muted">
+              Gunakan menu di sebelah kiri
+              untuk mengelola sistem.
+            </p>
+
+          </div>
+
+        </div>
+
+      `;
+
+    } catch (error) {
+
+      renderError(
+        el,
+        error
+      );
+
+    }
 
   }
 
@@ -1092,37 +1588,54 @@ window.App = (() => {
     type
   ) {
 
-    const cfg =
+    const config =
       TABLE_CONFIG[type];
 
-    if (!cfg) {
+    if (!config) {
 
-      throw new Error(
-        "Konfigurasi halaman tidak ditemukan: " +
-        type
+      renderError(
+        el,
+        new Error(
+          "Konfigurasi halaman tidak ditemukan: " +
+          type
+        )
       );
+
+      return;
 
     }
 
 
-    const result =
-      await API[cfg.api]();
-
-    const rows =
-      Array.isArray(result.data)
-        ? result.data
-        : [];
+    let rows = [];
 
 
-    const role =
-      String(
-        user.role || ""
-      ).toUpperCase();
+    try {
+
+      const response =
+        await API[config.api]();
+
+      rows =
+        Array.isArray(
+          response.data
+        )
+          ? response.data
+          : [];
 
 
-    const canEdit =
-      role === "ADMIN" ||
-      role === "ADMIN_FINANCE";
+    } catch (error) {
+
+      renderError(
+        el,
+        error
+      );
+
+      return;
+
+    }
+
+
+    let filteredRows =
+      [...rows];
 
 
     el.innerHTML = `
@@ -1132,11 +1645,15 @@ window.App = (() => {
         <div>
 
           <h1>
-            ${esc(cfg.title)}
+            ${esc(
+              config.title
+            )}
           </h1>
 
           <p>
-            ${esc(cfg.description)}
+            ${esc(
+              config.description
+            )}
           </p>
 
         </div>
@@ -1144,9 +1661,11 @@ window.App = (() => {
 
         <button
           class="btn btn-primary"
-          id="addBtn"
+          id="addRecord"
         >
-          ${esc(cfg.addLabel)}
+          ${esc(
+            config.addLabel
+          )}
         </button>
 
       </div>
@@ -1158,49 +1677,68 @@ window.App = (() => {
       >
 
         <div
-          style="
-            display:flex;
-            gap:10px;
-            align-items:center;
-            flex-wrap:wrap
-          "
+          class="field"
         >
 
-          <input
-            id="tableSearch"
-            type="search"
-            placeholder="Cari data..."
-            style="
-              min-width:280px;
-              flex:1
-            "
-          >
+          <label>
+            Cari Data
+          </label>
 
-          <span
-            class="muted"
-            id="rowCount"
+          <input
+            type="search"
+            id="tableSearch"
+            placeholder="Cari berdasarkan data..."
           >
-            ${rows.length} data
-          </span>
 
         </div>
 
       </div>
 
 
-      <div id="tableContainer"></div>
+      <div
+        id="crudTable"
+      >
+        ${table(
+          filteredRows,
+          config.columns,
+          {
+            editable: true
+          }
+        )}
+      </div>
 
     `;
 
 
+    /*
+     * ADD
+     */
+
     document
-      .getElementById("addBtn")
-      .onclick = () => {
+      .getElementById(
+        "addRecord"
+      )
+      .addEventListener(
+        "click",
+        () => {
 
-        form(type);
+          openForm(
+            config.form,
+            null,
+            async () => {
 
-      };
+              await refreshCrud();
 
+            }
+          );
+
+        }
+      );
+
+
+    /*
+     * SEARCH
+     */
 
     const searchInput =
       document.getElementById(
@@ -1208,475 +1746,241 @@ window.App = (() => {
       );
 
 
-    function renderFiltered() {
+    if (searchInput) {
 
-      const q =
-        String(
-          searchInput.value || ""
-        )
-          .trim()
-          .toLowerCase();
+      searchInput.addEventListener(
+        "input",
+        () => {
+
+          const query =
+            searchInput.value
+              .trim()
+              .toLowerCase();
 
 
-      const filtered =
-        !q
-          ? rows
-          : rows.filter(row =>
-              cfg.search.some(
-                key =>
-                  String(
-                    row[key] ?? ""
+          if (!query) {
+
+            filteredRows =
+              [...rows];
+
+          } else {
+
+            filteredRows =
+              rows.filter(
+                row =>
+                  config.search.some(
+                    key =>
+                      String(
+                        row[key] ??
+                        ""
+                      )
+                        .toLowerCase()
+                        .includes(
+                          query
+                        )
                   )
-                    .toLowerCase()
-                    .includes(q)
-              )
+              );
+
+          }
+
+
+          document.getElementById(
+            "crudTable"
+          ).innerHTML =
+            table(
+              filteredRows,
+              config.columns,
+              {
+                editable: true
+              }
             );
 
 
-      document
-        .getElementById("rowCount")
-        .textContent =
-        `${filtered.length} data`;
+          bindTableActions();
 
+        }
 
-      document
-        .getElementById("tableContainer")
-        .innerHTML =
-        buildTable(
-          filtered,
-          cfg.columns,
-          type,
-          canEdit
-        );
-
-
-      bindTableActions(
-        type,
-        filtered
       );
 
     }
 
 
-    searchInput.addEventListener(
-      "input",
-      renderFiltered
-    );
+    /*
+     * TABLE ACTIONS
+     */
+
+    function bindTableActions() {
+
+      document
+        .querySelectorAll(
+          ".btn-edit"
+        )
+        .forEach(
+          button => {
+
+            button.addEventListener(
+              "click",
+              () => {
+
+                const index =
+                  Number(
+                    button.dataset.index
+                  );
+
+                const record =
+                  filteredRows[index];
+
+                if (!record) {
+                  return;
+                }
 
 
-    renderFiltered();
+                openForm(
+                  config.form,
+                  record,
+                  async () => {
 
-  }
+                    await refreshCrud();
 
+                  }
+                );
 
-  /*
-   * =========================================================
-   * TABLE BUILDER
-   * =========================================================
-   */
-
-  function buildTable(
-    rows,
-    columns,
-    type,
-    canEdit
-  ) {
-
-    const showActions =
-      canEdit &&
-      (
-        type === "students" ||
-        type === "sensei"
-      );
-
-
-    return `
-
-      <div class="table-wrap">
-
-        <table class="table">
-
-          <thead>
-
-            <tr>
-
-              ${columns
-                .map(
-                  column =>
-                    `<th>${esc(column)}</th>`
-                )
-                .join("")}
-
-              ${
-                showActions
-                  ? `
-                    <th
-                      style="
-                        min-width:150px
-                      "
-                    >
-                      AKSI
-                    </th>
-                  `
-                  : ""
               }
-
-            </tr>
-
-          </thead>
-
-
-          <tbody>
-
-            ${
-              rows.length
-                ? rows
-                    .map(
-                      (row, index) => `
-
-                        <tr>
-
-                          ${columns
-                            .map(
-                              column =>
-                                `
-                                  <td>
-                                    ${formatCell(
-                                      column,
-                                      row[column]
-                                    )}
-                                  </td>
-                                `
-                            )
-                            .join("")}
-
-
-                          ${
-                            showActions
-                              ? `
-
-                                <td>
-
-                                  <button
-                                    type="button"
-                                    class="btn btn-light btn-edit"
-                                    data-index="${index}"
-                                    data-type="${esc(type)}"
-                                  >
-                                    Edit
-                                  </button>
-
-
-                                  <button
-                                    type="button"
-                                    class="btn btn-light btn-delete"
-                                    data-index="${index}"
-                                    data-type="${esc(type)}"
-                                  >
-                                    Hapus
-                                  </button>
-
-                                </td>
-
-                              `
-                              : ""
-                          }
-
-                        </tr>
-
-                      `
-                    )
-                    .join("")
-
-                : `
-
-                  <tr>
-
-                    <td
-                      colspan="${
-                        columns.length +
-                        (
-                          showActions
-                            ? 1
-                            : 0
-                        )
-                      }"
-                      class="muted"
-                    >
-                      Belum ada data.
-                    </td>
-
-                  </tr>
-
-                `
-            }
-
-          </tbody>
-
-        </table>
-
-      </div>
-
-    `;
-
-  }
-
-  /*
-   * =========================================================
-   * TABLE ACTIONS
-   * =========================================================
-   */
-
-  function bindTableActions(type, rows) {
-
-    document
-      .querySelectorAll(".btn-edit")
-      .forEach(button => {
-
-        button.addEventListener(
-          "click",
-          () => {
-
-            const index =
-              Number(
-                button.dataset.index
-              );
-
-            const row =
-              rows[index];
-
-            if (!row) {
-              toast(
-                "Data tidak ditemukan."
-              );
-              return;
-            }
-
-            form(
-              type,
-              row
             );
 
           }
         );
 
-      });
 
+      document
+        .querySelectorAll(
+          ".btn-delete"
+        )
+        .forEach(
+          button => {
 
-    document
-      .querySelectorAll(".btn-delete")
-      .forEach(button => {
+            button.addEventListener(
+              "click",
+              async () => {
 
-        button.addEventListener(
-          "click",
-          async () => {
-
-            const index =
-              Number(
-                button.dataset.index
-              );
-
-            const row =
-              rows[index];
-
-            if (!row) {
-              toast(
-                "Data tidak ditemukan."
-              );
-              return;
-            }
-
-
-            const cfg =
-              TABLE_CONFIG[type];
-
-
-            const id =
-              row[cfg.form
-                ? FORM_CONFIG[
-                    cfg.form
-                  ].idField
-                : "ID"];
-
-
-            if (!id) {
-
-              toast(
-                "ID data tidak ditemukan."
-              );
-
-              return;
-
-            }
-
-
-            const confirmed =
-              window.confirm(
-                `Yakin ingin menghapus data ${id}?`
-              );
-
-
-            if (!confirmed) {
-              return;
-            }
-
-
-            try {
-
-              showLoading(
-                "Menghapus data..."
-              );
-
-
-              let result;
-
-
-              if (type === "students") {
-
-                result =
-                  await API.call(
-                    "studentDelete",
-                    {
-                      id: id
-                    }
+                const index =
+                  Number(
+                    button.dataset.index
                   );
 
-              } else if (
-                type === "sensei"
-              ) {
+                const record =
+                  filteredRows[index];
 
-                result =
-                  await API.call(
-                    "senseiDelete",
-                    {
-                      id: id
-                    }
-                  );
-
-              } else {
-
-                toast(
-                  "Hapus data untuk menu ini belum diaktifkan."
-                );
-
-                hideLoading();
-
-                return;
-
-              }
+                if (!record) {
+                  return;
+                }
 
 
-              hideLoading();
-
-
-              if (
-                !result ||
-                result.success !== true
-              ) {
-
-                throw new Error(
-                  result?.message ||
-                  "Data gagal dihapus."
+                await deleteRecord(
+                  type,
+                  record
                 );
 
               }
-
-
-              toast(
-                "Data berhasil dihapus."
-              );
-
-
-              await load(
-                type
-              );
-
-
-            } catch (error) {
-
-              hideLoading();
-
-              console.error(
-                "DELETE ERROR:",
-                error
-              );
-
-
-              toast(
-                error.message ||
-                "Gagal menghapus data."
-              );
-
-            }
+            );
 
           }
         );
 
-      });
+    }
+
+
+    bindTableActions();
+
+
+    /*
+     * REFRESH
+     */
+
+    async function refreshCrud() {
+
+      try {
+
+        const response =
+          await API[config.api]();
+
+        rows =
+          Array.isArray(
+            response.data
+          )
+            ? response.data
+            : [];
+
+        filteredRows =
+          [...rows];
+
+
+        const search =
+          document.getElementById(
+            "tableSearch"
+          );
+
+
+        if (search) {
+          search.value = "";
+        }
+
+
+        const tableElement =
+          document.getElementById(
+            "crudTable"
+          );
+
+
+        if (tableElement) {
+
+          tableElement.innerHTML =
+            table(
+              filteredRows,
+              config.columns,
+              {
+                editable: true
+              }
+            );
+
+          bindTableActions();
+
+        }
+
+      } catch (error) {
+
+        toast(
+          error.message ||
+          "Gagal memuat data."
+        );
+
+      }
+
+    }
 
   }
 
 
   /*
    * =========================================================
-   * DYNAMIC FORM
+   * FORM GENERATOR
    * =========================================================
    */
 
-  function form(
-    type,
-    existingData = null
+  function openForm(
+    formType,
+    existing,
+    onSaved
   ) {
 
-    /*
-     * Support nama lama:
-     *
-     * App.form("Siswa")
-     * App.form("Sensei")
-     * App.form("Absensi")
-     *
-     * sekaligus:
-     *
-     * App.form("students")
-     */
+    const config =
+      FORM_CONFIG[formType];
 
-    const aliases = {
-
-      "Siswa":
-        "students",
-
-      "Sensei":
-        "sensei",
-
-      "Absensi":
-        "attendance",
-
-      "Tagihan":
-        "billing",
-
-      "Pembayaran":
-        "payments",
-
-      "Payroll":
-        "salary"
-
-    };
-
-
-    type =
-      aliases[type] ||
-      type;
-
-
-    const cfg =
-      FORM_CONFIG[type];
-
-
-    if (!cfg) {
+    if (!config) {
 
       toast(
         "Form tidak ditemukan: " +
-        type
+        formType
       );
 
       return;
@@ -1684,36 +1988,23 @@ window.App = (() => {
     }
 
 
+    const isEdit =
+      !!existing;
+
+
     const modal =
       document.createElement(
         "div"
       );
 
-
     modal.className =
       "modal-backdrop";
-
-
-    const isEdit =
-      Boolean(existingData);
-
-
-    const title =
-      isEdit
-        ? cfg.editTitle
-        : cfg.title;
 
 
     modal.innerHTML = `
 
       <div
         class="modal"
-        style="
-          max-width:900px;
-          width:calc(100% - 30px);
-          max-height:90vh;
-          overflow:auto;
-        "
       >
 
         <div
@@ -1723,19 +2014,12 @@ window.App = (() => {
           <div>
 
             <h2>
-              ${esc(title)}
-            </h2>
-
-            <div
-              class="muted"
-              style="font-size:13px"
-            >
-              ${
+              ${esc(
                 isEdit
-                  ? "Perbarui data."
-                  : "Isi data kemudian simpan ke database."
-              }
-            </div>
+                  ? config.editTitle
+                  : config.title
+              )}
+            </h2>
 
           </div>
 
@@ -1752,19 +2036,19 @@ window.App = (() => {
 
 
         <form
-          id="dynamicForm"
+          id="recordForm"
         >
 
           <div
             class="form-grid"
           >
 
-            ${cfg.fields
+            ${config.fields
               .map(
                 field =>
                   renderField(
                     field,
-                    existingData
+                    existing
                   )
               )
               .join("")}
@@ -1779,7 +2063,7 @@ window.App = (() => {
             <button
               type="button"
               class="btn btn-light"
-              id="cancelModal"
+              id="cancelForm"
             >
               Batal
             </button>
@@ -1787,13 +2071,9 @@ window.App = (() => {
             <button
               type="submit"
               class="btn btn-primary"
-              id="saveModal"
+              id="saveForm"
             >
-              ${
-                isEdit
-                  ? "Simpan Perubahan"
-                  : "Simpan"
-              }
+              Simpan
             </button>
 
           </div>
@@ -1810,266 +2090,134 @@ window.App = (() => {
     );
 
 
+    /*
+     * CLOSE
+     */
+
     const close =
-      () => modal.remove();
+      () => {
+
+        modal.remove();
+
+      };
 
 
     modal
       .querySelector(
         "#closeModal"
       )
-      .onclick = close;
+      .addEventListener(
+        "click",
+        close
+      );
 
 
     modal
       .querySelector(
-        "#cancelModal"
+        "#cancelForm"
       )
-      .onclick = close;
-
-
-    const formElement =
-      modal.querySelector(
-        "#dynamicForm"
+      .addEventListener(
+        "click",
+        close
       );
 
 
-    formElement.addEventListener(
-      "submit",
-      async event => {
+    /*
+     * SUBMIT
+     */
 
-        event.preventDefault();
+    modal
+      .querySelector(
+        "#recordForm"
+      )
+      .addEventListener(
+        "submit",
+        async event => {
 
-
-        const saveButton =
-          modal.querySelector(
-            "#saveModal"
-          );
-
-
-        try {
-
-          saveButton.disabled =
-            true;
-
-          saveButton.textContent =
-            "Menyimpan...";
+          event.preventDefault();
 
 
-          const payload =
-            collectFormData(
-              formElement,
-              cfg.fields
+          const button =
+            modal.querySelector(
+              "#saveForm"
             );
 
 
-          validateForm(
-            payload,
-            cfg.fields
-          );
+          const originalText =
+            button.textContent;
 
 
-          /*
-           * Hitung otomatis payroll
-           */
+          try {
 
-          if (
-            type === "salary"
-          ) {
+            button.disabled =
+              true;
 
-            const base =
-              numberValue(
-                payload.BASE_AMOUNT
-              );
+            button.textContent =
+              "Menyimpan...";
 
-            const bonus =
-              numberValue(
-                payload.BONUS
-              );
 
-            const deduction =
-              numberValue(
-                payload.DEDUCTION
+            const payload =
+              collectFormData(
+                modal,
+                config
               );
 
 
-            payload.NET_SALARY =
-              base +
-              bonus -
-              deduction;
+            validateFormData(
+              payload,
+              config
+            );
 
 
-            const netInput =
-              formElement.querySelector(
-                '[name="NET_SALARY"]'
-              );
+            await saveRecord(
+              formType,
+              payload
+            );
 
 
-            if (netInput) {
+            toast(
+              isEdit
+                ? "Data berhasil diperbarui."
+                : "Data berhasil ditambahkan."
+            );
 
-              netInput.value =
-                payload.NET_SALARY;
+
+            close();
+
+
+            if (
+              typeof onSaved ===
+              "function"
+            ) {
+
+              await onSaved();
 
             }
 
-          }
+          } catch (error) {
 
-
-          let result;
-
-
-          /*
-           * Endpoint backend
-           */
-
-          if (
-            type === "students"
-          ) {
-
-            result =
-              await API.call(
-                "studentSave",
-                payload
-              );
-
-          } else if (
-            type === "sensei"
-          ) {
-
-            result =
-              await API.call(
-                "senseiSave",
-                payload
-              );
-
-          } else if (
-            type === "attendance"
-          ) {
-
-            result =
-              await API.call(
-                "attendanceSave",
-                payload
-              );
-
-          } else if (
-            type === "billing"
-          ) {
-
-            result =
-              await API.call(
-                "billingSave",
-                payload
-              );
-
-          } else if (
-            type === "payments"
-          ) {
-
-            result =
-              await API.call(
-                "paymentSave",
-                payload
-              );
-
-          } else if (
-            type === "salary"
-          ) {
-
-            result =
-              await API.call(
-                "salarySave",
-                payload
-              );
-
-          } else {
-
-            throw new Error(
-              "Endpoint tidak tersedia."
+            console.error(
+              "Save error:",
+              error
             );
 
-          }
 
-
-          if (
-            !result ||
-            result.success !== true
-          ) {
-
-            throw new Error(
-              result?.message ||
-              "Data gagal disimpan."
+            toast(
+              error.message ||
+              "Gagal menyimpan data."
             );
 
+
+            button.disabled =
+              false;
+
+            button.textContent =
+              originalText;
+
           }
-
-
-          close();
-
-
-          toast(
-            result.message ||
-            "Data berhasil disimpan."
-          );
-
-
-          /*
-           * Refresh halaman
-           */
-
-          const pageMap = {
-
-            students:
-              "students",
-
-            sensei:
-              "sensei",
-
-            attendance:
-              "attendance",
-
-            billing:
-              "billing",
-
-            payments:
-              "payments",
-
-            salary:
-              "salary"
-
-          };
-
-
-          await load(
-            pageMap[type]
-          );
-
-
-        } catch (error) {
-
-          console.error(
-            "SAVE ERROR:",
-            error
-          );
-
-
-          toast(
-            error.message ||
-            "Gagal menyimpan data."
-          );
-
-
-          saveButton.disabled =
-            false;
-
-          saveButton.textContent =
-            isEdit
-              ? "Simpan Perubahan"
-              : "Simpan";
 
         }
-
-      });
+      );
 
   }
 
@@ -2082,12 +2230,13 @@ window.App = (() => {
 
   function renderField(
     field,
-    existingData
+    existing
   ) {
 
     const value =
-      existingData
-        ? existingData[field.key] ?? ""
+      existing
+        ? existing[field.key] ??
+          ""
         : "";
 
 
@@ -2097,58 +2246,56 @@ window.App = (() => {
         : "";
 
 
-    const placeholder =
-      field.placeholder
-        ? `placeholder="${esc(
-            field.placeholder
-          )}"`
-        : "";
-
-
     const full =
-      field.type === "textarea"
+      field.type ===
+        "textarea"
         ? "full"
         : "";
 
 
-    let input = "";
+    const id =
+      "field_" +
+      field.key;
+
+
+    let control = "";
 
 
     if (
-      field.type === "select"
+      field.type ===
+      "select"
     ) {
 
-      input = `
+      control = `
 
         <select
+          id="${esc(id)}"
           name="${esc(field.key)}"
           ${required}
         >
 
           <option value="">
-            -- Pilih --
+            Pilih...
           </option>
 
-          ${(
-            field.options || []
-          )
+          ${(field.options || [])
             .map(
               option => `
-
                 <option
                   value="${esc(option)}"
                   ${
-                    String(value)
-                      .toUpperCase() ===
-                    String(option)
-                      .toUpperCase()
+                    String(
+                      value
+                    ) ===
+                    String(
+                      option
+                    )
                       ? "selected"
                       : ""
                   }
                 >
                   ${esc(option)}
                 </option>
-
               `
             )
             .join("")}
@@ -2158,32 +2305,46 @@ window.App = (() => {
       `;
 
     } else if (
-      field.type === "textarea"
+      field.type ===
+      "textarea"
     ) {
 
-      input = `
+      control = `
 
         <textarea
+          id="${esc(id)}"
           name="${esc(field.key)}"
           rows="4"
           ${required}
-          ${placeholder}
-        >${esc(value)}</textarea>
+          placeholder="${esc(
+            field.placeholder ||
+            ""
+          )}"
+        >${esc(
+          value
+        )}</textarea>
 
       `;
 
     } else {
 
-      input = `
+      control = `
 
         <input
-          type="${esc(
-            field.type || "text"
-          )}"
+          id="${esc(id)}"
           name="${esc(field.key)}"
-          value="${esc(value)}"
+          type="${esc(
+            field.type ||
+            "text"
+          )}"
+          value="${esc(
+            value
+          )}"
           ${required}
-          ${placeholder}
+          placeholder="${esc(
+            field.placeholder ||
+            ""
+          )}"
         >
 
       `;
@@ -2197,25 +2358,26 @@ window.App = (() => {
         class="field ${full}"
       >
 
-        <label>
+        <label
+          for="${esc(id)}"
+        >
 
-          ${esc(field.label)}
+          ${esc(
+            field.label ||
+            fieldLabel(
+              field.key
+            )
+          )}
 
           ${
             field.required
-              ? `<span
-                  style="
-                    color:#b00020
-                  "
-                >
-                  *
-                </span>`
+              ? `<span style="color:#dc2626">*</span>`
               : ""
           }
 
         </label>
 
-        ${input}
+        ${control}
 
       </div>
 
@@ -2231,45 +2393,72 @@ window.App = (() => {
    */
 
   function collectFormData(
-    formElement,
-    fields
+    modal,
+    config
   ) {
+
+    const form =
+      modal.querySelector(
+        "#recordForm"
+      );
+
+
+    const formData =
+      new FormData(
+        form
+      );
+
 
     const payload = {};
 
 
-    fields.forEach(
+    config.fields.forEach(
       field => {
 
-        const input =
-          formElement.querySelector(
-            `[name="${CSS.escape(
-              field.key
-            )}"]`
+        let value =
+          formData.get(
+            field.key
           );
 
 
-        if (!input) {
-          return;
+        if (
+          value === null ||
+          value === undefined
+        ) {
+
+          value = "";
+
         }
 
 
-        let value =
-          input.value;
-
-
-        /*
-         * Number
-         */
-
         if (
-          field.type === "number"
+          field.type ===
+          "number"
         ) {
 
+          if (
+            String(
+              value
+            ).trim() === ""
+          ) {
+
+            value = "";
+
+          } else {
+
+            value =
+              Number(
+                value
+              );
+
+          }
+
+        } else {
+
           value =
-            value === ""
-              ? ""
-              : Number(value);
+            String(
+              value
+            ).trim();
 
         }
 
@@ -2288,46 +2477,412 @@ window.App = (() => {
 
   /*
    * =========================================================
-   * FORM VALIDATION
+   * VALIDATION
    * =========================================================
    */
 
-  function validateForm(
+  function validateFormData(
     payload,
-    fields
+    config
   ) {
 
-    const missing =
-      fields
-        .filter(
-          field =>
-            field.required &&
-            (
-              payload[field.key] ===
-                undefined ||
-              payload[field.key] ===
-                null ||
-              String(
-                payload[field.key]
-              ).trim() === ""
-            )
-        )
-        .map(
-          field =>
-            field.label
-        );
+    const errors = [];
+
+
+    config.fields.forEach(
+      field => {
+
+        if (
+          !field.required
+        ) {
+          return;
+        }
+
+
+        const value =
+          payload[field.key];
+
+
+        if (
+          value === "" ||
+          value === null ||
+          value === undefined
+        ) {
+
+          errors.push(
+            field.label ||
+            field.key
+          );
+
+        }
+
+      }
+    );
 
 
     if (
-      missing.length
+      errors.length
     ) {
 
       throw new Error(
         "Field wajib belum diisi: " +
-        missing.join(", ")
+        errors.join(", ")
       );
 
     }
+
+  }
+
+
+  /*
+   * =========================================================
+   * SAVE RECORD
+   * =========================================================
+   */
+
+  async function saveRecord(
+    type,
+    payload
+  ) {
+
+    const actions = {
+
+      students:
+        "studentSave",
+
+      sensei:
+        "senseiSave",
+
+      attendance:
+        "attendanceSave",
+
+      billing:
+        "billingSave",
+
+      payments:
+        "paymentSave",
+
+      salary:
+        "salarySave"
+
+    };
+
+
+    const action =
+      actions[type];
+
+
+    if (!action) {
+
+      throw new Error(
+        "Action penyimpanan tidak ditemukan untuk: " +
+        type
+      );
+
+    }
+
+
+    const result =
+      await API.call(
+        action,
+        payload
+      );
+
+
+    if (
+      !result ||
+      result.success !== true
+    ) {
+
+      throw new Error(
+        result?.message ||
+        "Data gagal disimpan."
+      );
+
+    }
+
+
+    return result;
+
+  }
+
+
+  /*
+   * =========================================================
+   * DELETE RECORD
+   * =========================================================
+   */
+
+  async function deleteRecord(
+    type,
+    record
+  ) {
+
+    const actions = {
+
+      students:
+        "studentDelete",
+
+      sensei:
+        "senseiDelete"
+
+    };
+
+
+    const action =
+      actions[type];
+
+
+    if (!action) {
+
+      toast(
+        "Penghapusan untuk menu ini belum tersedia."
+      );
+
+      return;
+
+    }
+
+
+    const config =
+      TABLE_CONFIG[type];
+
+
+    const idField =
+      config?.columns?.[0];
+
+
+    const id =
+      record[
+        idField
+      ];
+
+
+    if (!id) {
+
+      toast(
+        "ID data tidak ditemukan."
+      );
+
+      return;
+
+    }
+
+
+    const confirmed =
+      window.confirm(
+        "Yakin ingin menghapus data " +
+        id +
+        "?"
+      );
+
+
+    if (!confirmed) {
+      return;
+    }
+
+
+    try {
+
+      const result =
+        await API.call(
+          action,
+          {
+            id
+          }
+        );
+
+
+      if (
+        !result ||
+        result.success !== true
+      ) {
+
+        throw new Error(
+          result?.message ||
+          "Data gagal dihapus."
+        );
+
+      }
+
+
+      toast(
+        "Data berhasil dihapus."
+      );
+
+
+      /*
+       * Reload halaman aktif.
+       */
+
+      const activePage =
+        document
+          .querySelector(
+            "[data-page].active"
+          );
+
+
+      if (
+        activePage
+      ) {
+
+        await load(
+          activePage.dataset.page
+        );
+
+      }
+
+    } catch (error) {
+
+      console.error(
+        "Delete error:",
+        error
+      );
+
+
+      toast(
+        error.message ||
+        "Gagal menghapus data."
+      );
+
+    }
+
+  }
+
+
+  /*
+   * =========================================================
+   * ERROR
+   * =========================================================
+   */
+
+  function renderError(
+    el,
+    error
+  ) {
+
+    const message =
+      error?.message ||
+      "Terjadi kesalahan.";
+
+
+    el.innerHTML = `
+
+      <div class="card">
+
+        <h3>
+          Terjadi kesalahan
+        </h3>
+
+        <p
+          class="muted"
+        >
+          ${esc(
+            message
+          )}
+        </p>
+
+        <button
+          class="btn btn-primary"
+          id="retryButton"
+        >
+          Coba Lagi
+        </button>
+
+      </div>
+
+    `;
+
+
+    const retry =
+      document.getElementById(
+        "retryButton"
+      );
+
+
+    if (retry) {
+
+      retry.addEventListener(
+        "click",
+        () => {
+
+          const active =
+            document.querySelector(
+              "[data-page].active"
+            );
+
+
+          if (active) {
+
+            load(
+              active.dataset.page
+            );
+
+          } else {
+
+            load(
+              "dashboard"
+            );
+
+          }
+
+        }
+      );
+
+    }
+
+  }
+
+
+  /*
+   * =========================================================
+   * TOAST
+   * =========================================================
+   */
+
+  function toast(
+    message
+  ) {
+
+    const old =
+      document.querySelectorAll(
+        ".toast"
+      );
+
+
+    old.forEach(
+      element =>
+        element.remove()
+    );
+
+
+    const t =
+      document.createElement(
+        "div"
+      );
+
+
+    t.className =
+      "toast";
+
+
+    t.textContent =
+      message;
+
+
+    document.body.appendChild(
+      t
+    );
+
+
+    setTimeout(
+      () => {
+
+        t.remove();
+
+      },
+      2600
+    );
 
   }
 
@@ -2377,7 +2932,7 @@ window.App = (() => {
 
           <button
             class="btn btn-dark"
-            data-report="attendance"
+            style="margin-top:10px"
           >
             Buka
           </button>
@@ -2392,12 +2947,13 @@ window.App = (() => {
           </strong>
 
           <p class="muted">
-            Rekap tagihan dan pembayaran.
+            Rekap tagihan dan status
+            pembayaran.
           </p>
 
           <button
             class="btn btn-dark"
-            data-report="billing"
+            style="margin-top:10px"
           >
             Buka
           </button>
@@ -2412,12 +2968,13 @@ window.App = (() => {
           </strong>
 
           <p class="muted">
-            Rekap payroll sensei.
+            Rekap pembayaran payroll
+            sensei.
           </p>
 
           <button
             class="btn btn-dark"
-            data-report="salary"
+            style="margin-top:10px"
           >
             Buka
           </button>
@@ -2427,32 +2984,6 @@ window.App = (() => {
       </div>
 
     `;
-
-
-    el
-      .querySelectorAll(
-        "[data-report]"
-      )
-      .forEach(
-        button => {
-
-          button.onclick =
-            () => {
-
-              const report =
-                button.dataset.report;
-
-
-              toast(
-                "Laporan " +
-                report +
-                " akan dikembangkan pada modul laporan."
-              );
-
-            };
-
-        }
-      );
 
   }
 
@@ -2506,367 +3037,17 @@ window.App = (() => {
         </div>
 
 
-        <div
-          class="field"
-          style="margin-top:15px"
-        >
-
-          <label>
-            Apps Script API
-          </label>
-
-          <input
-            value="${esc(
-              ARIMA_CONFIG.API_URL ||
-              ""
-            )}"
-            readonly
-          >
-
-        </div>
-
-
         <p
           class="muted"
-          style="margin-top:15px"
         >
-          Database menggunakan Google Spreadsheet
-          dan backend Google Apps Script.
+          API_URL diatur pada
+          js/config.js setelah backend
+          Apps Script dideploy.
         </p>
 
       </div>
 
     `;
-
-  }
-
-
-  /*
-   * =========================================================
-   * FORMAT CELL
-   * =========================================================
-   */
-
-  function formatCell(
-    key,
-    value
-  ) {
-
-    if (
-      value === null ||
-      value === undefined ||
-      value === ""
-    ) {
-
-      return `
-        <span class="muted">
-          —
-        </span>
-      `;
-
-    }
-
-
-    /*
-     * Format nominal
-     */
-
-    const moneyFields = [
-
-      "AMOUNT",
-      "BASE_AMOUNT",
-      "BONUS",
-      "DEDUCTION",
-      "NET_SALARY",
-      "TARIF_PER_PERTEMUAN",
-      "TARIF_PER_JAM"
-
-    ];
-
-
-    if (
-      moneyFields.includes(
-        key
-      )
-    ) {
-
-      const number =
-        Number(value);
-
-
-      if (
-        Number.isFinite(
-          number
-        )
-      ) {
-
-        return esc(
-          formatRupiah(
-            number
-          )
-        );
-
-      }
-
-    }
-
-
-    /*
-     * Status
-     */
-
-    if (
-      key === "STATUS" ||
-      key === "PAYMENT_STATUS"
-    ) {
-
-      return `
-        <span
-          style="
-            font-weight:600
-          "
-        >
-          ${esc(value)}
-        </span>
-      `;
-
-    }
-
-
-    return esc(value);
-
-  }
-
-
-  /*
-   * =========================================================
-   * UTILITIES
-   * =========================================================
-   */
-
-  function esc(value) {
-
-    return String(
-      value ?? ""
-    ).replace(
-      /[&<>"']/g,
-      character => ({
-
-        "&":
-          "&amp;",
-
-        "<":
-          "&lt;",
-
-        ">":
-          "&gt;",
-
-        '"':
-          "&quot;",
-
-        "'":
-          "&#39;"
-
-      })[character]
-    );
-
-  }
-
-
-  function numberValue(
-    value
-  ) {
-
-    const number =
-      Number(value);
-
-
-    return Number.isFinite(
-      number
-    )
-      ? number
-      : 0;
-
-  }
-
-
-  function formatRupiah(
-    value
-  ) {
-
-    return new Intl.NumberFormat(
-      "id-ID",
-      {
-        style: "currency",
-        currency: "IDR",
-        maximumFractionDigits: 0
-      }
-    ).format(
-      Number(value) || 0
-    );
-
-  }
-
-
-  function showLoading(
-    message = "Memproses..."
-  ) {
-
-    let overlay =
-      document.getElementById(
-        "arima-loading"
-      );
-
-
-    if (!overlay) {
-
-      overlay =
-        document.createElement(
-          "div"
-        );
-
-      overlay.id =
-        "arima-loading";
-
-      overlay.style.cssText = `
-        position:fixed;
-        inset:0;
-        z-index:99999;
-        background:rgba(0,0,0,.45);
-        display:flex;
-        align-items:center;
-        justify-content:center;
-      `;
-
-
-      overlay.innerHTML = `
-
-        <div
-          style="
-            background:#fff;
-            padding:22px 28px;
-            border-radius:12px;
-            box-shadow:0 10px 40px rgba(0,0,0,.2);
-            font-weight:600;
-          "
-        >
-          <span
-            id="arima-loading-text"
-          >
-            ${esc(message)}
-          </span>
-        </div>
-
-      `;
-
-
-      document.body.appendChild(
-        overlay
-      );
-
-    }
-
-
-    const text =
-      document.getElementById(
-        "arima-loading-text"
-      );
-
-
-    if (text) {
-      text.textContent =
-        message;
-    }
-
-  }
-
-
-  function hideLoading() {
-
-    const overlay =
-      document.getElementById(
-        "arima-loading"
-      );
-
-
-    if (overlay) {
-      overlay.remove();
-    }
-
-  }
-
-
-  function toast(
-    message
-  ) {
-
-    let container =
-      document.getElementById(
-        "arima-toast-container"
-      );
-
-
-    if (!container) {
-
-      container =
-        document.createElement(
-          "div"
-        );
-
-      container.id =
-        "arima-toast-container";
-
-      container.style.cssText = `
-        position:fixed;
-        right:20px;
-        bottom:20px;
-        z-index:100000;
-        display:flex;
-        flex-direction:column;
-        gap:10px;
-      `;
-
-      document.body.appendChild(
-        container
-      );
-
-    }
-
-
-    const item =
-      document.createElement(
-        "div"
-      );
-
-
-    item.style.cssText = `
-      background:#111;
-      color:#fff;
-      padding:12px 16px;
-      border-radius:9px;
-      box-shadow:0 8px 30px rgba(0,0,0,.2);
-      max-width:360px;
-      font-size:14px;
-    `;
-
-
-    item.textContent =
-      message;
-
-
-    container.appendChild(
-      item
-    );
-
-
-    setTimeout(
-      () => {
-
-        item.remove();
-
-      },
-      3000
-    );
 
   }
 
@@ -2883,11 +3064,1453 @@ window.App = (() => {
 
     load,
 
-    form,
-
-    toast
+    form: (
+      type,
+      existing = null,
+      onSaved = null
+    ) =>
+      openForm(
+        type,
+        existing,
+        onSaved
+      )
 
   };
 
+
 })();
-              
+
+  /*
+   * =========================================================
+   * TABLE CONFIGURATION
+   * =========================================================
+   *
+   * Konfigurasi ini harus mengikuti kolom pada Google Sheet.
+   *
+   * API:
+   *   students   -> API.students()
+   *   sensei     -> API.sensei()
+   *   attendance -> API.attendance()
+   *   billing    -> API.billing()
+   *   payments   -> API.payments()
+   *   salary     -> API.salary()
+   *
+   */
+
+
+  const TABLE_CONFIG = {
+
+    students: {
+
+      title:
+        "Data Siswa",
+
+      description:
+        "Kelola identitas dan program siswa.",
+
+      addLabel:
+        "+ Tambah Siswa",
+
+      api:
+        "students",
+
+      columns: [
+        "ID_SISWA",
+        "NAMA",
+        "NIK",
+        "NO_WA",
+        "NAMA_ORANG_TUA",
+        "NO_WA_ORANG_TUA",
+        "PROGRAM",
+        "ASRAMA",
+        "TANGGAL_MASUK",
+        "STATUS"
+      ],
+
+      search: [
+        "ID_SISWA",
+        "NAMA",
+        "NIK",
+        "NO_WA",
+        "PROGRAM",
+        "STATUS"
+      ],
+
+      form:
+        "students"
+
+    },
+
+
+    sensei: {
+
+      title:
+        "Data Sensei",
+
+      description:
+        "Kelola data pengajar LPKS Arima Persada.",
+
+      addLabel:
+        "+ Tambah Sensei",
+
+      api:
+        "sensei",
+
+      columns: [
+        "ID_SENSEI",
+        "NAMA",
+        "NO_WA",
+        "EMAIL",
+        "TARIF_PER_PERTEMUAN",
+        "TARIF_PER_JAM",
+        "STATUS"
+      ],
+
+      search: [
+        "ID_SENSEI",
+        "NAMA",
+        "NO_WA",
+        "EMAIL",
+        "STATUS"
+      ],
+
+      form:
+        "sensei"
+
+    },
+
+
+    attendance: {
+
+      title:
+        "Absensi",
+
+      description:
+        "Pencatatan kehadiran siswa dan sensei.",
+
+      addLabel:
+        "+ Catat Absensi",
+
+      api:
+        "attendance",
+
+      columns: [
+        "ATTENDANCE_ID",
+        "ACTOR_ID",
+        "ACTOR_TYPE",
+        "SESSION_ID",
+        "CLASS_ID",
+        "TANGGAL",
+        "JAM_MASUK",
+        "JAM_KELUAR",
+        "STATUS",
+        "CATATAN"
+      ],
+
+      search: [
+        "ATTENDANCE_ID",
+        "ACTOR_ID",
+        "SESSION_ID",
+        "CLASS_ID",
+        "STATUS"
+      ],
+
+      form:
+        "attendance"
+
+    },
+
+
+    billing: {
+
+      title:
+        "Tagihan",
+
+      description:
+        "Kelola tagihan siswa.",
+
+      addLabel:
+        "+ Buat Tagihan",
+
+      api:
+        "billing",
+
+      columns: [
+        "BILLING_ID",
+        "ID_SISWA",
+        "DESCRIPTION",
+        "CATEGORY",
+        "AMOUNT",
+        "DUE_DATE",
+        "STATUS",
+        "NOTES"
+      ],
+
+      search: [
+        "BILLING_ID",
+        "ID_SISWA",
+        "DESCRIPTION",
+        "CATEGORY",
+        "STATUS"
+      ],
+
+      form:
+        "billing"
+
+    },
+
+
+    payments: {
+
+      title:
+        "Pembayaran",
+
+      description:
+        "Kelola pembayaran dan transaksi siswa.",
+
+      addLabel:
+        "+ Input Pembayaran",
+
+      api:
+        "payments",
+
+      columns: [
+        "PAYMENT_ID",
+        "BILLING_ID",
+        "ID_SISWA",
+        "PAYMENT_DATE",
+        "AMOUNT",
+        "PAYMENT_METHOD",
+        "REFERENCE_NO",
+        "NOTES"
+      ],
+
+      search: [
+        "PAYMENT_ID",
+        "BILLING_ID",
+        "ID_SISWA",
+        "REFERENCE_NO",
+        "PAYMENT_METHOD"
+      ],
+
+      form:
+        "payments"
+
+    },
+
+
+    salary: {
+
+      title:
+        "Payroll Sensei",
+
+      description:
+        "Kelola payroll dan pembayaran sensei.",
+
+      addLabel:
+        "+ Rekap Payroll",
+
+      api:
+        "salary",
+
+      columns: [
+        "SALARY_ID",
+        "ID_SENSEI",
+        "PERIOD",
+        "MEETING_COUNT",
+        "HOUR_COUNT",
+        "BASE_AMOUNT",
+        "BONUS",
+        "DEDUCTION",
+        "NET_SALARY",
+        "PAYMENT_DATE",
+        "PAYMENT_STATUS",
+        "NOTES"
+      ],
+
+      search: [
+        "SALARY_ID",
+        "ID_SENSEI",
+        "PERIOD",
+        "PAYMENT_STATUS"
+      ],
+
+      form:
+        "salary"
+
+    }
+
+  };
+
+
+  /*
+   * =========================================================
+   * FORM CONFIGURATION
+   * =========================================================
+   *
+   * Form dibuat berdasarkan SCHEMA Google Spreadsheet.
+   *
+   * ID otomatis boleh dikosongkan.
+   * Backend akan membuat ID menggunakan generateId_().
+   *
+   */
+
+
+  const FORM_CONFIG = {
+
+    /*
+     * -------------------------------------------------------
+     * SISWA
+     * -------------------------------------------------------
+     */
+
+    students: {
+
+      title:
+        "Tambah Siswa",
+
+      editTitle:
+        "Edit Data Siswa",
+
+      fields: [
+
+        {
+          key:
+            "ID_SISWA",
+
+          label:
+            "ID Siswa",
+
+          type:
+            "text",
+
+          required:
+            false,
+
+          placeholder:
+            "Kosongkan untuk ID otomatis"
+        },
+
+
+        {
+          key:
+            "NAMA",
+
+          label:
+            "Nama Lengkap",
+
+          type:
+            "text",
+
+          required:
+            true,
+
+          placeholder:
+            "Nama lengkap siswa"
+        },
+
+
+        {
+          key:
+            "NIK",
+
+          label:
+            "NIK",
+
+          type:
+            "text",
+
+          required:
+            false,
+
+          placeholder:
+            "16 digit NIK"
+        },
+
+
+        {
+          key:
+            "NO_WA",
+
+          label:
+            "No. WhatsApp",
+
+          type:
+            "text",
+
+          required:
+            true,
+
+          placeholder:
+            "08xxxxxxxxxx"
+        },
+
+
+        {
+          key:
+            "NAMA_ORANG_TUA",
+
+          label:
+            "Nama Orang Tua / Wali",
+
+          type:
+            "text",
+
+          required:
+            false
+        },
+
+
+        {
+          key:
+            "NO_WA_ORANG_TUA",
+
+          label:
+            "No. WhatsApp Orang Tua / Wali",
+
+          type:
+            "text",
+
+          required:
+            false
+        },
+
+
+        {
+          key:
+            "PROGRAM",
+
+          label:
+            "Program",
+
+          type:
+            "select",
+
+          required:
+            true,
+
+          options: [
+            "MAGANG",
+            "SSW (TOKUTEI GINOU)",
+            "ENGINEER",
+            "ENGINEERING"
+          ]
+        },
+
+
+        {
+          key:
+            "ASRAMA",
+
+          label:
+            "Asrama",
+
+          type:
+            "select",
+
+          required:
+            true,
+
+          options: [
+            "YA",
+            "TIDAK"
+          ]
+        },
+
+
+        {
+          key:
+            "TANGGAL_MASUK",
+
+          label:
+            "Tanggal Masuk",
+
+          type:
+            "date",
+
+          required:
+            false
+        },
+
+
+        {
+          key:
+            "STATUS",
+
+          label:
+            "Status",
+
+          type:
+            "select",
+
+          required:
+            true,
+
+          options: [
+            "AKTIF",
+            "NONAKTIF",
+            "LULUS",
+            "KELUAR"
+          ]
+        }
+
+      ]
+
+    },
+
+
+    /*
+     * -------------------------------------------------------
+     * SENSEI
+     * -------------------------------------------------------
+     */
+
+    sensei: {
+
+      title:
+        "Tambah Sensei",
+
+      editTitle:
+        "Edit Data Sensei",
+
+      fields: [
+
+        {
+          key:
+            "ID_SENSEI",
+
+          label:
+            "ID Sensei",
+
+          type:
+            "text",
+
+          required:
+            false,
+
+          placeholder:
+            "Kosongkan untuk ID otomatis"
+        },
+
+
+        {
+          key:
+            "NAMA",
+
+          label:
+            "Nama Sensei",
+
+          type:
+            "text",
+
+          required:
+            true
+        },
+
+
+        {
+          key:
+            "NO_WA",
+
+          label:
+            "No. WhatsApp",
+
+          type:
+            "text",
+
+          required:
+            true
+        },
+
+
+        {
+          key:
+            "EMAIL",
+
+          label:
+            "Email",
+
+          type:
+            "email",
+
+          required:
+            false
+        },
+
+
+        {
+          key:
+            "TARIF_PER_PERTEMUAN",
+
+          label:
+            "Tarif per Pertemuan",
+
+          type:
+            "number",
+
+          required:
+            false
+        },
+
+
+        {
+          key:
+            "TARIF_PER_JAM",
+
+          label:
+            "Tarif per Jam",
+
+          type:
+            "number",
+
+          required:
+            false
+        },
+
+
+        {
+          key:
+            "STATUS",
+
+          label:
+            "Status",
+
+          type:
+            "select",
+
+          required:
+            true,
+
+          options: [
+            "AKTIF",
+            "NONAKTIF"
+          ]
+
+        }
+
+      ]
+
+    },
+
+
+    /*
+     * -------------------------------------------------------
+     * ABSENSI
+     * -------------------------------------------------------
+     */
+
+    attendance: {
+
+      title:
+        "Catat Absensi",
+
+      editTitle:
+        "Edit Absensi",
+
+      fields: [
+
+        {
+          key:
+            "ATTENDANCE_ID",
+
+          label:
+            "ID Absensi",
+
+          type:
+            "text",
+
+          required:
+            false,
+
+          placeholder:
+            "Kosongkan untuk ID otomatis"
+        },
+
+
+        {
+          key:
+            "ACTOR_ID",
+
+          label:
+            "ID Siswa / Sensei",
+
+          type:
+            "text",
+
+          required:
+            true
+        },
+
+
+        {
+          key:
+            "ACTOR_TYPE",
+
+          label:
+            "Tipe Aktor",
+
+          type:
+            "select",
+
+          required:
+            true,
+
+          options: [
+            "SISWA",
+            "SENSEI"
+          ]
+        },
+
+
+        {
+          key:
+            "SESSION_ID",
+
+          label:
+            "Session ID",
+
+          type:
+            "text",
+
+          required:
+            true
+        },
+
+
+        {
+          key:
+            "CLASS_ID",
+
+          label:
+            "Class ID",
+
+          type:
+            "text",
+
+          required:
+            true
+        },
+
+
+        {
+          key:
+            "TANGGAL",
+
+          label:
+            "Tanggal",
+
+          type:
+            "date",
+
+          required:
+            true
+        },
+
+
+        {
+          key:
+            "JAM_MASUK",
+
+          label:
+            "Jam Masuk",
+
+          type:
+            "time",
+
+          required:
+            false
+        },
+
+
+        {
+          key:
+            "JAM_KELUAR",
+
+          label:
+            "Jam Keluar",
+
+          type:
+            "time",
+
+          required:
+            false
+        },
+
+
+        {
+          key:
+            "STATUS",
+
+          label:
+            "Status",
+
+          type:
+            "select",
+
+          required:
+            true,
+
+          options: [
+            "HADIR",
+            "IZIN",
+            "SAKIT",
+            "ALPA",
+            "TERLAMBAT"
+          ]
+
+        },
+
+
+        {
+          key:
+            "CATATAN",
+
+          label:
+            "Catatan",
+
+          type:
+            "textarea",
+
+          required:
+            false
+
+        }
+
+      ]
+
+    },
+
+
+    /*
+     * -------------------------------------------------------
+     * TAGIHAN
+     * -------------------------------------------------------
+     */
+
+    billing: {
+
+      title:
+        "Buat Tagihan",
+
+      editTitle:
+        "Edit Tagihan",
+
+      fields: [
+
+        {
+          key:
+            "BILLING_ID",
+
+          label:
+            "ID Tagihan",
+
+          type:
+            "text",
+
+          required:
+            false,
+
+          placeholder:
+            "Kosongkan untuk ID otomatis"
+        },
+
+
+        {
+          key:
+            "ID_SISWA",
+
+          label:
+            "ID Siswa",
+
+          type:
+            "text",
+
+          required:
+            true
+        },
+
+
+        {
+          key:
+            "DESCRIPTION",
+
+          label:
+            "Deskripsi",
+
+          type:
+            "text",
+
+          required:
+            true,
+
+          placeholder:
+            "Contoh: Biaya belajar bulan Oktober"
+        },
+
+
+        {
+          key:
+            "CATEGORY",
+
+          label:
+            "Kategori",
+
+          type:
+            "select",
+
+          required:
+            true,
+
+          options: [
+            "BELAJAR",
+            "JFT",
+            "SSW",
+            "JLPT",
+            "ASRAMA",
+            "LAINNYA"
+          ]
+
+        },
+
+
+        {
+          key:
+            "AMOUNT",
+
+          label:
+            "Jumlah",
+
+          type:
+            "number",
+
+          required:
+            true
+        },
+
+
+        {
+          key:
+            "DUE_DATE",
+
+          label:
+            "Jatuh Tempo",
+
+          type:
+            "date",
+
+          required:
+            false
+        },
+
+
+        {
+          key:
+            "STATUS",
+
+          label:
+            "Status",
+
+          type:
+            "select",
+
+          required:
+            true,
+
+          options: [
+            "PENDING",
+            "LUNAS",
+            "JATUH_TEMPO",
+            "BATAL"
+          ]
+
+        },
+
+
+        {
+          key:
+            "NOTES",
+
+          label:
+            "Catatan",
+
+          type:
+            "textarea",
+
+          required:
+            false
+        }
+
+      ]
+
+    },
+
+
+    /*
+     * -------------------------------------------------------
+     * PEMBAYARAN
+     * -------------------------------------------------------
+     */
+
+    payments: {
+
+      title:
+        "Input Pembayaran",
+
+      editTitle:
+        "Edit Pembayaran",
+
+      fields: [
+
+        {
+          key:
+            "PAYMENT_ID",
+
+          label:
+            "ID Pembayaran",
+
+          type:
+            "text",
+
+          required:
+            false,
+
+          placeholder:
+            "Kosongkan untuk ID otomatis"
+        },
+
+
+        {
+          key:
+            "BILLING_ID",
+
+          label:
+            "ID Tagihan",
+
+          type:
+            "text",
+
+          required:
+            true
+        },
+
+
+        {
+          key:
+            "ID_SISWA",
+
+          label:
+            "ID Siswa",
+
+          type:
+            "text",
+
+          required:
+            true
+        },
+
+
+        {
+          key:
+            "PAYMENT_DATE",
+
+          label:
+            "Tanggal Pembayaran",
+
+          type:
+            "date",
+
+          required:
+            true
+        },
+
+
+        {
+          key:
+            "AMOUNT",
+
+          label:
+            "Jumlah Pembayaran",
+
+          type:
+            "number",
+
+          required:
+            true
+        },
+
+
+        {
+          key:
+            "PAYMENT_METHOD",
+
+          label:
+            "Metode Pembayaran",
+
+          type:
+            "select",
+
+          required:
+            true,
+
+          options: [
+            "CASH",
+            "TRANSFER",
+            "QRIS",
+            "LAINNYA"
+          ]
+
+        },
+
+
+        {
+          key:
+            "REFERENCE_NO",
+
+          label:
+            "Nomor Referensi",
+
+          type:
+            "text",
+
+          required:
+            false
+        },
+
+
+        {
+          key:
+            "NOTES",
+
+          label:
+            "Catatan",
+
+          type:
+            "textarea",
+
+          required:
+            false
+        }
+
+      ]
+
+    },
+
+
+    /*
+     * -------------------------------------------------------
+     * PAYROLL
+     * -------------------------------------------------------
+     */
+
+    salary: {
+
+      title:
+        "Rekap Payroll",
+
+      editTitle:
+        "Edit Payroll",
+
+      fields: [
+
+        {
+          key:
+            "SALARY_ID",
+
+          label:
+            "ID Payroll",
+
+          type:
+            "text",
+
+          required:
+            false,
+
+          placeholder:
+            "Kosongkan untuk ID otomatis"
+        },
+
+
+        {
+          key:
+            "ID_SENSEI",
+
+          label:
+            "ID Sensei",
+
+          type:
+            "text",
+
+          required:
+            true
+        },
+
+
+        {
+          key:
+            "PERIOD",
+
+          label:
+            "Periode",
+
+          type:
+            "month",
+
+          required:
+            true
+        },
+
+
+        {
+          key:
+            "MEETING_COUNT",
+
+          label:
+            "Jumlah Pertemuan",
+
+          type:
+            "number",
+
+          required:
+            false
+        },
+
+
+        {
+          key:
+            "HOUR_COUNT",
+
+          label:
+            "Jumlah Jam",
+
+          type:
+            "number",
+
+          required:
+            false
+        },
+
+
+        {
+          key:
+            "BASE_AMOUNT",
+
+          label:
+            "Gaji Pokok",
+
+          type:
+            "number",
+
+          required:
+            true
+        },
+
+
+        {
+          key:
+            "BONUS",
+
+          label:
+            "Bonus",
+
+          type:
+            "number",
+
+          required:
+            false
+        },
+
+
+        {
+          key:
+            "DEDUCTION",
+
+          label:
+            "Potongan",
+
+          type:
+            "number",
+
+          required:
+            false
+        },
+
+
+        {
+          key:
+            "NET_SALARY",
+
+          label:
+            "Gaji Bersih",
+
+          type:
+            "number",
+
+          required:
+            false,
+
+          placeholder:
+            "Bisa dihitung oleh backend"
+        },
+
+
+        {
+          key:
+            "PAYMENT_DATE",
+
+          label:
+            "Tanggal Pembayaran",
+
+          type:
+            "date",
+
+          required:
+            false
+        },
+
+
+        {
+          key:
+            "PAYMENT_STATUS",
+
+          label:
+            "Status Pembayaran",
+
+          type:
+            "select",
+
+          required:
+            true,
+
+          options: [
+            "PENDING",
+            "DIBAYAR",
+            "BATAL"
+          ]
+
+        },
+
+
+        {
+          key:
+            "NOTES",
+
+          label:
+            "Catatan",
+
+          type:
+            "textarea",
+
+          required:
+            false
+        }
+
+      ]
+
+    }
+
+  };
+
+
+  /*
+   * =========================================================
+   * BACKWARD COMPATIBILITY
+   * =========================================================
+   *
+   * Kalau kode lama masih memanggil:
+   *
+   * App.form("Siswa")
+   * App.form("Sensei")
+   * App.form("Absensi")
+   * App.form("Tagihan")
+   * App.form("Pembayaran")
+   * App.form("Payroll")
+   *
+   * semuanya tetap diarahkan ke form baru.
+   *
+   */
+
+
+  const OLD_FORM_MAP = {
+
+    "Siswa":
+      "students",
+
+    "Sensei":
+      "sensei",
+
+    "Absensi":
+      "attendance",
+
+    "Tagihan":
+      "billing",
+
+    "Pembayaran":
+      "payments",
+
+    "Payroll":
+      "salary"
+
+  };
+
+
+  /*
+   * =========================================================
+   * OVERRIDE PUBLIC FORM
+   * =========================================================
+   */
+
+  function publicForm(
+    type,
+    existing = null,
+    onSaved = null
+  ) {
+
+    const normalized =
+      OLD_FORM_MAP[type] ||
+      type;
+
+
+    if (
+      !FORM_CONFIG[
+        normalized
+      ]
+    ) {
+
+      toast(
+        "Form tidak tersedia: " +
+        type
+      );
+
+      return;
+
+    }
+
+
+    openForm(
+      normalized,
+      existing,
+      onSaved
+    );
+
+  }
+
+
+  /*
+   * =========================================================
+   * FINAL PUBLIC API
+   * =========================================================
+   */
+
+  return {
+
+    init,
+
+    load,
+
+    form:
+      publicForm
+
+  };
+
+
+})();
