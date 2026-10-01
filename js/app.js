@@ -1,8 +1,5 @@
 window.App = (() => {
-
-  /* =========================================================
-     MENU
-  ========================================================= */
+  "use strict";
 
   const menus = [
     ["dashboard", "Dashboard", "▦"],
@@ -18,16 +15,24 @@ window.App = (() => {
 
   let user = null;
 
-
-  /* =========================================================
-     FORM CONFIGURATION
-  ========================================================= */
+  /*
+   * =========================================================
+   * FORM CONFIGURATION
+   * =========================================================
+   *
+   * Field di bawah dibuat mengikuti struktur backend
+   * ARIMA-MANAGEMENT-SYSTEM.
+   */
 
   const FORM_CONFIG = {
 
     students: {
       title: "Tambah Siswa",
+      editTitle: "Edit Siswa",
       action: "studentSave",
+      deleteAction: "studentDelete",
+      idField: "ID_SISWA",
+
       fields: [
         {
           key: "ID_SISWA",
@@ -36,32 +41,38 @@ window.App = (() => {
           required: false,
           placeholder: "Kosongkan untuk ID otomatis"
         },
+
         {
           key: "NAMA",
           label: "Nama Siswa",
           type: "text",
           required: true
         },
+
         {
           key: "NIK",
           label: "NIK",
           type: "text"
         },
+
         {
           key: "NO_WA",
           label: "No. WhatsApp",
           type: "text"
         },
+
         {
           key: "NAMA_ORANG_TUA",
           label: "Nama Orang Tua / Wali",
           type: "text"
         },
+
         {
           key: "NO_WA_ORANG_TUA",
           label: "No. WhatsApp Orang Tua / Wali",
           type: "text"
         },
+
         {
           key: "PROGRAM",
           label: "Program",
@@ -74,6 +85,7 @@ window.App = (() => {
             "ENGINEER"
           ]
         },
+
         {
           key: "ASRAMA",
           label: "Asrama",
@@ -83,11 +95,13 @@ window.App = (() => {
             "TIDAK"
           ]
         },
+
         {
           key: "TANGGAL_MASUK",
           label: "Tanggal Masuk",
           type: "date"
         },
+
         {
           key: "STATUS",
           label: "Status",
@@ -103,10 +117,13 @@ window.App = (() => {
       ]
     },
 
-
     sensei: {
       title: "Tambah Sensei",
+      editTitle: "Edit Sensei",
       action: "senseiSave",
+      deleteAction: "senseiDelete",
+      idField: "ID_SENSEI",
+
       fields: [
         {
           key: "ID_SENSEI",
@@ -115,17 +132,38 @@ window.App = (() => {
           required: false,
           placeholder: "Kosongkan untuk ID otomatis"
         },
+
         {
           key: "NAMA",
           label: "Nama Sensei",
           type: "text",
           required: true
         },
+
         {
           key: "NO_WA",
           label: "No. WhatsApp",
           type: "text"
         },
+
+        {
+          key: "EMAIL",
+          label: "Email",
+          type: "email"
+        },
+
+        {
+          key: "TARIF_PER_PERTEMUAN",
+          label: "Tarif per Pertemuan",
+          type: "number"
+        },
+
+        {
+          key: "TARIF_PER_JAM",
+          label: "Tarif per Jam",
+          type: "number"
+        },
+
         {
           key: "STATUS",
           label: "Status",
@@ -138,10 +176,12 @@ window.App = (() => {
       ]
     },
 
-
     attendance: {
       title: "Catat Absensi",
+      editTitle: "Edit Absensi",
       action: "attendanceSave",
+      idField: "ATTENDANCE_ID",
+
       fields: [
         {
           key: "ATTENDANCE_ID",
@@ -150,46 +190,84 @@ window.App = (() => {
           required: false,
           placeholder: "Kosongkan untuk ID otomatis"
         },
+
         {
-          key: "ID_SISWA",
-          label: "ID Siswa",
+          key: "ACTOR_ID",
+          label: "ID Siswa / Sensei",
           type: "text",
           required: true
         },
+
         {
-          key: "DATE",
-          label: "Tanggal",
-          type: "date",
-          required: true
-        },
-        {
-          key: "STATUS",
-          label: "Status Kehadiran",
+          key: "ACTOR_TYPE",
+          label: "Tipe",
           type: "select",
+          required: true,
           options: [
-            "HADIR",
-            "IZIN",
-            "SAKIT",
-            "ALPA"
+            "SISWA",
+            "SENSEI"
           ]
         },
+
+        {
+          key: "SESSION_ID",
+          label: "ID Sesi",
+          type: "text"
+        },
+
         {
           key: "CLASS_ID",
           label: "ID Kelas",
           type: "text"
         },
+
         {
-          key: "SESSION_ID",
-          label: "ID Sesi",
-          type: "text"
+          key: "TANGGAL",
+          label: "Tanggal",
+          type: "date",
+          required: true
+        },
+
+        {
+          key: "JAM_MASUK",
+          label: "Jam Masuk",
+          type: "time"
+        },
+
+        {
+          key: "JAM_KELUAR",
+          label: "Jam Keluar",
+          type: "time"
+        },
+
+        {
+          key: "STATUS",
+          label: "Status Kehadiran",
+          type: "select",
+          required: true,
+          options: [
+            "HADIR",
+            "IZIN",
+            "SAKIT",
+            "ALPA",
+            "TERLAMBAT"
+          ]
+        },
+
+        {
+          key: "CATATAN",
+          label: "Catatan",
+          type: "textarea"
         }
       ]
     },
 
-
     billing: {
       title: "Buat Tagihan",
+      editTitle: "Edit Tagihan",
       action: "billingSave",
+      idField: "BILLING_ID",
+
       fields: [
         {
           key: "BILLING_ID",
@@ -198,30 +276,48 @@ window.App = (() => {
           required: false,
           placeholder: "Kosongkan untuk ID otomatis"
         },
+
         {
           key: "ID_SISWA",
           label: "ID Siswa",
           type: "text",
           required: true
         },
+
         {
           key: "DESCRIPTION",
-          label: "Keterangan Tagihan",
+          label: "Keterangan",
           type: "text",
-          required: true,
-          placeholder: "Contoh: Biaya JFT / SSW / JLPT"
+          required: true
         },
+
+        {
+          key: "CATEGORY",
+          label: "Kategori",
+          type: "select",
+          options: [
+            "BIAYA BELAJAR",
+            "JFT",
+            "SSW",
+            "JLPT",
+            "KEGIATAN",
+            "LAINNYA"
+          ]
+        },
+
         {
           key: "AMOUNT",
           label: "Jumlah Tagihan",
           type: "number",
           required: true
         },
+
         {
           key: "DUE_DATE",
-          label: "Tanggal Jatuh Tempo",
+          label: "Jatuh Tempo",
           type: "date"
         },
+
         {
           key: "STATUS",
           label: "Status",
@@ -232,14 +328,22 @@ window.App = (() => {
             "SEBAGIAN",
             "BATAL"
           ]
+        },
+
+        {
+          key: "NOTES",
+          label: "Catatan",
+          type: "textarea"
         }
       ]
     },
 
-
     payments: {
       title: "Input Pembayaran",
+      editTitle: "Edit Pembayaran",
       action: "paymentSave",
+      idField: "PAYMENT_ID",
+
       fields: [
         {
           key: "PAYMENT_ID",
@@ -248,27 +352,37 @@ window.App = (() => {
           required: false,
           placeholder: "Kosongkan untuk ID otomatis"
         },
+
         {
           key: "BILLING_ID",
           label: "ID Tagihan",
           type: "text",
           required: true
         },
+
+        {
+          key: "ID_SISWA",
+          label: "ID Siswa",
+          type: "text"
+        },
+
         {
           key: "PAYMENT_DATE",
           label: "Tanggal Pembayaran",
           type: "date",
           required: true
         },
+
         {
           key: "AMOUNT",
           label: "Jumlah Pembayaran",
           type: "number",
           required: true
         },
+
         {
           key: "PAYMENT_METHOD",
-          label: "Metode Pembayaran",
+          label: "Metode",
           type: "select",
           options: [
             "CASH",
@@ -277,18 +391,27 @@ window.App = (() => {
             "LAINNYA"
           ]
         },
+
         {
-          key: "DESCRIPTION",
-          label: "Keterangan",
+          key: "REFERENCE_NO",
+          label: "No. Referensi",
+          type: "text"
+        },
+
+        {
+          key: "NOTES",
+          label: "Catatan",
           type: "textarea"
         }
       ]
     },
 
-
     salary: {
       title: "Rekap Payroll Sensei",
+      editTitle: "Edit Payroll",
       action: "salarySave",
+      idField: "SALARY_ID",
+
       fields: [
         {
           key: "SALARY_ID",
@@ -297,39 +420,64 @@ window.App = (() => {
           required: false,
           placeholder: "Kosongkan untuk ID otomatis"
         },
+
         {
           key: "ID_SENSEI",
           label: "ID Sensei",
           type: "text",
           required: true
         },
+
         {
           key: "PERIOD",
           label: "Periode",
           type: "text",
           required: true,
-          placeholder: "Contoh: Oktober 2026"
+          placeholder: "Contoh: 2026-10"
         },
+
         {
-          key: "BASE_SALARY",
+          key: "MEETING_COUNT",
+          label: "Jumlah Pertemuan",
+          type: "number"
+        },
+
+        {
+          key: "HOUR_COUNT",
+          label: "Jumlah Jam",
+          type: "number"
+        },
+
+        {
+          key: "BASE_AMOUNT",
           label: "Gaji Pokok",
           type: "number"
         },
+
         {
           key: "BONUS",
           label: "Bonus",
           type: "number"
         },
+
         {
           key: "DEDUCTION",
           label: "Potongan",
           type: "number"
         },
+
         {
           key: "NET_SALARY",
           label: "Gaji Bersih",
           type: "number"
         },
+
+        {
+          key: "PAYMENT_DATE",
+          label: "Tanggal Pembayaran",
+          type: "date"
+        },
+
         {
           key: "PAYMENT_STATUS",
           label: "Status Pembayaran",
@@ -338,16 +486,196 @@ window.App = (() => {
             "PENDING",
             "DIBAYAR"
           ]
+        },
+
+        {
+          key: "NOTES",
+          label: "Catatan",
+          type: "textarea"
         }
       ]
     }
+  };
 
+  /*
+   * =========================================================
+   * TABLE CONFIGURATION
+   * =========================================================
+   */
+
+  const TABLE_CONFIG = {
+
+    students: {
+      api: "students",
+      title: "Data Siswa",
+      description: "Kelola identitas dan program siswa.",
+      addLabel: "+ Tambah Siswa",
+      form: "students",
+
+      columns: [
+        "ID_SISWA",
+        "NAMA",
+        "NIK",
+        "NO_WA",
+        "PROGRAM",
+        "ASRAMA",
+        "TANGGAL_MASUK",
+        "STATUS"
+      ],
+
+      search: [
+        "ID_SISWA",
+        "NAMA",
+        "NIK",
+        "NO_WA"
+      ]
+    },
+
+    sensei: {
+      api: "sensei",
+      title: "Data Sensei",
+      description: "Kelola data pengajar dan tarif.",
+      addLabel: "+ Tambah Sensei",
+      form: "sensei",
+
+      columns: [
+        "ID_SENSEI",
+        "NAMA",
+        "NO_WA",
+        "EMAIL",
+        "TARIF_PER_PERTEMUAN",
+        "TARIF_PER_JAM",
+        "STATUS"
+      ],
+
+      search: [
+        "ID_SENSEI",
+        "NAMA",
+        "NO_WA",
+        "EMAIL"
+      ]
+    },
+
+    attendance: {
+      api: "attendance",
+      title: "Absensi",
+      description: "Pencatatan kehadiran berdasarkan ID.",
+      addLabel: "+ Catat Absensi",
+      form: "attendance",
+
+      columns: [
+        "ATTENDANCE_ID",
+        "ACTOR_ID",
+        "ACTOR_TYPE",
+        "SESSION_ID",
+        "CLASS_ID",
+        "TANGGAL",
+        "JAM_MASUK",
+        "JAM_KELUAR",
+        "STATUS",
+        "CATATAN"
+      ],
+
+      search: [
+        "ATTENDANCE_ID",
+        "ACTOR_ID",
+        "CLASS_ID",
+        "STATUS"
+      ]
+    },
+
+    billing: {
+      api: "billing",
+      title: "Tagihan",
+      description:
+        "Biaya belajar dan kegiatan seperti JFT, SSW, dan JLPT.",
+      addLabel: "+ Buat Tagihan",
+      form: "billing",
+
+      columns: [
+        "BILLING_ID",
+        "ID_SISWA",
+        "DESCRIPTION",
+        "CATEGORY",
+        "AMOUNT",
+        "DUE_DATE",
+        "STATUS",
+        "NOTES"
+      ],
+
+      search: [
+        "BILLING_ID",
+        "ID_SISWA",
+        "DESCRIPTION",
+        "CATEGORY",
+        "STATUS"
+      ]
+    },
+
+    payments: {
+      api: "payments",
+      title: "Pembayaran",
+      description:
+        "Riwayat pembayaran dan transaksi siswa.",
+      addLabel: "+ Input Pembayaran",
+      form: "payments",
+
+      columns: [
+        "PAYMENT_ID",
+        "BILLING_ID",
+        "ID_SISWA",
+        "PAYMENT_DATE",
+        "AMOUNT",
+        "PAYMENT_METHOD",
+        "REFERENCE_NO",
+        "NOTES"
+      ],
+
+      search: [
+        "PAYMENT_ID",
+        "BILLING_ID",
+        "ID_SISWA",
+        "REFERENCE_NO"
+      ]
+    },
+
+    salary: {
+      api: "salary",
+      title: "Payroll Sensei",
+      description:
+        "Rekap gaji, pertemuan, jam, bonus, potongan, dan pembayaran.",
+      addLabel: "+ Rekap Payroll",
+      form: "salary",
+
+      columns: [
+        "SALARY_ID",
+        "ID_SENSEI",
+        "PERIOD",
+        "MEETING_COUNT",
+        "HOUR_COUNT",
+        "BASE_AMOUNT",
+        "BONUS",
+        "DEDUCTION",
+        "NET_SALARY",
+        "PAYMENT_DATE",
+        "PAYMENT_STATUS"
+      ],
+
+      search: [
+        "SALARY_ID",
+        "ID_SENSEI",
+        "PERIOD",
+        "PAYMENT_STATUS"
+      ]
+    }
   };
 
 
-  /* =========================================================
-     INIT
-  ========================================================= */
+  /*
+   * =========================================================
+   * INITIALIZATION
+   * =========================================================
+   */
 
   async function init() {
 
@@ -363,36 +691,56 @@ window.App = (() => {
   }
 
 
-  /* =========================================================
-     SHELL
-  ========================================================= */
+  /*
+   * =========================================================
+   * MAIN SHELL
+   * =========================================================
+   */
 
   function renderShell() {
 
-    document.getElementById("app").innerHTML = `
+    const app = document.getElementById("app");
 
+    if (!app) {
+      throw new Error(
+        "Element #app tidak ditemukan."
+      );
+    }
+
+    app.innerHTML = `
       <div class="shell">
 
         <aside class="sidebar">
 
           <div class="side-brand">
-            <img src="assets/logo.webp">
+
+            <img
+              src="assets/logo.webp"
+              alt="LPKS Arima Persada"
+            >
+
             <strong>
               ARIMA<br>
               MANAGEMENT
             </strong>
+
           </div>
 
           <nav class="nav">
 
             ${menus.map(m => `
-              <a href="#"
-                 data-page="${m[0]}">
-                ${m[2]} &nbsp; ${m[1]}
+              <a
+                href="#"
+                data-page="${esc(m[0])}"
+              >
+                ${m[2]} &nbsp; ${esc(m[1])}
               </a>
             `).join("")}
 
-            <a href="#" id="logout">
+            <a
+              href="#"
+              id="logout"
+            >
               ↪ &nbsp; Keluar
             </a>
 
@@ -407,18 +755,26 @@ window.App = (() => {
 
             <div>
               <strong>
-                ${esc(ARIMA_CONFIG.COMPANY_NAME)}
+                ${esc(
+                  ARIMA_CONFIG.COMPANY_NAME ||
+                  "LPKS Arima Persada"
+                )}
               </strong>
             </div>
 
             <div class="muted">
-              ${esc(user.name)} · ${esc(user.role)}
+              ${esc(user.name || "")}
+              ·
+              ${esc(user.role || "")}
             </div>
 
           </header>
 
 
-          <section class="content" id="page"></section>
+          <section
+            class="content"
+            id="page"
+          ></section>
 
         </main>
 
@@ -426,37 +782,71 @@ window.App = (() => {
     `;
 
 
+    /*
+     * MENU NAVIGATION
+     */
+
     document
       .querySelectorAll("[data-page]")
       .forEach(a => {
 
-        a.onclick = e => {
+        a.addEventListener(
+          "click",
+          e => {
 
-          e.preventDefault();
+            e.preventDefault();
 
-          load(a.dataset.page);
+            load(
+              a.dataset.page
+            );
 
-        };
+          }
+        );
 
       });
 
 
-    document
-      .getElementById("logout")
-      .onclick = async e => {
+    /*
+     * LOGOUT
+     */
 
-        e.preventDefault();
+    const logoutButton =
+      document.getElementById("logout");
 
-        await Auth.logout();
+    if (logoutButton) {
 
-      };
+      logoutButton.addEventListener(
+        "click",
+        async e => {
+
+          e.preventDefault();
+
+          try {
+
+            await Auth.logout();
+
+          } catch (error) {
+
+            console.error(
+              "Logout error:",
+              error
+            );
+
+          }
+
+        }
+      );
+
+    }
 
   }
 
 
-  /* =========================================================
-     PAGE LOADER
-  ========================================================= */
+  /*
+   * =========================================================
+   * PAGE LOADER
+   * =========================================================
+   */
 
   async function load(page) {
 
@@ -475,6 +865,10 @@ window.App = (() => {
     const el =
       document.getElementById("page");
 
+    if (!el) {
+      return;
+    }
+
 
     el.innerHTML = `
       <div class="card">
@@ -485,51 +879,97 @@ window.App = (() => {
 
     const map = {
 
-      dashboard: renderDashboard,
+      dashboard:
+        renderDashboard,
 
-      students: renderStudents,
+      students:
+        () =>
+          renderCrudPage(
+            el,
+            "students"
+          ),
 
-      sensei: renderSensei,
+      sensei:
+        () =>
+          renderCrudPage(
+            el,
+            "sensei"
+          ),
 
-      attendance: renderAttendance,
+      attendance:
+        () =>
+          renderCrudPage(
+            el,
+            "attendance"
+          ),
 
-      billing: renderBilling,
+      billing:
+        () =>
+          renderCrudPage(
+            el,
+            "billing"
+          ),
 
-      payments: renderPayments,
+      payments:
+        () =>
+          renderCrudPage(
+            el,
+            "payments"
+          ),
 
-      salary: renderSalary,
+      salary:
+        () =>
+          renderCrudPage(
+            el,
+            "salary"
+          ),
 
-      reports: renderReports,
+      reports:
+        () =>
+          renderReports(el),
 
-      settings: renderSettings
+      settings:
+        () =>
+          renderSettings(el)
 
     };
 
 
     try {
 
-      await (
+      const renderer =
         map[page] ||
-        renderDashboard
-      )(el);
+        map.dashboard;
+
+      await renderer();
 
     } catch (error) {
 
-      console.error(error);
+      console.error(
+        "LOAD ERROR:",
+        error
+      );
 
       el.innerHTML = `
         <div class="card">
-          <div style="
-            color:#b00020;
-            font-weight:600;
-            margin-bottom:8px;
-          ">
+
+          <div
+            style="
+              color:#b00020;
+              font-weight:700;
+              margin-bottom:8px
+            "
+          >
             Terjadi kesalahan
           </div>
 
           <div class="muted">
-            ${esc(error.message)}
+            ${esc(
+              error.message ||
+              "Gagal memuat data."
+            )}
           </div>
+
         </div>
       `;
 
@@ -538,106 +978,22 @@ window.App = (() => {
   }
 
 
-  /* =========================================================
-     HELPERS
-  ========================================================= */
+  /*
+   * =========================================================
+   * DASHBOARD
+   * =========================================================
+   */
 
-  const esc = value => {
+  async function renderDashboard() {
 
-    return String(value ?? "")
-      .replace(
-        /[&<>"']/g,
-        c => ({
-          "&": "&amp;",
-          "<": "&lt;",
-          ">": "&gt;",
-          '"': "&quot;",
-          "'": "&#39;"
-        }[c])
-      );
+    const el =
+      document.getElementById("page");
 
-  };
-
-
-  const table = (rows, cols) => {
-
-    return `
-
-      <div class="table-wrap">
-
-        <table class="table">
-
-          <thead>
-
-            <tr>
-
-              ${cols.map(c => `
-                <th>${esc(c)}</th>
-              `).join("")}
-
-            </tr>
-
-          </thead>
-
-
-          <tbody>
-
-            ${
-              rows.length
-
-              ?
-
-              rows.map(r => `
-
-                <tr>
-
-                  ${cols.map(c => `
-                    <td>
-                      ${esc(r[c])}
-                    </td>
-                  `).join("")}
-
-                </tr>
-
-              `).join("")
-
-              :
-
-              `
-                <tr>
-                  <td
-                    colspan="${cols.length}"
-                    class="muted"
-                  >
-                    Belum ada data.
-                  </td>
-                </tr>
-              `
-            }
-
-          </tbody>
-
-        </table>
-
-      </div>
-
-    `;
-
-  };
-
-
-  /* =========================================================
-     DASHBOARD
-  ========================================================= */
-
-  async function renderDashboard(el) {
-
-    const r =
+    const result =
       await API.dashboard();
 
-
     const d =
-      r.data || {};
+      result.data || {};
 
 
     el.innerHTML = `
@@ -646,7 +1002,9 @@ window.App = (() => {
 
         <div>
 
-          <h1>Dashboard</h1>
+          <h1>
+            Dashboard
+          </h1>
 
           <p>
             Ringkasan operasional
@@ -723,76 +1081,48 @@ window.App = (() => {
   }
 
 
-  /* =========================================================
-     SISWA
-  ========================================================= */
+  /*
+   * =========================================================
+   * CRUD PAGE
+   * =========================================================
+   */
 
-  async function renderStudents(el) {
+  async function renderCrudPage(
+    el,
+    type
+  ) {
 
-    const r =
-      await API.students();
+    const cfg =
+      TABLE_CONFIG[type];
 
+    if (!cfg) {
 
-    const rows =
-      r.data || [];
+      throw new Error(
+        "Konfigurasi halaman tidak ditemukan: " +
+        type
+      );
 
-
-    el.innerHTML = `
-
-      <div class="page-title">
-
-        <div>
-
-          <h1>Data Siswa</h1>
-
-          <p>
-            Kelola identitas dan program siswa.
-          </p>
-
-        </div>
+    }
 
 
-        <button
-          class="btn btn-primary"
-          onclick="App.form('students')"
-        >
-          + Tambah Siswa
-        </button>
-
-      </div>
-
-
-      ${table(
-        rows,
-        [
-          "ID_SISWA",
-          "NAMA",
-          "NIK",
-          "NO_WA",
-          "PROGRAM",
-          "ASRAMA",
-          "TANGGAL_MASUK",
-          "STATUS"
-        ]
-      )}
-
-    `;
-
-  }
-
-
-  /* =========================================================
-     SENSEI
-  ========================================================= */
-
-  async function renderSensei(el) {
-
-    const r =
-      await API.sensei();
-
+    const result =
+      await API[cfg.api]();
 
     const rows =
-      r.data || [];
+      Array.isArray(result.data)
+        ? result.data
+        : [];
+
+
+    const role =
+      String(
+        user.role || ""
+      ).toUpperCase();
+
+
+    const canEdit =
+      role === "ADMIN" ||
+      role === "ADMIN_FINANCE";
 
 
     el.innerHTML = `
@@ -801,10 +1131,12 @@ window.App = (() => {
 
         <div>
 
-          <h1>Data Sensei</h1>
+          <h1>
+            ${esc(cfg.title)}
+          </h1>
 
           <p>
-            Kelola data pengajar.
+            ${esc(cfg.description)}
           </p>
 
         </div>
@@ -812,363 +1144,276 @@ window.App = (() => {
 
         <button
           class="btn btn-primary"
-          onclick="App.form('sensei')"
+          id="addBtn"
         >
-          + Tambah Sensei
+          ${esc(cfg.addLabel)}
         </button>
 
       </div>
 
 
-      ${table(
-        rows,
-        [
-          "ID_SENSEI",
-          "NAMA",
-          "STATUS",
-          "NO_WA"
-        ]
-      )}
+      <div
+        class="card"
+        style="margin-bottom:16px"
+      >
 
-    `;
-
-  }
-
-
-  /* =========================================================
-     ABSENSI
-  ========================================================= */
-
-  async function renderAttendance(el) {
-
-    const r =
-      await API.attendance();
-
-
-    el.innerHTML = `
-
-      <div class="page-title">
-
-        <div>
-
-          <h1>Absensi</h1>
-
-          <p>
-            Pencatatan kehadiran berdasarkan ID.
-          </p>
-
-        </div>
-
-
-        <button
-          class="btn btn-primary"
-          onclick="App.form('attendance')"
+        <div
+          style="
+            display:flex;
+            gap:10px;
+            align-items:center;
+            flex-wrap:wrap
+          "
         >
-          + Catat Absensi
-        </button>
-
-      </div>
-
-
-      ${table(
-        r.data || [],
-        [
-          "ID_SISWA",
-          "DATE",
-          "STATUS",
-          "CLASS_ID",
-          "SESSION_ID"
-        ]
-      )}
-
-    `;
-
-  }
-
-
-  /* =========================================================
-     TAGIHAN
-  ========================================================= */
-
-  async function renderBilling(el) {
-
-    const r =
-      await API.billing();
-
-
-    el.innerHTML = `
-
-      <div class="page-title">
-
-        <div>
-
-          <h1>Tagihan</h1>
-
-          <p>
-            Biaya belajar dan kegiatan
-            seperti JFT, SSW, dan JLPT.
-          </p>
-
-        </div>
-
-
-        <button
-          class="btn btn-primary"
-          onclick="App.form('billing')"
-        >
-          + Buat Tagihan
-        </button>
-
-      </div>
-
-
-      ${table(
-        r.data || [],
-        [
-          "BILLING_ID",
-          "ID_SISWA",
-          "DESCRIPTION",
-          "AMOUNT",
-          "DUE_DATE",
-          "STATUS"
-        ]
-      )}
-
-    `;
-
-  }
-
-
-  /* =========================================================
-     PEMBAYARAN
-  ========================================================= */
-
-  async function renderPayments(el) {
-
-    const r =
-      await API.payments();
-
-
-    el.innerHTML = `
-
-      <div class="page-title">
-
-        <div>
-
-          <h1>Pembayaran</h1>
-
-          <p>
-            Riwayat pembayaran dan kwitansi.
-          </p>
-
-        </div>
-
-
-        <button
-          class="btn btn-primary"
-          onclick="App.form('payments')"
-        >
-          + Input Pembayaran
-        </button>
-
-      </div>
-
-
-      ${table(
-        r.data || [],
-        [
-          "PAYMENT_ID",
-          "BILLING_ID",
-          "PAYMENT_DATE",
-          "AMOUNT",
-          "PAYMENT_METHOD"
-        ]
-      )}
-
-    `;
-
-  }
-
-
-  /* =========================================================
-     PAYROLL
-  ========================================================= */
-
-  async function renderSalary(el) {
-
-    const r =
-      await API.salary();
-
-
-    el.innerHTML = `
-
-      <div class="page-title">
-
-        <div>
-
-          <h1>Payroll Sensei</h1>
-
-          <p>
-            Rekap gaji, bonus,
-            potongan, dan pembayaran.
-          </p>
-
-        </div>
-
-
-        <button
-          class="btn btn-primary"
-          onclick="App.form('salary')"
-        >
-          + Rekap Payroll
-        </button>
-
-      </div>
-
-
-      ${table(
-        r.data || [],
-        [
-          "SALARY_ID",
-          "ID_SENSEI",
-          "PERIOD",
-          "BASE_SALARY",
-          "BONUS",
-          "DEDUCTION",
-          "NET_SALARY",
-          "PAYMENT_STATUS"
-        ]
-      )}
-
-    `;
-
-  }
-
-
-  /* =========================================================
-     REPORTS
-  ========================================================= */
-
-  async function renderReports(el) {
-
-    el.innerHTML = `
-
-      <div class="page-title">
-
-        <div>
-
-          <h1>Laporan</h1>
-
-          <p>
-            Ringkasan operasional dan keuangan.
-          </p>
-
-        </div>
-
-      </div>
-
-
-      <div class="cards">
-
-        <div class="card">
-
-          Laporan absensi
-
-          <br>
-
-          <button
-            class="btn btn-dark"
-            style="margin-top:10px"
-          >
-            Buka
-          </button>
-
-        </div>
-
-
-        <div class="card">
-
-          Laporan tagihan
-
-          <br>
-
-          <button
-            class="btn btn-dark"
-            style="margin-top:10px"
-          >
-            Buka
-          </button>
-
-        </div>
-
-
-        <div class="card">
-
-          Laporan payroll
-
-          <br>
-
-          <button
-            class="btn btn-dark"
-            style="margin-top:10px"
-          >
-            Buka
-          </button>
-
-        </div>
-
-      </div>
-
-    `;
-
-  }
-
-
-  /* =========================================================
-     SETTINGS
-  ========================================================= */
-
-  async function renderSettings(el) {
-
-    el.innerHTML = `
-
-      <div class="page-title">
-
-        <div>
-
-          <h1>Pengaturan</h1>
-
-          <p>
-            Konfigurasi aplikasi dan database.
-          </p>
-
-        </div>
-
-      </div>
-
-
-      <div class="card">
-
-        <div class="field">
-
-          <label>
-            Google Spreadsheet ID
-          </label>
 
           <input
-            value="${esc(
-              ARIMA_CONFIG.SPREADSHEET_ID
-            )}"
-            readonly
+            id="tableSearch"
+            type="search"
+            placeholder="Cari data..."
+            style="
+              min-width:280px;
+              flex:1
+            "
           >
+
+          <span
+            class="muted"
+            id="rowCount"
+          >
+            ${rows.length} data
+          </span>
 
         </div>
 
+      </div>
 
-        <p class="muted">
-          API_URL terhubung ke backend
-          Google Apps Script.
-        </p>
+
+      <div id="tableContainer"></div>
+
+    `;
+
+
+    document
+      .getElementById("addBtn")
+      .onclick = () => {
+
+        form(type);
+
+      };
+
+
+    const searchInput =
+      document.getElementById(
+        "tableSearch"
+      );
+
+
+    function renderFiltered() {
+
+      const q =
+        String(
+          searchInput.value || ""
+        )
+          .trim()
+          .toLowerCase();
+
+
+      const filtered =
+        !q
+          ? rows
+          : rows.filter(row =>
+              cfg.search.some(
+                key =>
+                  String(
+                    row[key] ?? ""
+                  )
+                    .toLowerCase()
+                    .includes(q)
+              )
+            );
+
+
+      document
+        .getElementById("rowCount")
+        .textContent =
+        `${filtered.length} data`;
+
+
+      document
+        .getElementById("tableContainer")
+        .innerHTML =
+        buildTable(
+          filtered,
+          cfg.columns,
+          type,
+          canEdit
+        );
+
+
+      bindTableActions(
+        type,
+        filtered
+      );
+
+    }
+
+
+    searchInput.addEventListener(
+      "input",
+      renderFiltered
+    );
+
+
+    renderFiltered();
+
+  }
+
+
+  /*
+   * =========================================================
+   * TABLE BUILDER
+   * =========================================================
+   */
+
+  function buildTable(
+    rows,
+    columns,
+    type,
+    canEdit
+  ) {
+
+    const showActions =
+      canEdit &&
+      (
+        type === "students" ||
+        type === "sensei"
+      );
+
+
+    return `
+
+      <div class="table-wrap">
+
+        <table class="table">
+
+          <thead>
+
+            <tr>
+
+              ${columns
+                .map(
+                  column =>
+                    `<th>${esc(column)}</th>`
+                )
+                .join("")}
+
+              ${
+                showActions
+                  ? `
+                    <th
+                      style="
+                        min-width:150px
+                      "
+                    >
+                      AKSI
+                    </th>
+                  `
+                  : ""
+              }
+
+            </tr>
+
+          </thead>
+
+
+          <tbody>
+
+            ${
+              rows.length
+                ? rows
+                    .map(
+                      (row, index) => `
+
+                        <tr>
+
+                          ${columns
+                            .map(
+                              column =>
+                                `
+                                  <td>
+                                    ${formatCell(
+                                      column,
+                                      row[column]
+                                    )}
+                                  </td>
+                                `
+                            )
+                            .join("")}
+
+
+                          ${
+                            showActions
+                              ? `
+
+                                <td>
+
+                                  <button
+                                    type="button"
+                                    class="btn btn-light btn-edit"
+                                    data-index="${index}"
+                                    data-type="${esc(type)}"
+                                  >
+                                    Edit
+                                  </button>
+
+
+                                  <button
+                                    type="button"
+                                    class="btn btn-light btn-delete"
+                                    data-index="${index}"
+                                    data-type="${esc(type)}"
+                                  >
+                                    Hapus
+                                  </button>
+
+                                </td>
+
+                              `
+                              : ""
+                          }
+
+                        </tr>
+
+                      `
+                    )
+                    .join("")
+
+                : `
+
+                  <tr>
+
+                    <td
+                      colspan="${
+                        columns.length +
+                        (
+                          showActions
+                            ? 1
+                            : 0
+                        )
+                      }"
+                      class="muted"
+                    >
+                      Belum ada data.
+                    </td>
+
+                  </tr>
+
+                `
+            }
+
+          </tbody>
+
+        </table>
 
       </div>
 
@@ -1176,21 +1421,262 @@ window.App = (() => {
 
   }
 
+  /*
+   * =========================================================
+   * TABLE ACTIONS
+   * =========================================================
+   */
 
-  /* =========================================================
-     FORM GENERATOR
-  ========================================================= */
+  function bindTableActions(type, rows) {
 
-  function form(type, editData = null) {
+    document
+      .querySelectorAll(".btn-edit")
+      .forEach(button => {
 
-    const config =
+        button.addEventListener(
+          "click",
+          () => {
+
+            const index =
+              Number(
+                button.dataset.index
+              );
+
+            const row =
+              rows[index];
+
+            if (!row) {
+              toast(
+                "Data tidak ditemukan."
+              );
+              return;
+            }
+
+            form(
+              type,
+              row
+            );
+
+          }
+        );
+
+      });
+
+
+    document
+      .querySelectorAll(".btn-delete")
+      .forEach(button => {
+
+        button.addEventListener(
+          "click",
+          async () => {
+
+            const index =
+              Number(
+                button.dataset.index
+              );
+
+            const row =
+              rows[index];
+
+            if (!row) {
+              toast(
+                "Data tidak ditemukan."
+              );
+              return;
+            }
+
+
+            const cfg =
+              TABLE_CONFIG[type];
+
+
+            const id =
+              row[cfg.form
+                ? FORM_CONFIG[
+                    cfg.form
+                  ].idField
+                : "ID"];
+
+
+            if (!id) {
+
+              toast(
+                "ID data tidak ditemukan."
+              );
+
+              return;
+
+            }
+
+
+            const confirmed =
+              window.confirm(
+                `Yakin ingin menghapus data ${id}?`
+              );
+
+
+            if (!confirmed) {
+              return;
+            }
+
+
+            try {
+
+              showLoading(
+                "Menghapus data..."
+              );
+
+
+              let result;
+
+
+              if (type === "students") {
+
+                result =
+                  await API.call(
+                    "studentDelete",
+                    {
+                      id: id
+                    }
+                  );
+
+              } else if (
+                type === "sensei"
+              ) {
+
+                result =
+                  await API.call(
+                    "senseiDelete",
+                    {
+                      id: id
+                    }
+                  );
+
+              } else {
+
+                toast(
+                  "Hapus data untuk menu ini belum diaktifkan."
+                );
+
+                hideLoading();
+
+                return;
+
+              }
+
+
+              hideLoading();
+
+
+              if (
+                !result ||
+                result.success !== true
+              ) {
+
+                throw new Error(
+                  result?.message ||
+                  "Data gagal dihapus."
+                );
+
+              }
+
+
+              toast(
+                "Data berhasil dihapus."
+              );
+
+
+              await load(
+                type
+              );
+
+
+            } catch (error) {
+
+              hideLoading();
+
+              console.error(
+                "DELETE ERROR:",
+                error
+              );
+
+
+              toast(
+                error.message ||
+                "Gagal menghapus data."
+              );
+
+            }
+
+          }
+        );
+
+      });
+
+  }
+
+
+  /*
+   * =========================================================
+   * DYNAMIC FORM
+   * =========================================================
+   */
+
+  function form(
+    type,
+    existingData = null
+  ) {
+
+    /*
+     * Support nama lama:
+     *
+     * App.form("Siswa")
+     * App.form("Sensei")
+     * App.form("Absensi")
+     *
+     * sekaligus:
+     *
+     * App.form("students")
+     */
+
+    const aliases = {
+
+      "Siswa":
+        "students",
+
+      "Sensei":
+        "sensei",
+
+      "Absensi":
+        "attendance",
+
+      "Tagihan":
+        "billing",
+
+      "Pembayaran":
+        "payments",
+
+      "Payroll":
+        "salary"
+
+    };
+
+
+    type =
+      aliases[type] ||
+      type;
+
+
+    const cfg =
       FORM_CONFIG[type];
 
 
-    if (!config) {
+    if (!cfg) {
 
       toast(
-        "Form untuk menu ini belum tersedia."
+        "Form tidak ditemukan: " +
+        type
       );
 
       return;
@@ -1199,11 +1685,23 @@ window.App = (() => {
 
 
     const modal =
-      document.createElement("div");
+      document.createElement(
+        "div"
+      );
 
 
     modal.className =
       "modal-backdrop";
+
+
+    const isEdit =
+      Boolean(existingData);
+
+
+    const title =
+      isEdit
+        ? cfg.editTitle
+        : cfg.title;
 
 
     modal.innerHTML = `
@@ -1212,22 +1710,40 @@ window.App = (() => {
         class="modal"
         style="
           max-width:900px;
+          width:calc(100% - 30px);
           max-height:90vh;
-          overflow-y:auto;
+          overflow:auto;
         "
       >
 
-        <div class="section-head">
+        <div
+          class="section-head"
+        >
 
-          <h2>
-            ${esc(config.title)}
-          </h2>
+          <div>
+
+            <h2>
+              ${esc(title)}
+            </h2>
+
+            <div
+              class="muted"
+              style="font-size:13px"
+            >
+              ${
+                isEdit
+                  ? "Perbarui data."
+                  : "Isi data kemudian simpan ke database."
+              }
+            </div>
+
+          </div>
 
 
           <button
-            class="btn btn-light"
-            id="close"
             type="button"
+            class="btn btn-light"
+            id="closeModal"
           >
             Tutup
           </button>
@@ -1235,12 +1751,22 @@ window.App = (() => {
         </div>
 
 
-        <form id="dynamicForm">
+        <form
+          id="dynamicForm"
+        >
 
-          <div class="form-grid">
+          <div
+            class="form-grid"
+          >
 
-            ${config.fields
-              .map(fieldHTML)
+            ${cfg.fields
+              .map(
+                field =>
+                  renderField(
+                    field,
+                    existingData
+                  )
+              )
               .join("")}
 
           </div>
@@ -1248,29 +1774,26 @@ window.App = (() => {
 
           <div
             class="modal-actions"
-            style="
-              display:flex;
-              justify-content:flex-end;
-              gap:10px;
-              margin-top:20px;
-            "
           >
 
             <button
-              class="btn btn-light"
-              id="cancel"
               type="button"
+              class="btn btn-light"
+              id="cancelModal"
             >
               Batal
             </button>
 
-
             <button
-              class="btn btn-primary"
-              id="save"
               type="submit"
+              class="btn btn-primary"
+              id="saveModal"
             >
-              Simpan
+              ${
+                isEdit
+                  ? "Simpan Perubahan"
+                  : "Simpan"
+              }
             </button>
 
           </div>
@@ -1282,131 +1805,190 @@ window.App = (() => {
     `;
 
 
-    document.body.appendChild(modal);
+    document.body.appendChild(
+      modal
+    );
 
 
-    /* Isi data edit jika ada */
+    const close =
+      () => modal.remove();
 
-    if (editData) {
 
-      config.fields.forEach(field => {
+    modal
+      .querySelector(
+        "#closeModal"
+      )
+      .onclick = close;
 
-        const input =
+
+    modal
+      .querySelector(
+        "#cancelModal"
+      )
+      .onclick = close;
+
+
+    const formElement =
+      modal.querySelector(
+        "#dynamicForm"
+      );
+
+
+    formElement.addEventListener(
+      "submit",
+      async event => {
+
+        event.preventDefault();
+
+
+        const saveButton =
           modal.querySelector(
-            `[name="${field.key}"]`
+            "#saveModal"
           );
-
-
-        if (
-          input &&
-          editData[field.key] !== undefined
-        ) {
-
-          input.value =
-            editData[field.key] ?? "";
-
-        }
-
-      });
-
-    }
-
-
-    /* Close */
-
-    modal
-      .querySelector("#close")
-      .onclick = () =>
-        modal.remove();
-
-
-    modal
-      .querySelector("#cancel")
-      .onclick = () =>
-        modal.remove();
-
-
-    /* Submit */
-
-    modal
-      .querySelector("#dynamicForm")
-      .onsubmit = async e => {
-
-        e.preventDefault();
-
-
-        const button =
-          modal.querySelector("#save");
-
-
-        button.disabled = true;
-
-        button.textContent =
-          "Menyimpan...";
 
 
         try {
 
-          const formData =
-            new FormData(e.target);
+          saveButton.disabled =
+            true;
+
+          saveButton.textContent =
+            "Menyimpan...";
 
 
-          const payload = {};
+          const payload =
+            collectFormData(
+              formElement,
+              cfg.fields
+            );
 
 
-          config.fields.forEach(field => {
-
-            const value =
-              formData.get(field.key);
-
-
-            payload[field.key] =
-              value === null
-                ? ""
-                : String(value).trim();
-
-          });
+          validateForm(
+            payload,
+            cfg.fields
+          );
 
 
-          /* Validasi required */
+          /*
+           * Hitung otomatis payroll
+           */
 
-          for (const field of config.fields) {
+          if (
+            type === "salary"
+          ) {
 
-            if (
-              field.required &&
-              !payload[field.key]
-            ) {
-
-              throw new Error(
-                `${field.label} wajib diisi.`
+            const base =
+              numberValue(
+                payload.BASE_AMOUNT
               );
+
+            const bonus =
+              numberValue(
+                payload.BONUS
+              );
+
+            const deduction =
+              numberValue(
+                payload.DEDUCTION
+              );
+
+
+            payload.NET_SALARY =
+              base +
+              bonus -
+              deduction;
+
+
+            const netInput =
+              formElement.querySelector(
+                '[name="NET_SALARY"]'
+              );
+
+
+            if (netInput) {
+
+              netInput.value =
+                payload.NET_SALARY;
 
             }
 
           }
 
 
-          console.log(
-            "SAVE ACTION:",
-            config.action
-          );
-
-
-          console.log(
-            "SAVE PAYLOAD:",
-            payload
-          );
+          let result;
 
 
           /*
-           * Kirim langsung ke Apps Script
+           * Endpoint backend
            */
 
-          const result =
-            await API.call(
-              config.action,
-              payload
+          if (
+            type === "students"
+          ) {
+
+            result =
+              await API.call(
+                "studentSave",
+                payload
+              );
+
+          } else if (
+            type === "sensei"
+          ) {
+
+            result =
+              await API.call(
+                "senseiSave",
+                payload
+              );
+
+          } else if (
+            type === "attendance"
+          ) {
+
+            result =
+              await API.call(
+                "attendanceSave",
+                payload
+              );
+
+          } else if (
+            type === "billing"
+          ) {
+
+            result =
+              await API.call(
+                "billingSave",
+                payload
+              );
+
+          } else if (
+            type === "payments"
+          ) {
+
+            result =
+              await API.call(
+                "paymentSave",
+                payload
+              );
+
+          } else if (
+            type === "salary"
+          ) {
+
+            result =
+              await API.call(
+                "salarySave",
+                payload
+              );
+
+          } else {
+
+            throw new Error(
+              "Endpoint tidak tersedia."
             );
+
+          }
 
 
           if (
@@ -1422,25 +2004,44 @@ window.App = (() => {
           }
 
 
+          close();
+
+
           toast(
             result.message ||
             "Data berhasil disimpan."
           );
 
 
-          modal.remove();
-
-
           /*
            * Refresh halaman
            */
 
-          const currentPage =
-            getCurrentPage();
+          const pageMap = {
+
+            students:
+              "students",
+
+            sensei:
+              "sensei",
+
+            attendance:
+              "attendance",
+
+            billing:
+              "billing",
+
+            payments:
+              "payments",
+
+            salary:
+              "salary"
+
+          };
 
 
           await load(
-            currentPage
+            pageMap[type]
           );
 
 
@@ -1458,23 +2059,37 @@ window.App = (() => {
           );
 
 
-          button.disabled = false;
+          saveButton.disabled =
+            false;
 
-          button.textContent =
-            "Simpan";
+          saveButton.textContent =
+            isEdit
+              ? "Simpan Perubahan"
+              : "Simpan";
 
         }
 
-      };
+      });
 
   }
 
 
-  /* =========================================================
-     FORM FIELD HTML
-  ========================================================= */
+  /*
+   * =========================================================
+   * FIELD RENDERER
+   * =========================================================
+   */
 
-  function fieldHTML(field) {
+  function renderField(
+    field,
+    existingData
+  ) {
+
+    const value =
+      existingData
+        ? existingData[field.key] ?? ""
+        : "";
+
 
     const required =
       field.required
@@ -1484,77 +2099,92 @@ window.App = (() => {
 
     const placeholder =
       field.placeholder
-        ? `placeholder="${esc(field.placeholder)}"`
+        ? `placeholder="${esc(
+            field.placeholder
+          )}"`
         : "";
 
 
-    if (field.type === "textarea") {
-
-      return `
-
-        <div class="field full">
-
-          <label>
-            ${esc(field.label)}
-            ${field.required
-              ? '<span style="color:#e30613">*</span>'
-              : ""}
-          </label>
+    const full =
+      field.type === "textarea"
+        ? "full"
+        : "";
 
 
-          <textarea
-            name="${esc(field.key)}"
-            rows="4"
-            ${required}
-            ${placeholder}
-          ></textarea>
-
-        </div>
-
-      `;
-
-    }
+    let input = "";
 
 
-    if (field.type === "select") {
+    if (
+      field.type === "select"
+    ) {
 
-      return `
+      input = `
 
-        <div class="field">
+        <select
+          name="${esc(field.key)}"
+          ${required}
+        >
 
-          <label>
-            ${esc(field.label)}
-            ${field.required
-              ? '<span style="color:#e30613">*</span>'
-              : ""}
-          </label>
+          <option value="">
+            -- Pilih --
+          </option>
 
-
-          <select
-            name="${esc(field.key)}"
-            ${required}
-          >
-
-            <option value="">
-              -- Pilih ${esc(field.label)} --
-            </option>
-
-
-            ${(field.options || [])
-              .map(option => `
+          ${(
+            field.options || []
+          )
+            .map(
+              option => `
 
                 <option
                   value="${esc(option)}"
+                  ${
+                    String(value)
+                      .toUpperCase() ===
+                    String(option)
+                      .toUpperCase()
+                      ? "selected"
+                      : ""
+                  }
                 >
                   ${esc(option)}
                 </option>
 
-              `)
-              .join("")}
+              `
+            )
+            .join("")}
 
-          </select>
+        </select>
 
-        </div>
+      `;
+
+    } else if (
+      field.type === "textarea"
+    ) {
+
+      input = `
+
+        <textarea
+          name="${esc(field.key)}"
+          rows="4"
+          ${required}
+          ${placeholder}
+        >${esc(value)}</textarea>
+
+      `;
+
+    } else {
+
+      input = `
+
+        <input
+          type="${esc(
+            field.type || "text"
+          )}"
+          name="${esc(field.key)}"
+          value="${esc(value)}"
+          ${required}
+          ${placeholder}
+        >
 
       `;
 
@@ -1563,22 +2193,29 @@ window.App = (() => {
 
     return `
 
-      <div class="field">
+      <div
+        class="field ${full}"
+      >
 
         <label>
+
           ${esc(field.label)}
-          ${field.required
-            ? '<span style="color:#e30613">*</span>'
-            : ""}
+
+          ${
+            field.required
+              ? `<span
+                  style="
+                    color:#b00020
+                  "
+                >
+                  *
+                </span>`
+              : ""
+          }
+
         </label>
 
-
-        <input
-          type="${esc(field.type || "text")}"
-          name="${esc(field.key)}"
-          ${required}
-          ${placeholder}
-        >
+        ${input}
 
       </div>
 
@@ -1587,66 +2224,670 @@ window.App = (() => {
   }
 
 
-  /* =========================================================
-     CURRENT PAGE
-  ========================================================= */
+  /*
+   * =========================================================
+   * COLLECT FORM DATA
+   * =========================================================
+   */
 
-  function getCurrentPage() {
+  function collectFormData(
+    formElement,
+    fields
+  ) {
 
-    const active =
-      document.querySelector(
-        "[data-page].active"
-      );
+    const payload = {};
 
 
-    return active
-      ? active.dataset.page
-      : "dashboard";
+    fields.forEach(
+      field => {
+
+        const input =
+          formElement.querySelector(
+            `[name="${CSS.escape(
+              field.key
+            )}"]`
+          );
+
+
+        if (!input) {
+          return;
+        }
+
+
+        let value =
+          input.value;
+
+
+        /*
+         * Number
+         */
+
+        if (
+          field.type === "number"
+        ) {
+
+          value =
+            value === ""
+              ? ""
+              : Number(value);
+
+        }
+
+
+        payload[field.key] =
+          value;
+
+      }
+    );
+
+
+    return payload;
 
   }
 
 
-  /* =========================================================
-     TOAST
-  ========================================================= */
+  /*
+   * =========================================================
+   * FORM VALIDATION
+   * =========================================================
+   */
 
-  function toast(msg) {
+  function validateForm(
+    payload,
+    fields
+  ) {
 
-    const t =
-      document.createElement("div");
+    const missing =
+      fields
+        .filter(
+          field =>
+            field.required &&
+            (
+              payload[field.key] ===
+                undefined ||
+              payload[field.key] ===
+                null ||
+              String(
+                payload[field.key]
+              ).trim() === ""
+            )
+        )
+        .map(
+          field =>
+            field.label
+        );
 
 
-    t.className =
-      "toast";
+    if (
+      missing.length
+    ) {
+
+      throw new Error(
+        "Field wajib belum diisi: " +
+        missing.join(", ")
+      );
+
+    }
+
+  }
 
 
-    t.textContent =
-      msg;
+  /*
+   * =========================================================
+   * REPORTS
+   * =========================================================
+   */
+
+  async function renderReports(
+    el
+  ) {
+
+    el.innerHTML = `
+
+      <div class="page-title">
+
+        <div>
+
+          <h1>
+            Laporan
+          </h1>
+
+          <p>
+            Ringkasan operasional
+            dan keuangan.
+          </p>
+
+        </div>
+
+      </div>
 
 
-    document.body.appendChild(t);
+      <div class="cards">
+
+        <div class="card">
+
+          <strong>
+            Laporan Absensi
+          </strong>
+
+          <p class="muted">
+            Rekap kehadiran siswa
+            dan sensei.
+          </p>
+
+          <button
+            class="btn btn-dark"
+            data-report="attendance"
+          >
+            Buka
+          </button>
+
+        </div>
 
 
-    setTimeout(
-      () => t.remove(),
-      2500
+        <div class="card">
+
+          <strong>
+            Laporan Tagihan
+          </strong>
+
+          <p class="muted">
+            Rekap tagihan dan pembayaran.
+          </p>
+
+          <button
+            class="btn btn-dark"
+            data-report="billing"
+          >
+            Buka
+          </button>
+
+        </div>
+
+
+        <div class="card">
+
+          <strong>
+            Laporan Payroll
+          </strong>
+
+          <p class="muted">
+            Rekap payroll sensei.
+          </p>
+
+          <button
+            class="btn btn-dark"
+            data-report="salary"
+          >
+            Buka
+          </button>
+
+        </div>
+
+      </div>
+
+    `;
+
+
+    el
+      .querySelectorAll(
+        "[data-report]"
+      )
+      .forEach(
+        button => {
+
+          button.onclick =
+            () => {
+
+              const report =
+                button.dataset.report;
+
+
+              toast(
+                "Laporan " +
+                report +
+                " akan dikembangkan pada modul laporan."
+              );
+
+            };
+
+        }
+      );
+
+  }
+
+
+  /*
+   * =========================================================
+   * SETTINGS
+   * =========================================================
+   */
+
+  async function renderSettings(
+    el
+  ) {
+
+    el.innerHTML = `
+
+      <div class="page-title">
+
+        <div>
+
+          <h1>
+            Pengaturan
+          </h1>
+
+          <p>
+            Konfigurasi aplikasi
+            dan integrasi database.
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <div class="card">
+
+        <div class="field">
+
+          <label>
+            Google Spreadsheet ID
+          </label>
+
+          <input
+            value="${esc(
+              ARIMA_CONFIG.SPREADSHEET_ID ||
+              ""
+            )}"
+            readonly
+          >
+
+        </div>
+
+
+        <div
+          class="field"
+          style="margin-top:15px"
+        >
+
+          <label>
+            Apps Script API
+          </label>
+
+          <input
+            value="${esc(
+              ARIMA_CONFIG.API_URL ||
+              ""
+            )}"
+            readonly
+          >
+
+        </div>
+
+
+        <p
+          class="muted"
+          style="margin-top:15px"
+        >
+          Database menggunakan Google Spreadsheet
+          dan backend Google Apps Script.
+        </p>
+
+      </div>
+
+    `;
+
+  }
+
+
+  /*
+   * =========================================================
+   * FORMAT CELL
+   * =========================================================
+   */
+
+  function formatCell(
+    key,
+    value
+  ) {
+
+    if (
+      value === null ||
+      value === undefined ||
+      value === ""
+    ) {
+
+      return `
+        <span class="muted">
+          —
+        </span>
+      `;
+
+    }
+
+
+    /*
+     * Format nominal
+     */
+
+    const moneyFields = [
+
+      "AMOUNT",
+      "BASE_AMOUNT",
+      "BONUS",
+      "DEDUCTION",
+      "NET_SALARY",
+      "TARIF_PER_PERTEMUAN",
+      "TARIF_PER_JAM"
+
+    ];
+
+
+    if (
+      moneyFields.includes(
+        key
+      )
+    ) {
+
+      const number =
+        Number(value);
+
+
+      if (
+        Number.isFinite(
+          number
+        )
+      ) {
+
+        return esc(
+          formatRupiah(
+            number
+          )
+        );
+
+      }
+
+    }
+
+
+    /*
+     * Status
+     */
+
+    if (
+      key === "STATUS" ||
+      key === "PAYMENT_STATUS"
+    ) {
+
+      return `
+        <span
+          style="
+            font-weight:600
+          "
+        >
+          ${esc(value)}
+        </span>
+      `;
+
+    }
+
+
+    return esc(value);
+
+  }
+
+
+  /*
+   * =========================================================
+   * UTILITIES
+   * =========================================================
+   */
+
+  function esc(value) {
+
+    return String(
+      value ?? ""
+    ).replace(
+      /[&<>"']/g,
+      character => ({
+
+        "&":
+          "&amp;",
+
+        "<":
+          "&lt;",
+
+        ">":
+          "&gt;",
+
+        '"':
+          "&quot;",
+
+        "'":
+          "&#39;"
+
+      })[character]
     );
 
   }
 
 
-  /* =========================================================
-     PUBLIC
-  ========================================================= */
+  function numberValue(
+    value
+  ) {
+
+    const number =
+      Number(value);
+
+
+    return Number.isFinite(
+      number
+    )
+      ? number
+      : 0;
+
+  }
+
+
+  function formatRupiah(
+    value
+  ) {
+
+    return new Intl.NumberFormat(
+      "id-ID",
+      {
+        style: "currency",
+        currency: "IDR",
+        maximumFractionDigits: 0
+      }
+    ).format(
+      Number(value) || 0
+    );
+
+  }
+
+
+  function showLoading(
+    message = "Memproses..."
+  ) {
+
+    let overlay =
+      document.getElementById(
+        "arima-loading"
+      );
+
+
+    if (!overlay) {
+
+      overlay =
+        document.createElement(
+          "div"
+        );
+
+      overlay.id =
+        "arima-loading";
+
+      overlay.style.cssText = `
+        position:fixed;
+        inset:0;
+        z-index:99999;
+        background:rgba(0,0,0,.45);
+        display:flex;
+        align-items:center;
+        justify-content:center;
+      `;
+
+
+      overlay.innerHTML = `
+
+        <div
+          style="
+            background:#fff;
+            padding:22px 28px;
+            border-radius:12px;
+            box-shadow:0 10px 40px rgba(0,0,0,.2);
+            font-weight:600;
+          "
+        >
+          <span
+            id="arima-loading-text"
+          >
+            ${esc(message)}
+          </span>
+        </div>
+
+      `;
+
+
+      document.body.appendChild(
+        overlay
+      );
+
+    }
+
+
+    const text =
+      document.getElementById(
+        "arima-loading-text"
+      );
+
+
+    if (text) {
+      text.textContent =
+        message;
+    }
+
+  }
+
+
+  function hideLoading() {
+
+    const overlay =
+      document.getElementById(
+        "arima-loading"
+      );
+
+
+    if (overlay) {
+      overlay.remove();
+    }
+
+  }
+
+
+  function toast(
+    message
+  ) {
+
+    let container =
+      document.getElementById(
+        "arima-toast-container"
+      );
+
+
+    if (!container) {
+
+      container =
+        document.createElement(
+          "div"
+        );
+
+      container.id =
+        "arima-toast-container";
+
+      container.style.cssText = `
+        position:fixed;
+        right:20px;
+        bottom:20px;
+        z-index:100000;
+        display:flex;
+        flex-direction:column;
+        gap:10px;
+      `;
+
+      document.body.appendChild(
+        container
+      );
+
+    }
+
+
+    const item =
+      document.createElement(
+        "div"
+      );
+
+
+    item.style.cssText = `
+      background:#111;
+      color:#fff;
+      padding:12px 16px;
+      border-radius:9px;
+      box-shadow:0 8px 30px rgba(0,0,0,.2);
+      max-width:360px;
+      font-size:14px;
+    `;
+
+
+    item.textContent =
+      message;
+
+
+    container.appendChild(
+      item
+    );
+
+
+    setTimeout(
+      () => {
+
+        item.remove();
+
+      },
+      3000
+    );
+
+  }
+
+
+  /*
+   * =========================================================
+   * PUBLIC API
+   * =========================================================
+   */
 
   return {
 
     init,
 
+    load,
+
     form,
 
-    load
+    toast
 
   };
 
 })();
+              
