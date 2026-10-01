@@ -19,103 +19,48 @@ window.API = (() => {
     sessionStorage.removeItem("ARIMA_TOKEN");
   };
 
-  async function call(action, payload = {}) {
+async function call(action, payload = {}) {
+  if (ARIMA_CONFIG.API_URL) {
 
-    const apiUrl =
-      window.ARIMA_CONFIG &&
-      window.ARIMA_CONFIG.API_URL
-        ? window.ARIMA_CONFIG.API_URL
-        : "";
+    const token =
+      localStorage.getItem("ARIMA_TOKEN") ||
+      localStorage.getItem("arima_token") ||
+      sessionStorage.getItem("ARIMA_TOKEN") ||
+      sessionStorage.getItem("arima_token") ||
+      "";
 
-    /*
-     * PRODUCTION MODE
-     */
-    if (
-      apiUrl &&
-      window.ARIMA_CONFIG &&
-      window.ARIMA_CONFIG.DEMO_MODE === false
-    ) {
+    const res = await fetch(ARIMA_CONFIG.API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        action,
+        payload,
+        token
+      })
+    });
 
-      const token = getToken();
-
-      const requestBody = {
-        action: action,
-        payload: payload,
-        token: token
-      };
-
-      try {
-
-        /*
-         * Menggunakan text/plain agar request tetap
-         * menjadi CORS simple request dan tidak
-         * memicu OPTIONS preflight.
-         *
-         * Body tetap JSON dan dibaca oleh doPost()
-         * menggunakan JSON.parse().
-         */
-        const res = await fetch(apiUrl, {
-          method: "POST",
-          headers: {
-            "Content-Type": "text/plain;charset=utf-8"
-          },
-          body: JSON.stringify(requestBody)
-        });
-
-        if (!res.ok) {
-          throw new Error("API error " + res.status);
-        }
-
-        const result = await res.json();
-
-        /*
-         * Jika session sudah tidak valid,
-         * hapus token agar user bisa login kembali.
-         */
-        if (
-          result &&
-          result.success === false &&
-          result.code === "AUTH_REQUIRED"
-        ) {
-          clearToken();
-        }
-
-        /*
-         * Simpan token hasil login.
-         */
-        if (
-          action === "login" &&
-          result &&
-          result.success &&
-          result.token
-        ) {
-          saveToken(result.token);
-        }
-
-        return result;
-
-      } catch (error) {
-
-        console.error("ARIMA API ERROR:", error);
-
-        return {
-          success: false,
-          message: error.message || "Gagal terhubung ke server."
-        };
-      }
+    if (!res.ok) {
+      throw new Error("API error " + res.status);
     }
 
-    /*
-     * DEMO MODE
-     */
-    return DemoAPI[action]
-      ? DemoAPI[action](payload)
-      : {
-          success: true,
-          data: []
-        };
+    const result = await res.json();
+
+    if (!result.success) {
+      throw new Error(result.message || "API request gagal.");
+    }
+
+    return result;
   }
 
+  return DemoAPI[action]
+    ? DemoAPI[action](payload)
+    : {
+        success: true,
+        data: []
+      };
+}
 
   /*
    * ================================
