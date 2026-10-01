@@ -1,5 +1,9 @@
 window.App = (() => {
 
+  /* =========================================================
+     MENU
+  ========================================================= */
+
   const menus = [
     ["dashboard", "Dashboard", "▦"],
     ["students", "Siswa", "♙"],
@@ -13,78 +17,382 @@ window.App = (() => {
   ];
 
   let user = null;
-  let schema = {};
 
-  // =========================================================
-  // INIT
-  // =========================================================
+
+  /* =========================================================
+     FORM CONFIGURATION
+  ========================================================= */
+
+  const FORM_CONFIG = {
+
+    students: {
+      title: "Tambah Siswa",
+      action: "studentSave",
+      fields: [
+        {
+          key: "ID_SISWA",
+          label: "ID Siswa",
+          type: "text",
+          required: false,
+          placeholder: "Kosongkan untuk ID otomatis"
+        },
+        {
+          key: "NAMA",
+          label: "Nama Siswa",
+          type: "text",
+          required: true
+        },
+        {
+          key: "NIK",
+          label: "NIK",
+          type: "text"
+        },
+        {
+          key: "NO_WA",
+          label: "No. WhatsApp",
+          type: "text"
+        },
+        {
+          key: "NAMA_ORANG_TUA",
+          label: "Nama Orang Tua / Wali",
+          type: "text"
+        },
+        {
+          key: "NO_WA_ORANG_TUA",
+          label: "No. WhatsApp Orang Tua / Wali",
+          type: "text"
+        },
+        {
+          key: "PROGRAM",
+          label: "Program",
+          type: "select",
+          options: [
+            "MAGANG",
+            "SSW",
+            "TOKUTEI GINOU",
+            "ENGINEERING",
+            "ENGINEER"
+          ]
+        },
+        {
+          key: "ASRAMA",
+          label: "Asrama",
+          type: "select",
+          options: [
+            "YA",
+            "TIDAK"
+          ]
+        },
+        {
+          key: "TANGGAL_MASUK",
+          label: "Tanggal Masuk",
+          type: "date"
+        },
+        {
+          key: "STATUS",
+          label: "Status",
+          type: "select",
+          options: [
+            "AKTIF",
+            "NONAKTIF",
+            "LULUS",
+            "BERANGKAT",
+            "KELUAR"
+          ]
+        }
+      ]
+    },
+
+
+    sensei: {
+      title: "Tambah Sensei",
+      action: "senseiSave",
+      fields: [
+        {
+          key: "ID_SENSEI",
+          label: "ID Sensei",
+          type: "text",
+          required: false,
+          placeholder: "Kosongkan untuk ID otomatis"
+        },
+        {
+          key: "NAMA",
+          label: "Nama Sensei",
+          type: "text",
+          required: true
+        },
+        {
+          key: "NO_WA",
+          label: "No. WhatsApp",
+          type: "text"
+        },
+        {
+          key: "STATUS",
+          label: "Status",
+          type: "select",
+          options: [
+            "AKTIF",
+            "NONAKTIF"
+          ]
+        }
+      ]
+    },
+
+
+    attendance: {
+      title: "Catat Absensi",
+      action: "attendanceSave",
+      fields: [
+        {
+          key: "ATTENDANCE_ID",
+          label: "ID Absensi",
+          type: "text",
+          required: false,
+          placeholder: "Kosongkan untuk ID otomatis"
+        },
+        {
+          key: "ID_SISWA",
+          label: "ID Siswa",
+          type: "text",
+          required: true
+        },
+        {
+          key: "DATE",
+          label: "Tanggal",
+          type: "date",
+          required: true
+        },
+        {
+          key: "STATUS",
+          label: "Status Kehadiran",
+          type: "select",
+          options: [
+            "HADIR",
+            "IZIN",
+            "SAKIT",
+            "ALPA"
+          ]
+        },
+        {
+          key: "CLASS_ID",
+          label: "ID Kelas",
+          type: "text"
+        },
+        {
+          key: "SESSION_ID",
+          label: "ID Sesi",
+          type: "text"
+        }
+      ]
+    },
+
+
+    billing: {
+      title: "Buat Tagihan",
+      action: "billingSave",
+      fields: [
+        {
+          key: "BILLING_ID",
+          label: "ID Tagihan",
+          type: "text",
+          required: false,
+          placeholder: "Kosongkan untuk ID otomatis"
+        },
+        {
+          key: "ID_SISWA",
+          label: "ID Siswa",
+          type: "text",
+          required: true
+        },
+        {
+          key: "DESCRIPTION",
+          label: "Keterangan Tagihan",
+          type: "text",
+          required: true,
+          placeholder: "Contoh: Biaya JFT / SSW / JLPT"
+        },
+        {
+          key: "AMOUNT",
+          label: "Jumlah Tagihan",
+          type: "number",
+          required: true
+        },
+        {
+          key: "DUE_DATE",
+          label: "Tanggal Jatuh Tempo",
+          type: "date"
+        },
+        {
+          key: "STATUS",
+          label: "Status",
+          type: "select",
+          options: [
+            "PENDING",
+            "LUNAS",
+            "SEBAGIAN",
+            "BATAL"
+          ]
+        }
+      ]
+    },
+
+
+    payments: {
+      title: "Input Pembayaran",
+      action: "paymentSave",
+      fields: [
+        {
+          key: "PAYMENT_ID",
+          label: "ID Pembayaran",
+          type: "text",
+          required: false,
+          placeholder: "Kosongkan untuk ID otomatis"
+        },
+        {
+          key: "BILLING_ID",
+          label: "ID Tagihan",
+          type: "text",
+          required: true
+        },
+        {
+          key: "PAYMENT_DATE",
+          label: "Tanggal Pembayaran",
+          type: "date",
+          required: true
+        },
+        {
+          key: "AMOUNT",
+          label: "Jumlah Pembayaran",
+          type: "number",
+          required: true
+        },
+        {
+          key: "PAYMENT_METHOD",
+          label: "Metode Pembayaran",
+          type: "select",
+          options: [
+            "CASH",
+            "TRANSFER",
+            "QRIS",
+            "LAINNYA"
+          ]
+        },
+        {
+          key: "DESCRIPTION",
+          label: "Keterangan",
+          type: "textarea"
+        }
+      ]
+    },
+
+
+    salary: {
+      title: "Rekap Payroll Sensei",
+      action: "salarySave",
+      fields: [
+        {
+          key: "SALARY_ID",
+          label: "ID Payroll",
+          type: "text",
+          required: false,
+          placeholder: "Kosongkan untuk ID otomatis"
+        },
+        {
+          key: "ID_SENSEI",
+          label: "ID Sensei",
+          type: "text",
+          required: true
+        },
+        {
+          key: "PERIOD",
+          label: "Periode",
+          type: "text",
+          required: true,
+          placeholder: "Contoh: Oktober 2026"
+        },
+        {
+          key: "BASE_SALARY",
+          label: "Gaji Pokok",
+          type: "number"
+        },
+        {
+          key: "BONUS",
+          label: "Bonus",
+          type: "number"
+        },
+        {
+          key: "DEDUCTION",
+          label: "Potongan",
+          type: "number"
+        },
+        {
+          key: "NET_SALARY",
+          label: "Gaji Bersih",
+          type: "number"
+        },
+        {
+          key: "PAYMENT_STATUS",
+          label: "Status Pembayaran",
+          type: "select",
+          options: [
+            "PENDING",
+            "DIBAYAR"
+          ]
+        }
+      ]
+    }
+
+  };
+
+
+  /* =========================================================
+     INIT
+  ========================================================= */
 
   async function init() {
 
     user = Auth.require();
 
-    if (!user) return;
+    if (!user) {
+      return;
+    }
 
     renderShell();
-
-    try {
-
-      const r = await API.call("schema");
-
-      if (r && r.success) {
-        schema = r.data || {};
-      }
-
-    } catch (error) {
-
-      console.error("Schema error:", error);
-
-    }
 
     await load("dashboard");
   }
 
 
-  // =========================================================
-  // SHELL
-  // =========================================================
+  /* =========================================================
+     SHELL
+  ========================================================= */
 
   function renderShell() {
 
     document.getElementById("app").innerHTML = `
+
       <div class="shell">
 
         <aside class="sidebar">
 
           <div class="side-brand">
-
-            <img
-              src="assets/logo.webp"
-              alt="Arima Management"
-            >
-
+            <img src="assets/logo.webp">
             <strong>
               ARIMA<br>
               MANAGEMENT
             </strong>
-
           </div>
 
           <nav class="nav">
 
             ${menus.map(m => `
-              <a
-                href="#"
-                data-page="${m[0]}"
-              >
+              <a href="#"
+                 data-page="${m[0]}">
                 ${m[2]} &nbsp; ${m[1]}
               </a>
             `).join("")}
 
-            <a
-              href="#"
-              id="logout"
-            >
+            <a href="#" id="logout">
               ↪ &nbsp; Keluar
             </a>
 
@@ -110,10 +418,7 @@ window.App = (() => {
           </header>
 
 
-          <section
-            class="content"
-            id="page"
-          ></section>
+          <section class="content" id="page"></section>
 
         </main>
 
@@ -149,9 +454,9 @@ window.App = (() => {
   }
 
 
-  // =========================================================
-  // PAGE LOADER
-  // =========================================================
+  /* =========================================================
+     PAGE LOADER
+  ========================================================= */
 
   async function load(page) {
 
@@ -214,8 +519,16 @@ window.App = (() => {
 
       el.innerHTML = `
         <div class="card">
-          <div class="error-box">
-            ${esc(error.message || "Terjadi kesalahan.")}
+          <div style="
+            color:#b00020;
+            font-weight:600;
+            margin-bottom:8px;
+          ">
+            Terjadi kesalahan
+          </div>
+
+          <div class="muted">
+            ${esc(error.message)}
           </div>
         </div>
       `;
@@ -225,31 +538,31 @@ window.App = (() => {
   }
 
 
-  // =========================================================
-  // ESCAPE HTML
-  // =========================================================
+  /* =========================================================
+     HELPERS
+  ========================================================= */
 
-  function esc(value) {
+  const esc = value => {
 
     return String(value ?? "")
-      .replace(/[&<>"']/g, c => ({
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#39;"
-      }[c]));
+      .replace(
+        /[&<>"']/g,
+        c => ({
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          '"': "&quot;",
+          "'": "&#39;"
+        }[c])
+      );
 
-  }
+  };
 
 
-  // =========================================================
-  // TABLE
-  // =========================================================
-
-  function table(rows, cols) {
+  const table = (rows, cols) => {
 
     return `
+
       <div class="table-wrap">
 
         <table class="table">
@@ -258,11 +571,9 @@ window.App = (() => {
 
             <tr>
 
-              ${cols
-                .map(c => `<th>${esc(c)}</th>`)
-                .join("")}
-
-              <th>Aksi</th>
+              ${cols.map(c => `
+                <th>${esc(c)}</th>
+              `).join("")}
 
             </tr>
 
@@ -280,24 +591,11 @@ window.App = (() => {
 
                 <tr>
 
-                  ${cols
-                    .map(c =>
-                      `<td>${esc(r[c])}</td>`
-                    )
-                    .join("")}
-
-                  <td>
-
-                    <button
-                      class="btn btn-light btn-edit"
-                      data-id="${esc(
-                        r[cols[0]]
-                      )}"
-                    >
-                      Edit
-                    </button>
-
-                  </td>
+                  ${cols.map(c => `
+                    <td>
+                      ${esc(r[c])}
+                    </td>
+                  `).join("")}
 
                 </tr>
 
@@ -307,14 +605,12 @@ window.App = (() => {
 
               `
                 <tr>
-
                   <td
-                    colspan="${cols.length + 1}"
+                    colspan="${cols.length}"
                     class="muted"
                   >
                     Belum ada data.
                   </td>
-
                 </tr>
               `
             }
@@ -324,19 +620,21 @@ window.App = (() => {
         </table>
 
       </div>
+
     `;
 
-  }
+  };
 
 
-  // =========================================================
-  // DASHBOARD
-  // =========================================================
+  /* =========================================================
+     DASHBOARD
+  ========================================================= */
 
   async function renderDashboard(el) {
 
     const r =
       await API.dashboard();
+
 
     const d =
       r.data || {};
@@ -363,28 +661,41 @@ window.App = (() => {
       <div class="cards">
 
         ${[
-          ["Siswa Aktif", d.students ?? 0],
-          ["Sensei", d.sensei ?? 0],
-          ["Kehadiran", `${d.attendance ?? 0}%`],
-          ["Tagihan Pending", d.pendingBilling ?? 0]
-        ]
+          [
+            "Siswa Aktif",
+            d.students ?? 0
+          ],
 
-          .map(x => `
+          [
+            "Sensei",
+            d.sensei ?? 0
+          ],
 
-            <div class="card">
+          [
+            "Kehadiran",
+            `${d.attendance ?? 0}%`
+          ],
 
-              <div class="muted">
-                ${esc(x[0])}
-              </div>
+          [
+            "Tagihan Pending",
+            d.pendingBilling ?? 0
+          ]
 
-              <div class="metric">
-                ${esc(x[1])}
-              </div>
+        ].map(x => `
 
+          <div class="card">
+
+            <div class="muted">
+              ${esc(x[0])}
             </div>
 
-          `)
-          .join("")}
+            <div class="metric">
+              ${esc(x[1])}
+            </div>
+
+          </div>
+
+        `).join("")}
 
       </div>
 
@@ -412,14 +723,15 @@ window.App = (() => {
   }
 
 
-  // =========================================================
-  // SISWA
-  // =========================================================
+  /* =========================================================
+     SISWA
+  ========================================================= */
 
   async function renderStudents(el) {
 
     const r =
       await API.students();
+
 
     const rows =
       r.data || [];
@@ -442,7 +754,7 @@ window.App = (() => {
 
         <button
           class="btn btn-primary"
-          id="addStudent"
+          onclick="App.form('students')"
         >
           + Tambah Siswa
         </button>
@@ -455,37 +767,29 @@ window.App = (() => {
         [
           "ID_SISWA",
           "NAMA",
+          "NIK",
+          "NO_WA",
           "PROGRAM",
-          "STATUS",
-          "NO_WA"
+          "ASRAMA",
+          "TANGGAL_MASUK",
+          "STATUS"
         ]
       )}
 
     `;
 
-
-    document
-      .getElementById("addStudent")
-      .onclick = () =>
-        form("STUDENTS");
-
-
-    bindEditButtons(
-      "STUDENTS",
-      rows
-    );
-
   }
 
 
-  // =========================================================
-  // SENSEI
-  // =========================================================
+  /* =========================================================
+     SENSEI
+  ========================================================= */
 
   async function renderSensei(el) {
 
     const r =
       await API.sensei();
+
 
     const rows =
       r.data || [];
@@ -508,7 +812,7 @@ window.App = (() => {
 
         <button
           class="btn btn-primary"
-          id="addSensei"
+          onclick="App.form('sensei')"
         >
           + Tambah Sensei
         </button>
@@ -528,32 +832,17 @@ window.App = (() => {
 
     `;
 
-
-    document
-      .getElementById("addSensei")
-      .onclick = () =>
-        form("SENSEI");
-
-
-    bindEditButtons(
-      "SENSEI",
-      rows
-    );
-
   }
 
 
-  // =========================================================
-  // ABSENSI
-  // =========================================================
+  /* =========================================================
+     ABSENSI
+  ========================================================= */
 
   async function renderAttendance(el) {
 
     const r =
       await API.attendance();
-
-    const rows =
-      r.data || [];
 
 
     el.innerHTML = `
@@ -573,7 +862,7 @@ window.App = (() => {
 
         <button
           class="btn btn-primary"
-          id="addAttendance"
+          onclick="App.form('attendance')"
         >
           + Catat Absensi
         </button>
@@ -582,7 +871,7 @@ window.App = (() => {
 
 
       ${table(
-        rows,
+        r.data || [],
         [
           "ID_SISWA",
           "DATE",
@@ -594,26 +883,17 @@ window.App = (() => {
 
     `;
 
-
-    document
-      .getElementById("addAttendance")
-      .onclick = () =>
-        form("ATTENDANCE");
-
   }
 
 
-  // =========================================================
-  // BILLING
-  // =========================================================
+  /* =========================================================
+     TAGIHAN
+  ========================================================= */
 
   async function renderBilling(el) {
 
     const r =
       await API.billing();
-
-    const rows =
-      r.data || [];
 
 
     el.innerHTML = `
@@ -634,7 +914,7 @@ window.App = (() => {
 
         <button
           class="btn btn-primary"
-          id="addBilling"
+          onclick="App.form('billing')"
         >
           + Buat Tagihan
         </button>
@@ -643,7 +923,7 @@ window.App = (() => {
 
 
       ${table(
-        rows,
+        r.data || [],
         [
           "BILLING_ID",
           "ID_SISWA",
@@ -656,26 +936,17 @@ window.App = (() => {
 
     `;
 
-
-    document
-      .getElementById("addBilling")
-      .onclick = () =>
-        form("BILLING");
-
   }
 
 
-  // =========================================================
-  // PAYMENTS
-  // =========================================================
+  /* =========================================================
+     PEMBAYARAN
+  ========================================================= */
 
   async function renderPayments(el) {
 
     const r =
       await API.payments();
-
-    const rows =
-      r.data || [];
 
 
     el.innerHTML = `
@@ -695,7 +966,7 @@ window.App = (() => {
 
         <button
           class="btn btn-primary"
-          id="addPayment"
+          onclick="App.form('payments')"
         >
           + Input Pembayaran
         </button>
@@ -704,7 +975,7 @@ window.App = (() => {
 
 
       ${table(
-        rows,
+        r.data || [],
         [
           "PAYMENT_ID",
           "BILLING_ID",
@@ -716,26 +987,17 @@ window.App = (() => {
 
     `;
 
-
-    document
-      .getElementById("addPayment")
-      .onclick = () =>
-        form("PAYMENTS");
-
   }
 
 
-  // =========================================================
-  // SALARY
-  // =========================================================
+  /* =========================================================
+     PAYROLL
+  ========================================================= */
 
   async function renderSalary(el) {
 
     const r =
       await API.salary();
-
-    const rows =
-      r.data || [];
 
 
     el.innerHTML = `
@@ -747,8 +1009,8 @@ window.App = (() => {
           <h1>Payroll Sensei</h1>
 
           <p>
-            Rekap gaji, jam/pertemuan,
-            bonus, potongan, dan pembayaran.
+            Rekap gaji, bonus,
+            potongan, dan pembayaran.
           </p>
 
         </div>
@@ -756,7 +1018,7 @@ window.App = (() => {
 
         <button
           class="btn btn-primary"
-          id="addSalary"
+          onclick="App.form('salary')"
         >
           + Rekap Payroll
         </button>
@@ -765,7 +1027,7 @@ window.App = (() => {
 
 
       ${table(
-        rows,
+        r.data || [],
         [
           "SALARY_ID",
           "ID_SENSEI",
@@ -780,18 +1042,12 @@ window.App = (() => {
 
     `;
 
-
-    document
-      .getElementById("addSalary")
-      .onclick = () =>
-        form("SALARY");
-
   }
 
 
-  // =========================================================
-  // REPORTS
-  // =========================================================
+  /* =========================================================
+     REPORTS
+  ========================================================= */
 
   async function renderReports(el) {
 
@@ -815,15 +1071,50 @@ window.App = (() => {
       <div class="cards">
 
         <div class="card">
+
           Laporan absensi
+
+          <br>
+
+          <button
+            class="btn btn-dark"
+            style="margin-top:10px"
+          >
+            Buka
+          </button>
+
         </div>
 
+
         <div class="card">
+
           Laporan tagihan
+
+          <br>
+
+          <button
+            class="btn btn-dark"
+            style="margin-top:10px"
+          >
+            Buka
+          </button>
+
         </div>
 
+
         <div class="card">
+
           Laporan payroll
+
+          <br>
+
+          <button
+            class="btn btn-dark"
+            style="margin-top:10px"
+          >
+            Buka
+          </button>
+
         </div>
 
       </div>
@@ -833,9 +1124,9 @@ window.App = (() => {
   }
 
 
-  // =========================================================
-  // SETTINGS
-  // =========================================================
+  /* =========================================================
+     SETTINGS
+  ========================================================= */
 
   async function renderSettings(el) {
 
@@ -848,8 +1139,7 @@ window.App = (() => {
           <h1>Pengaturan</h1>
 
           <p>
-            Konfigurasi aplikasi
-            dan integrasi database.
+            Konfigurasi aplikasi dan database.
           </p>
 
         </div>
@@ -876,10 +1166,8 @@ window.App = (() => {
 
 
         <p class="muted">
-
-          API_URL diatur pada
-          js/config.js.
-
+          API_URL terhubung ke backend
+          Google Apps Script.
         </p>
 
       </div>
@@ -889,46 +1177,25 @@ window.App = (() => {
   }
 
 
-  // =========================================================
-  // DYNAMIC FORM
-  // =========================================================
+  /* =========================================================
+     FORM GENERATOR
+  ========================================================= */
 
-  async function form(sheetName, existingData = null) {
+  function form(type, editData = null) {
 
-    const headers =
-      schema[sheetName];
+    const config =
+      FORM_CONFIG[type];
 
 
-    if (
-      !headers ||
-      !Array.isArray(headers)
-    ) {
+    if (!config) {
 
       toast(
-        "Schema " +
-        sheetName +
-        " belum tersedia."
+        "Form untuk menu ini belum tersedia."
       );
 
       return;
 
     }
-
-
-    const idField =
-      headers[0];
-
-
-    const hiddenFields = [
-      "CREATED_AT",
-      "UPDATED_AT"
-    ];
-
-
-    const fields =
-      headers.filter(
-        h => !hiddenFields.includes(h)
-      );
 
 
     const modal =
@@ -943,28 +1210,24 @@ window.App = (() => {
 
       <div
         class="modal"
-        style="max-width:900px"
+        style="
+          max-width:900px;
+          max-height:90vh;
+          overflow-y:auto;
+        "
       >
 
         <div class="section-head">
 
           <h2>
-            ${
-              existingData
-                ? "Edit "
-                : "Tambah "
-            }
-
-            ${esc(
-              sheetLabel(sheetName)
-            )}
-
+            ${esc(config.title)}
           </h2>
 
 
           <button
             class="btn btn-light"
             id="close"
+            type="button"
           >
             Tutup
           </button>
@@ -972,40 +1235,47 @@ window.App = (() => {
         </div>
 
 
-        <div
-          class="form-grid"
-          id="dynamicForm"
-        >
+        <form id="dynamicForm">
 
-          ${fields
-            .map(
-              field =>
-                makeField(
-                  field,
-                  existingData
-                    ? existingData[field]
-                    : ""
-                )
-            )
-            .join("")}
+          <div class="form-grid">
 
-        </div>
+            ${config.fields
+              .map(fieldHTML)
+              .join("")}
+
+          </div>
 
 
-        <div class="modal-actions">
-
-          <button
-            class="btn btn-primary"
-            id="save"
+          <div
+            class="modal-actions"
+            style="
+              display:flex;
+              justify-content:flex-end;
+              gap:10px;
+              margin-top:20px;
+            "
           >
-            ${
-              existingData
-                ? "Perbarui"
-                : "Simpan"
-            }
-          </button>
 
-        </div>
+            <button
+              class="btn btn-light"
+              id="cancel"
+              type="button"
+            >
+              Batal
+            </button>
+
+
+            <button
+              class="btn btn-primary"
+              id="save"
+              type="submit"
+            >
+              Simpan
+            </button>
+
+          </div>
+
+        </form>
 
       </div>
 
@@ -1015,6 +1285,35 @@ window.App = (() => {
     document.body.appendChild(modal);
 
 
+    /* Isi data edit jika ada */
+
+    if (editData) {
+
+      config.fields.forEach(field => {
+
+        const input =
+          modal.querySelector(
+            `[name="${field.key}"]`
+          );
+
+
+        if (
+          input &&
+          editData[field.key] !== undefined
+        ) {
+
+          input.value =
+            editData[field.key] ?? "";
+
+        }
+
+      });
+
+    }
+
+
+    /* Close */
+
     modal
       .querySelector("#close")
       .onclick = () =>
@@ -1022,8 +1321,19 @@ window.App = (() => {
 
 
     modal
-      .querySelector("#save")
-      .onclick = async () => {
+      .querySelector("#cancel")
+      .onclick = () =>
+        modal.remove();
+
+
+    /* Submit */
+
+    modal
+      .querySelector("#dynamicForm")
+      .onsubmit = async e => {
+
+        e.preventDefault();
+
 
         const button =
           modal.querySelector("#save");
@@ -1037,41 +1347,71 @@ window.App = (() => {
 
         try {
 
+          const formData =
+            new FormData(e.target);
+
+
           const payload = {};
 
 
-          fields.forEach(field => {
+          config.fields.forEach(field => {
 
-            const input =
-              modal.querySelector(
-                `[name="${field}"]`
-              );
+            const value =
+              formData.get(field.key);
 
 
-            if (input) {
-
-              payload[field] =
-                input.value.trim();
-
-            }
+            payload[field.key] =
+              value === null
+                ? ""
+                : String(value).trim();
 
           });
 
 
-          const action =
-            getSaveAction(sheetName);
+          /* Validasi required */
 
+          for (const field of config.fields) {
+
+            if (
+              field.required &&
+              !payload[field.key]
+            ) {
+
+              throw new Error(
+                `${field.label} wajib diisi.`
+              );
+
+            }
+
+          }
+
+
+          console.log(
+            "SAVE ACTION:",
+            config.action
+          );
+
+
+          console.log(
+            "SAVE PAYLOAD:",
+            payload
+          );
+
+
+          /*
+           * Kirim langsung ke Apps Script
+           */
 
           const result =
             await API.call(
-              action,
+              config.action,
               payload
             );
 
 
           if (
             !result ||
-            !result.success
+            result.success !== true
           ) {
 
             throw new Error(
@@ -1091,23 +1431,37 @@ window.App = (() => {
           modal.remove();
 
 
-          await reloadCurrentPage();
+          /*
+           * Refresh halaman
+           */
+
+          const currentPage =
+            getCurrentPage();
+
+
+          await load(
+            currentPage
+          );
+
 
         } catch (error) {
 
-          console.error(error);
+          console.error(
+            "SAVE ERROR:",
+            error
+          );
+
 
           toast(
             error.message ||
             "Gagal menyimpan data."
           );
 
+
           button.disabled = false;
 
           button.textContent =
-            existingData
-              ? "Perbarui"
-              : "Simpan";
+            "Simpan";
 
         }
 
@@ -1116,150 +1470,91 @@ window.App = (() => {
   }
 
 
-  // =========================================================
-  // FIELD GENERATOR
-  // =========================================================
+  /* =========================================================
+     FORM FIELD HTML
+  ========================================================= */
 
-  function makeField(field, value) {
+  function fieldHTML(field) {
 
-    const label =
-      fieldLabel(field);
-
-
-    const type =
-      fieldType(field);
+    const required =
+      field.required
+        ? "required"
+        : "";
 
 
-    const full =
-      [
-        "NAMA",
-        "NAMA_ORANG_TUA",
-        "DESCRIPTION",
-        "KETERANGAN",
-        "CATATAN"
-      ].includes(field);
+    const placeholder =
+      field.placeholder
+        ? `placeholder="${esc(field.placeholder)}"`
+        : "";
 
 
-    let input = "";
+    if (field.type === "textarea") {
+
+      return `
+
+        <div class="field full">
+
+          <label>
+            ${esc(field.label)}
+            ${field.required
+              ? '<span style="color:#e30613">*</span>'
+              : ""}
+          </label>
 
 
-    // SELECT
-    if (field === "STATUS") {
+          <textarea
+            name="${esc(field.key)}"
+            rows="4"
+            ${required}
+            ${placeholder}
+          ></textarea>
 
-      input = `
-
-        <select name="${esc(field)}">
-
-          <option
-            value="AKTIF"
-            ${value === "AKTIF" ? "selected" : ""}
-          >
-            AKTIF
-          </option>
-
-          <option
-            value="NONAKTIF"
-            ${value === "NONAKTIF" ? "selected" : ""}
-          >
-            NONAKTIF
-          </option>
-
-        </select>
+        </div>
 
       `;
 
     }
 
-    else if (field === "ASRAMA") {
 
-      input = `
+    if (field.type === "select") {
 
-        <select name="${esc(field)}">
+      return `
 
-          <option value="">
-            Pilih
-          </option>
+        <div class="field">
 
-          <option
-            value="YA"
-            ${value === "YA" ? "selected" : ""}
+          <label>
+            ${esc(field.label)}
+            ${field.required
+              ? '<span style="color:#e30613">*</span>'
+              : ""}
+          </label>
+
+
+          <select
+            name="${esc(field.key)}"
+            ${required}
           >
-            YA
-          </option>
 
-          <option
-            value="TIDAK"
-            ${value === "TIDAK" ? "selected" : ""}
-          >
-            TIDAK
-          </option>
+            <option value="">
+              -- Pilih ${esc(field.label)} --
+            </option>
 
-        </select>
 
-      `;
+            ${(field.options || [])
+              .map(option => `
 
-    }
+                <option
+                  value="${esc(option)}"
+                >
+                  ${esc(option)}
+                </option>
 
-    else if (field === "PROGRAM") {
+              `)
+              .join("")}
 
-      input = `
+          </select>
 
-        <select name="${esc(field)}">
-
-          <option value="">
-            Pilih Program
-          </option>
-
-          <option
-            value="MAGANG"
-            ${value === "MAGANG" ? "selected" : ""}
-          >
-            MAGANG
-          </option>
-
-          <option
-            value="SSW"
-            ${value === "SSW" ? "selected" : ""}
-          >
-            SSW / TOKUTEI GINOU
-          </option>
-
-          <option
-            value="ENGINEERING"
-            ${value === "ENGINEERING" ? "selected" : ""}
-          >
-            ENGINEERING
-          </option>
-
-        </select>
-
-      `;
-
-    }
-
-    else if (full) {
-
-      input = `
-
-        <textarea
-          name="${esc(field)}"
-          rows="3"
-        >${esc(value)}</textarea>
-
-      `;
-
-    }
-
-    else {
-
-      input = `
-
-        <input
-          type="${type}"
-          name="${esc(field)}"
-          value="${esc(value)}"
-          ${field === "ID_SISWA" || field === "ID_SENSEI" ? "" : ""}
-        >
+        </div>
 
       `;
 
@@ -1268,15 +1563,22 @@ window.App = (() => {
 
     return `
 
-      <div
-        class="field ${full ? "full" : ""}"
-      >
+      <div class="field">
 
         <label>
-          ${esc(label)}
+          ${esc(field.label)}
+          ${field.required
+            ? '<span style="color:#e30613">*</span>'
+            : ""}
         </label>
 
-        ${input}
+
+        <input
+          type="${esc(field.type || "text")}"
+          name="${esc(field.key)}"
+          ${required}
+          ${placeholder}
+        >
 
       </div>
 
@@ -1285,259 +1587,11 @@ window.App = (() => {
   }
 
 
-  // =========================================================
-  // FIELD TYPE
-  // =========================================================
-
-  function fieldType(field) {
-
-    if (
-      field.includes("DATE") ||
-      field === "TANGGAL_MASUK" ||
-      field === "PAYMENT_DATE" ||
-      field === "DUE_DATE"
-    ) {
-      return "date";
-    }
-
-
-    if (
-      field.includes("AMOUNT") ||
-      field.includes("SALARY") ||
-      field === "BONUS" ||
-      field === "DEDUCTION"
-    ) {
-      return "number";
-    }
-
-
-    return "text";
-
-  }
-
-
-  // =========================================================
-  // FIELD LABEL
-  // =========================================================
-
-  function fieldLabel(field) {
-
-    const labels = {
-
-      ID_SISWA: "ID Siswa",
-
-      ID_SENSEI: "ID Sensei",
-
-      NAMA: "Nama",
-
-      NIK: "NIK",
-
-      NO_WA: "No. WhatsApp",
-
-      NAMA_ORANG_TUA:
-        "Nama Orang Tua / Wali",
-
-      NO_WA_ORANG_TUA:
-        "No. WhatsApp Orang Tua / Wali",
-
-      PROGRAM:
-        "Program",
-
-      ASRAMA:
-        "Asrama",
-
-      TANGGAL_MASUK:
-        "Tanggal Masuk",
-
-      STATUS:
-        "Status",
-
-      DESCRIPTION:
-        "Deskripsi",
-
-      AMOUNT:
-        "Jumlah",
-
-      DUE_DATE:
-        "Jatuh Tempo",
-
-      BILLING_ID:
-        "ID Tagihan",
-
-      PAYMENT_DATE:
-        "Tanggal Pembayaran",
-
-      PAYMENT_METHOD:
-        "Metode Pembayaran",
-
-      PERIOD:
-        "Periode",
-
-      BASE_SALARY:
-        "Gaji Pokok",
-
-      BONUS:
-        "Bonus",
-
-      DEDUCTION:
-        "Potongan",
-
-      NET_SALARY:
-        "Gaji Bersih",
-
-      PAYMENT_STATUS:
-        "Status Pembayaran"
-
-    };
-
-
-    return (
-      labels[field] ||
-      field
-        .replaceAll("_", " ")
-        .toLowerCase()
-        .replace(/\b\w/g, x =>
-          x.toUpperCase()
-        )
-    );
-
-  }
-
-
-  // =========================================================
-  // SHEET LABEL
-  // =========================================================
-
-  function sheetLabel(sheet) {
-
-    const labels = {
-
-      STUDENTS: "Siswa",
-
-      SENSEI: "Sensei",
-
-      CLASSES: "Kelas",
-
-      SCHEDULES: "Jadwal",
-
-      ATTENDANCE: "Absensi",
-
-      BILLING: "Tagihan",
-
-      PAYMENTS: "Pembayaran",
-
-      SALARY: "Payroll Sensei",
-
-      SETTINGS: "Pengaturan"
-
-    };
-
-
-    return labels[sheet] || sheet;
-
-  }
-
-
-  // =========================================================
-  // SAVE ACTION
-  // =========================================================
-
-  function getSaveAction(sheet) {
-
-    const map = {
-
-      STUDENTS:
-        "studentSave",
-
-      SENSEI:
-        "senseiSave",
-
-      CLASSES:
-        "classSave",
-
-      SCHEDULES:
-        "scheduleSave",
-
-      ATTENDANCE:
-        "attendanceSave",
-
-      BILLING:
-        "billingSave",
-
-      PAYMENTS:
-        "paymentSave",
-
-      SALARY:
-        "salarySave",
-
-      SETTINGS:
-        "settingSave"
-
-    };
-
-
-    return map[sheet];
-
-  }
-
-
-  // =========================================================
-  // EDIT BUTTON
-  // =========================================================
-
-  function bindEditButtons(
-    sheetName,
-    rows
-  ) {
-
-    document
-      .querySelectorAll(".btn-edit")
-      .forEach(button => {
-
-        button.onclick = () => {
-
-          const id =
-            button.dataset.id;
-
-
-          const headers =
-            schema[sheetName] || [];
-
-
-          const idField =
-            headers[0];
-
-
-          const row =
-            rows.find(
-              r =>
-                String(
-                  r[idField]
-                ) === String(id)
-            );
-
-
-          if (row) {
-
-            form(
-              sheetName,
-              row
-            );
-
-          }
-
-        };
-
-      });
-
-  }
-
-
-  // =========================================================
-  // RELOAD CURRENT PAGE
-  // =========================================================
-
-  async function reloadCurrentPage() {
+  /* =========================================================
+     CURRENT PAGE
+  ========================================================= */
+
+  function getCurrentPage() {
 
     const active =
       document.querySelector(
@@ -1545,20 +1599,16 @@ window.App = (() => {
       );
 
 
-    const page =
-      active
-        ? active.dataset.page
-        : "dashboard";
-
-
-    await load(page);
+    return active
+      ? active.dataset.page
+      : "dashboard";
 
   }
 
 
-  // =========================================================
-  // TOAST
-  // =========================================================
+  /* =========================================================
+     TOAST
+  ========================================================= */
 
   function toast(msg) {
 
@@ -1585,15 +1635,17 @@ window.App = (() => {
   }
 
 
-  // =========================================================
-  // PUBLIC
-  // =========================================================
+  /* =========================================================
+     PUBLIC
+  ========================================================= */
 
   return {
 
     init,
 
-    form
+    form,
+
+    load
 
   };
 
