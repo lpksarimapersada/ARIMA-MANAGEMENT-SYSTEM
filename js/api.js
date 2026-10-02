@@ -1,90 +1,52 @@
 window.API = (() => {
+  "use strict";
 
-  /* =========================================================
-   * TOKEN / SESSION
-   * ========================================================= */
-
-  const getToken = () => {
+  function getToken() {
     return (
       localStorage.getItem("ARIMA_TOKEN") ||
       sessionStorage.getItem("ARIMA_TOKEN") ||
       ""
     );
-  };
+  }
 
-  const saveToken = (token) => {
+  function saveToken(token) {
     if (token) {
       localStorage.setItem("ARIMA_TOKEN", token);
     }
-  };
+  }
 
-  const clearToken = () => {
+  function clearToken() {
     localStorage.removeItem("ARIMA_TOKEN");
     sessionStorage.removeItem("ARIMA_TOKEN");
-  };
-
-
-  /* =========================================================
-   * API REQUEST
-   * ========================================================= */
+  }
 
   async function call(action, payload = {}) {
 
-    const apiUrl =
-      window.ARIMA_CONFIG &&
-      window.ARIMA_CONFIG.API_URL
-        ? window.ARIMA_CONFIG.API_URL
-        : "";
+    const config = window.ARIMA_CONFIG;
 
-    const demoMode =
-      window.ARIMA_CONFIG &&
-      window.ARIMA_CONFIG.DEMO_MODE === false;
-
-
-    /* -------------------------------------------------------
-     * DEMO MODE
-     * ------------------------------------------------------- */
-
-    if (!apiUrl || demoMode) {
-
-      if (DemoAPI[action]) {
-        return DemoAPI[action](payload);
-      }
-
-      return {
-        success: true,
-        data: []
-      };
-    }
-
-
-    /* -------------------------------------------------------
-     * REAL API
-     * ------------------------------------------------------- */
-
-    const token = getToken();
-
-    const response = await fetch(apiUrl, {
-      method: "POST",
-
-      headers: {
-        "Content-Type": "text/plain;charset=utf-8"
-      },
-
-      body: JSON.stringify({
-        action: action,
-        payload: payload,
-        token: token
-      })
-    });
-
-
-    if (!response.ok) {
+    if (!config || !config.API_URL) {
       throw new Error(
-        "API error HTTP " + response.status
+        "API_URL ARIMA Apps belum dikonfigurasi."
       );
     }
 
+    const response = await fetch(
+      config.API_URL,
+      {
+        method: "POST",
+
+        headers: {
+          "Content-Type":
+            "text/plain;charset=utf-8"
+        },
+
+        body: JSON.stringify({
+          action: action,
+          payload: payload,
+          token: getToken()
+        })
+      }
+    );
 
     const text = await response.text();
 
@@ -95,25 +57,19 @@ window.API = (() => {
     } catch (error) {
 
       console.error(
-        "Response API bukan JSON:",
+        "Response ARIMA Apps:",
         text
       );
 
       throw new Error(
-        "Server mengembalikan response yang tidak valid."
+        "ARIMA Apps mengembalikan response yang bukan JSON."
       );
     }
-
-
-    /* -------------------------------------------------------
-     * SESSION EXPIRED
-     * ------------------------------------------------------- */
 
     if (
       result &&
       result.code === "AUTH_REQUIRED"
     ) {
-
       clearToken();
 
       throw new Error(
@@ -122,586 +78,162 @@ window.API = (() => {
       );
     }
 
+    return result;
+  }
 
-    /* -------------------------------------------------------
-     * API ERROR
-     * ------------------------------------------------------- */
+  async function login(userId, password) {
+
+    const result = await call(
+      "login",
+      {
+        userId: String(userId || "").trim(),
+        password: String(password || "")
+      }
+    );
 
     if (
       result &&
-      result.success === false
+      result.success === true &&
+      result.token
     ) {
-
-      throw new Error(
-        result.message ||
-        "API request gagal."
-      );
+      saveToken(result.token);
     }
-
 
     return result;
   }
 
+  async function logout() {
 
-  /* =========================================================
-   * DEMO DATA
-   * ========================================================= */
-
-  const demoUsers = {
-
-    ADMIN001: {
-      userId: "ADMIN001",
-      name: "Administrator",
-      role: "ADMIN",
-      status: "AKTIF"
-    },
-
-    SENSEI001: {
-      userId: "SENSEI001",
-      name: "Sensei Demo",
-      role: "SENSEI",
-      status: "AKTIF"
-    },
-
-    SISWA001: {
-      userId: "SISWA001",
-      name: "Siswa Demo",
-      role: "SISWA",
-      status: "AKTIF"
+    try {
+      await call("logout", {});
+    } catch (error) {
+      console.warn(
+        "Logout API:",
+        error
+      );
     }
 
-  };
-
-
-  const demo = {
-
-    /* -------------------------------------------------------
-     * LOGIN
-     * ------------------------------------------------------- */
-
-    login: ({ userId, password }) => {
-
-      if (
-        !demoUsers[userId] ||
-        password !== "admin123"
-      ) {
-
-        return {
-          success: false,
-          message:
-            "ID atau password demo salah."
-        };
-      }
-
-      const token =
-        "DEMO-" +
-        Date.now();
-
-      saveToken(token);
-
-      return {
-        success: true,
-        token: token,
-        user: demoUsers[userId]
-      };
-    },
-
-
-    /* -------------------------------------------------------
-     * DASHBOARD
-     * ------------------------------------------------------- */
-
-    dashboard: () => ({
-      success: true,
-
-      data: {
-        students: 24,
-        sensei: 6,
-        attendance: 91,
-        pendingBilling: 7
-      }
-    }),
-
-
-    /* -------------------------------------------------------
-     * STUDENTS
-     * ------------------------------------------------------- */
-
-    students: () => ({
-      success: true,
-
-      data: [
-        {
-          ID_SISWA: "SISWA001",
-          NAMA: "Siswa Demo",
-          PROGRAM: "SSW / TOKUTEI GINOU",
-          STATUS: "AKTIF",
-          NO_WA: ""
-        },
-
-        {
-          ID_SISWA: "SISWA002",
-          NAMA: "Contoh Siswa",
-          PROGRAM: "MAGANG",
-          STATUS: "AKTIF",
-          NO_WA: ""
-        }
-      ]
-    }),
-
-
-    studentSave: (payload) => ({
-      success: true,
-      id:
-        payload.ID_SISWA ||
-        "SISWA-DEMO-" + Date.now(),
-
-      message:
-        "Data siswa berhasil disimpan (DEMO MODE)."
-    }),
-
-
-    studentDelete: () => ({
-      success: true,
-      message:
-        "Data siswa berhasil dihapus (DEMO MODE)."
-    }),
-
-
-    /* -------------------------------------------------------
-     * SENSEI
-     * ------------------------------------------------------- */
-
-    sensei: () => ({
-      success: true,
-
-      data: [
-        {
-          ID_SENSEI: "SENSEI001",
-          NAMA: "Sensei Demo",
-          STATUS: "AKTIF",
-          NO_WA: ""
-        }
-      ]
-    }),
-
-
-    senseiSave: () => ({
-      success: true,
-      message:
-        "Data sensei berhasil disimpan (DEMO MODE)."
-    }),
-
-
-    senseiDelete: () => ({
-      success: true,
-      message:
-        "Data sensei berhasil dihapus (DEMO MODE)."
-    }),
-
-
-    /* -------------------------------------------------------
-     * CLASSES
-     * ------------------------------------------------------- */
-
-    classes: () => ({
-      success: true,
-      data: []
-    }),
-
-
-    classSave: () => ({
-      success: true,
-      message:
-        "Data kelas berhasil disimpan (DEMO MODE)."
-    }),
-
-
-    /* -------------------------------------------------------
-     * SCHEDULES
-     * ------------------------------------------------------- */
-
-    schedules: () => ({
-      success: true,
-      data: []
-    }),
-
-
-    scheduleSave: () => ({
-      success: true,
-      message:
-        "Jadwal berhasil disimpan (DEMO MODE)."
-    }),
-
-
-    /* -------------------------------------------------------
-     * ATTENDANCE
-     * ------------------------------------------------------- */
-
-    attendance: () => ({
-      success: true,
-      data: []
-    }),
-
-
-    attendanceSave: () => ({
-      success: true,
-      message:
-        "Absensi berhasil disimpan (DEMO MODE)."
-    }),
-
-
-    /* -------------------------------------------------------
-     * BILLING
-     * ------------------------------------------------------- */
-
-    billing: () => ({
-      success: true,
-      data: []
-    }),
-
-
-    billingSave: () => ({
-      success: true,
-      message:
-        "Tagihan berhasil disimpan (DEMO MODE)."
-    }),
-
-
-    /* -------------------------------------------------------
-     * PAYMENTS
-     * ------------------------------------------------------- */
-
-    payments: () => ({
-      success: true,
-      data: []
-    }),
-
-
-    paymentSave: () => ({
-      success: true,
-      message:
-        "Pembayaran berhasil disimpan (DEMO MODE)."
-    }),
-
-
-    /* -------------------------------------------------------
-     * SALARY
-     * ------------------------------------------------------- */
-
-    salary: () => ({
-      success: true,
-      data: []
-    }),
-
-
-    salarySave: () => ({
-      success: true,
-      message:
-        "Payroll berhasil disimpan (DEMO MODE)."
-    }),
-
-
-    /* -------------------------------------------------------
-     * SETTINGS
-     * ------------------------------------------------------- */
-
-    settings: () => ({
-      success: true,
-      data: []
-    }),
-
-
-    settingSave: () => ({
-      success: true,
-      message:
-        "Pengaturan berhasil disimpan (DEMO MODE)."
-    }),
-
-
-    /* -------------------------------------------------------
-     * REPORTS
-     * ------------------------------------------------------- */
-
-    reports: () => ({
-      success: true,
-      data: {}
-    }),
-
-
-    /* -------------------------------------------------------
-     * LOGOUT
-     * ------------------------------------------------------- */
-
-    logout: () => {
-
-      clearToken();
-
-      return {
-        success: true
-      };
-    }
-
-  };
-
-
-  /* =========================================================
-   * DEMO API PROXY
-   * ========================================================= */
-
-  const DemoAPI = new Proxy(
-    demo,
-    {
-      get: (target, property) => {
-
-        if (
-          typeof target[property] ===
-          "function"
-        ) {
-          return target[property];
-        }
-
-        return () => ({
-          success: true,
-          data: []
-        });
-      }
-    }
-  );
-
-
-  /* =========================================================
-   * PUBLIC API
-   * ========================================================= */
+    clearToken();
+    localStorage.removeItem(
+      "arima_session"
+    );
+  }
+
+  async function health() {
+    return call("health", {});
+  }
+
+  async function dashboard() {
+    return call("dashboard", {});
+  }
+
+  async function students(payload = {}) {
+    return call("students", payload);
+  }
+
+  async function sensei(payload = {}) {
+    return call("sensei", payload);
+  }
+
+  async function attendance(payload = {}) {
+    return call("attendance", payload);
+  }
+
+  async function billing(payload = {}) {
+    return call("billing", payload);
+  }
+
+  async function payments(payload = {}) {
+    return call("payments", payload);
+  }
+
+  async function salary(payload = {}) {
+    return call("salary", payload);
+  }
+
+  async function reports(payload = {}) {
+    return call("reports", payload);
+  }
+
+  async function studentSave(payload) {
+    return call("studentSave", payload);
+  }
+
+  async function studentDelete(payload) {
+    return call("studentDelete", payload);
+  }
+
+  async function senseiSave(payload) {
+    return call("senseiSave", payload);
+  }
+
+  async function senseiDelete(payload) {
+    return call("senseiDelete", payload);
+  }
+
+  async function attendanceSave(payload) {
+    return call("attendanceSave", payload);
+  }
+
+  async function billingSave(payload) {
+    return call("billingSave", payload);
+  }
+
+  async function paymentSave(payload) {
+    return call("paymentSave", payload);
+  }
+
+  async function salarySave(payload) {
+    return call("salarySave", payload);
+  }
 
   return {
 
-    /* ================= LOGIN ================= */
+    call,
 
-    login: async (userId, password) => {
+    login,
 
-      const result =
-        await call(
-          "login",
-          {
-            userId: userId,
-            password: password
-          }
-        );
+    logout,
 
-      if (
-        result &&
-        result.success &&
-        result.token
-      ) {
-        saveToken(result.token);
-      }
+    health,
 
-      return result;
-    },
+    dashboard,
 
+    students,
 
-    /* ================= DASHBOARD ================= */
+    sensei,
 
-    dashboard: () =>
-      call("dashboard"),
+    attendance,
 
+    billing,
 
-    /* ================= STUDENTS ================= */
+    payments,
 
-    students: () =>
-      call("students"),
+    salary,
 
-    studentSave: (payload) =>
-      call(
-        "studentSave",
-        payload
-      ),
+    reports,
 
-    studentDelete: (id) =>
-      call(
-        "studentDelete",
-        {
-          id: id
-        }
-      ),
+    studentSave,
 
+    studentDelete,
 
-    /* ================= SENSEI ================= */
+    senseiSave,
 
-    sensei: () =>
-      call("sensei"),
+    senseiDelete,
 
-    senseiSave: (payload) =>
-      call(
-        "senseiSave",
-        payload
-      ),
+    attendanceSave,
 
-    senseiDelete: (id) =>
-      call(
-        "senseiDelete",
-        {
-          id: id
-        }
-      ),
+    billingSave,
 
+    paymentSave,
 
-    /* ================= CLASSES ================= */
+    salarySave,
 
-    classes: () =>
-      call("classes"),
+    getToken,
 
-    classSave: (payload) =>
-      call(
-        "classSave",
-        payload
-      ),
+    saveToken,
 
-
-    /* ================= SCHEDULES ================= */
-
-    schedules: () =>
-      call("schedules"),
-
-    scheduleSave: (payload) =>
-      call(
-        "scheduleSave",
-        payload
-      ),
-
-
-    /* ================= ATTENDANCE ================= */
-
-    attendance: () =>
-      call("attendance"),
-
-    attendanceSave: (payload) =>
-      call(
-        "attendanceSave",
-        payload
-      ),
-
-
-    /* ================= BILLING ================= */
-
-    billing: () =>
-      call("billing"),
-
-    billingSave: (payload) =>
-      call(
-        "billingSave",
-        payload
-      ),
-
-
-    /* ================= PAYMENTS ================= */
-
-    payments: () =>
-      call("payments"),
-
-    paymentSave: (payload) =>
-      call(
-        "paymentSave",
-        payload
-      ),
-
-
-    /* ================= SALARY ================= */
-
-    salary: () =>
-      call("salary"),
-
-    salarySave: (payload) =>
-      call(
-        "salarySave",
-        payload
-      ),
-
-
-    /* ================= SETTINGS ================= */
-
-    settings: () =>
-      call("settings"),
-
-    settingSave: (payload) =>
-      call(
-        "settingSave",
-        payload
-      ),
-
-
-    /* ================= REPORTS ================= */
-
-    reports: () =>
-      call("reports"),
-
-
-    /* ================= LOGOUT ================= */
-
-    logout: async () => {
-
-      const token =
-        getToken();
-
-      try {
-
-        const apiUrl =
-          window.ARIMA_CONFIG &&
-          window.ARIMA_CONFIG.API_URL
-            ? window.ARIMA_CONFIG.API_URL
-            : "";
-
-        const demoMode =
-          window.ARIMA_CONFIG &&
-          window.ARIMA_CONFIG.DEMO_MODE === true;
-
-
-        if (
-          apiUrl &&
-          !demoMode
-        ) {
-
-          await fetch(
-            apiUrl,
-            {
-              method: "POST",
-
-              headers: {
-                "Content-Type":
-                  "text/plain;charset=utf-8"
-              },
-
-              body: JSON.stringify({
-                action: "logout",
-                payload: {},
-                token: token
-              })
-            }
-          );
-
-        }
-
-      } catch (error) {
-
-        console.warn(
-          "Logout API warning:",
-          error
-        );
-
-      }
-
-      clearToken();
-
-      return {
-        success: true
-      };
-    },
-
-
-    /* ================= RAW CALL ================= */
-
-    call
+    clearToken
 
   };
 
