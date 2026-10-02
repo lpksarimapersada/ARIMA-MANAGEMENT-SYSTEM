@@ -15,23 +15,27 @@ window.API = (() => {
     sensei: "senseiDelete"
   };
 
+  function tokenStorageKey() {
+    return String(window.ARIMA_TOKEN_KEY || "ARIMA_TOKEN");
+  }
+
   function getToken() {
     return (
-      localStorage.getItem("ARIMA_TOKEN") ||
-      sessionStorage.getItem("ARIMA_TOKEN") ||
+      localStorage.getItem(tokenStorageKey()) ||
+      sessionStorage.getItem(tokenStorageKey()) ||
       ""
     );
   }
 
   function saveToken(token) {
     if (token) {
-      localStorage.setItem("ARIMA_TOKEN", token);
+      localStorage.setItem(tokenStorageKey(), token);
     }
   }
 
   function clearToken() {
-    localStorage.removeItem("ARIMA_TOKEN");
-    sessionStorage.removeItem("ARIMA_TOKEN");
+    localStorage.removeItem(tokenStorageKey());
+    sessionStorage.removeItem(tokenStorageKey());
   }
 
   async function call(action, payload = {}) {
@@ -157,6 +161,14 @@ window.API = (() => {
     return call("attendance", payload);
   }
 
+  async function attendanceProfile() {
+    return call("attendanceProfile", {});
+  }
+
+  async function selfAttendance(payload) {
+    return call("selfAttendance", payload);
+  }
+
   async function billing(payload = {}) {
     return call("billing", payload);
   }
@@ -262,6 +274,10 @@ window.API = (() => {
     sensei,
 
     attendance,
+
+    attendanceProfile,
+
+    selfAttendance,
 
     billing,
 

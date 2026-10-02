@@ -43,11 +43,23 @@ function route_(action, p, token) {
     case 'students':
       return listSheet_('STUDENTS');
     case 'assignStudentIds':
+      const assignStudentIdsAccessError = accountAccessError_(token);
+      if (assignStudentIdsAccessError) return assignStudentIdsAccessError;
       return assignMissingStudentIds_();
     case 'sensei':
       return senseiList_(token);
     case 'attendance':
+      const attendanceAccessError = accountAccessError_(token);
+      if (attendanceAccessError) return attendanceAccessError;
       return listSheet_('ATTENDANCE');
+    case 'attendanceProfile':
+      const attendanceProfileAccessError = attendanceRoleError_(token);
+      if (attendanceProfileAccessError) return attendanceProfileAccessError;
+      return attendanceProfile_(token);
+    case 'selfAttendance':
+      const selfAttendanceAccessError = attendanceRoleError_(token);
+      if (selfAttendanceAccessError) return selfAttendanceAccessError;
+      return saveOwnAttendance_(p, token);
     case 'billing':
       const billingAccessError = accountAccessError_(token);
       if (billingAccessError) return billingAccessError;
@@ -89,6 +101,8 @@ function route_(action, p, token) {
     case 'senseiDelete':
       return deleteSheetRecord_('SENSEI', 'ID_SENSEI', p);
     case 'attendanceSave':
+      const attendanceSaveAccessError = accountAccessError_(token);
+      if (attendanceSaveAccessError) return attendanceSaveAccessError;
       return saveSheetRecord_('ATTENDANCE', 'ATTENDANCE_ID', p);
     case 'billingSave':
       const billingSaveAccessError = accountAccessError_(token);
@@ -164,6 +178,16 @@ function accountAccessError_(token) {
   return null;
 }
 
+function attendanceRoleError_(token) {
+  const user = tokenUser_(token);
+  if (!user) return { success: false, code: 'AUTH_REQUIRED', message: 'Silakan login kembali ke aplikasi absensi.' };
+  const role = String(user.role || '').trim().toUpperCase();
+  if (role !== 'SISWA' && role !== 'SENSEI') {
+    return { success: false, code: 'FORBIDDEN', message: 'Aplikasi absensi ini hanya untuk siswa dan sensei.' };
+  }
+  return null;
+}
+
 function accountSheetMeta_() {
   const workbook = ss_();
   let sheet = workbook.getSheetByName('USERS');
@@ -225,7 +249,144 @@ function linkedAccountPerson_(role, userId) {
     return String(item[idIndex] || '').trim().toUpperCase() === String(userId || '').trim().toUpperCase();
   });
   if (!row) return { success: false, message: 'ID tersebut belum terdaftar pada data ' + (role === 'SISWA' ? 'siswa.' : 'sensei.') };
-  return { success: true, person: { id: row[idIndex], name: nameIndex < 0 ? String(userId) : String(row[nameIndex] || userId) } };
+  const phoneIndex = findColumnIndex_(headers, ['NO_WA', 'NO_HP', 'PHONE']);
+  return {
+    success: true,
+    person: {
+      id: row[idIndex],
+      name: nameIndex < 0 ? String(userId) : String(row[nameIndex] || userId),
+      phone: phoneIndex < 0 ? '' : String(row[phoneIndex] || '')
+    }
+  };
+}
+
+function attendanceProfile_(token) {
+  const user = tokenUser_(token);
+  const role = String(user.role || '').trim().toUpperCase();
+  const linked = linkedAccountPerson_(role, user.id);
+  if (!linked.success) return linked;
+  const actorType = role === 'SISWA' ? 'STUDENT' : 'SENSEI';
+  const todayAttendance = attendanceForToday_(String(linked.person.id), actorType);
+  return {
+    success: true,
+    data: {
+      id: String(linked.person.id),
+      name: linked.person.name,
+      phone: linked.person.phone,
+      role: actorType,
+      todayAttendance: todayAttendance
+    }
+  };
+}
+
+function attendanceForToday_(actorId, actorType) {
+  const sheet = ss_().getSheetByName('ATTENDANCE');
+  if (!sheet) return null;
+  const values = sheet.getDataRange().getValues();
+  if (values.length < 2) return null;
+
+  const headers = values[0].map(String);
+  const idIndex = findColumnIndex_(headers, ['ACTOR_ID']);
+  const typeIndex = findColumnIndex_(headers, ['ACTOR_TYPE']);
+  const dateIndex = findColumnIndex_(headers, ['TANGGAL']);
+  if ([idIndex, typeIndex, dateIndex].some(function (index) { return index < 0; })) return null;
+  const today = Utilities.formatDate(new Date(), ARIMA.TIMEZONE, 'yyyy-MM-dd');
+  const rowIndex = values.slice(1).findIndex(function (row) {
+    return String(row[idIndex] || '').trim() === actorId &&
+      String(row[typeIndex] || '').trim().toUpperCase() === actorType &&
+      attendanceDateKey_(row[dateIndex]) === today;
+  });
+  if (rowIndex < 0) return null;
+
+  const row = values[rowIndex + 1];
+  const get = function (field) {
+    const index = findColumnIndex_(headers, [field]);
+    return index < 0 ? '' : row[index];
+  };
+  return {
+    ATTENDANCE_ID: get('ATTENDANCE_ID'),
+    JAM_MASUK: get('JAM_MASUK'),
+    JAM_KELUAR: get('JAM_KELUAR'),
+    STATUS: get('STATUS'),
+    CATATAN: get('CATATAN')
+  };
+}
+
+function attendanceDateKey_(value) {
+  if (value instanceof Date) return Utilities.formatDate(value, ARIMA.TIMEZONE, 'yyyy-MM-dd');
+  return String(value || '').trim().slice(0, 10);
+}
+
+function saveOwnAttendance_(payload, token) {
+  const user = tokenUser_(token);
+  const actorId = String(user.id || '').trim();
+  const accountRole = String(user.role || '').trim().toUpperCase();
+  const linked = linkedAccountPerson_(accountRole, actorId);
+  if (!linked.success) return linked;
+  const actorType = accountRole === 'SISWA' ? 'STUDENT' : 'SENSEI';
+  const record = payload && typeof payload === 'object' ? payload : {};
+  const status = String(record.STATUS || '').trim().toUpperCase();
+  const allowedStatuses = ['HADIR', 'IZIN', 'SAKIT', 'ALPA', 'TERLAMBAT'];
+  if (allowedStatuses.indexOf(status) < 0) return { success: false, message: 'Status absensi tidak valid.' };
+
+  const today = Utilities.formatDate(new Date(), ARIMA.TIMEZONE, 'yyyy-MM-dd');
+  const start = String(record.JAM_MASUK || '').trim();
+  const end = String(record.JAM_KELUAR || '').trim();
+  if ((start && clockMinutes_(start) === null) || (end && clockMinutes_(end) === null)) {
+    return { success: false, message: 'Format jam absensi tidak valid.' };
+  }
+  if (actorType === 'SENSEI' && (status === 'HADIR' || status === 'TERLAMBAT') && (!start || !end)) {
+    return { success: false, message: 'Sensei wajib mengisi jam mengajar mulai dan selesai.' };
+  }
+
+  const sheet = ss_().getSheetByName('ATTENDANCE');
+  if (!sheet) return { success: false, message: 'Sheet ATTENDANCE tidak ditemukan.' };
+  const values = sheet.getDataRange().getValues();
+  const headers = values[0].map(String);
+  const idIndex = findColumnIndex_(headers, ['ACTOR_ID']);
+  const typeIndex = findColumnIndex_(headers, ['ACTOR_TYPE']);
+  const dateIndex = findColumnIndex_(headers, ['TANGGAL']);
+  const keyIndex = findColumnIndex_(headers, ['ATTENDANCE_ID']);
+  const startIndex = findColumnIndex_(headers, ['JAM_MASUK']);
+  const endIndex = findColumnIndex_(headers, ['JAM_KELUAR']);
+  if ([idIndex, typeIndex, dateIndex, keyIndex, startIndex, endIndex].some(function (index) { return index < 0; })) {
+    return { success: false, message: 'Kolom sheet ATTENDANCE belum lengkap.' };
+  }
+
+  let existing = null;
+  for (let index = 1; index < values.length; index += 1) {
+    const row = values[index];
+    if (String(row[idIndex] || '').trim() === actorId &&
+        String(row[typeIndex] || '').trim().toUpperCase() === actorType &&
+        attendanceDateKey_(row[dateIndex]) === today) {
+      existing = { row: row, rowNumber: index + 1 };
+      break;
+    }
+  }
+
+  const attendance = {
+    ACTOR_ID: actorId,
+    ACTOR_TYPE: actorType,
+    SESSION_ID: '',
+    CLASS_ID: '',
+    TANGGAL: today,
+    JAM_MASUK: existing ? String(existing.row[startIndex] || start) : start,
+    JAM_KELUAR: end || (existing ? String(existing.row[endIndex] || '') : ''),
+    STATUS: status,
+    CATATAN: String(record.CATATAN || '')
+  };
+
+  if (existing) {
+    attendance.ATTENDANCE_ID = existing.row[keyIndex];
+    attendance.__ROW_NUMBER = existing.rowNumber;
+    attendance.__MODE = 'update';
+  } else {
+    attendance.__MODE = 'create';
+  }
+
+  const result = saveSheetRecord_('ATTENDANCE', 'ATTENDANCE_ID', attendance);
+  if (!result.success) return result;
+  return { success: true, message: existing ? 'Absensi hari ini berhasil diperbarui.' : 'Absensi berhasil tercatat.', data: result.data };
 }
 
 function accountRowById_(meta, userId) {
