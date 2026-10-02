@@ -33,3 +33,32 @@
 .attendance-id-warning .btn{flex:none;background:#fff;color:#8b1318}
 .attendance-history h2,.attendance-form-card h2{margin:0;font-size:18px}
 @media(max-width:760px){.attendance-id-warning{align-items:stretch;flex-direction:column}.form-group-wide,.attendance-person,.form-actions{grid-column:auto}.form-actions .btn{width:100%}}
+.modal-overlay{position:fixed;inset:0;z-index:30;display:grid;place-items:center;padding:20px;background:rgba(16,16,18,.58);overflow-y:auto}
+.form-modal-shell{position:relative;width:min(760px,100%);max-height:min(90vh,900px);padding:0;border:1px solid #e2e2e5;border-radius:12px;box-shadow:0 24px 70px rgba(0,0,0,.24);overflow:auto}
+.form-modal-header{position:sticky;top:0;z-index:2;display:flex;align-items:center;gap:14px;padding:21px 26px;background:#fff;border-bottom:1px solid #ececef}
+.form-modal-mark{display:grid;place-items:center;flex:0 0 44px;width:44px;height:44px;border-radius:10px;background:#fcebed;color:var(--accent);font-size:18px;font-weight:800}
+.form-modal-heading{min-width:0}
+.form-modal-kicker{font-size:10px;font-weight:700;color:var(--accent)}
+.form-modal-heading h2{margin:3px 0 2px;font-size:21px}
+.form-modal-heading p{margin:0;color:#777;font-size:13px;line-height:1.4}
+.modal-close{margin-left:auto;width:34px;height:34px;border:1px solid #e5e5e8;border-radius:7px;background:#fff;color:#555;font-size:21px;cursor:pointer}
+.form-modal-fields{padding:22px 26px 25px;gap:17px}
+.form-modal-fields .form-group{display:grid;gap:7px;min-width:0}
+.form-modal-fields .form-group label{font-size:12px;font-weight:700;color:#404046}
+.form-modal-fields .form-group label span{color:var(--accent)}
+.form-modal-fields input,.form-modal-fields select,.form-modal-fields textarea{width:100%;min-height:42px;padding:10px 12px;border:1px solid #d8d8dd;border-radius:7px;background:#fff;color:#171717;outline:none}
+.form-modal-fields textarea{min-height:76px;resize:vertical}
+.form-modal-fields input:focus,.form-modal-fields select:focus,.form-modal-fields textarea:focus{border-color:#c51d25;box-shadow:0 0 0 3px rgba(215,25,32,.1)}
+.form-modal-footer{grid-column:1/-1;display:flex;justify-content:flex-end;gap:9px;padding-top:5px;border-top:1px solid #ededf0}
+.form-modal-footer .btn{min-width:96px}
+.payroll-sensei-field{grid-column:1/-1}
+.payroll-sensei-preview{display:grid;gap:8px;padding:13px 15px;border:1px solid #e4e4e7;border-radius:8px;background:#f8f8f9;color:#555;font-size:13px}
+.payroll-profile-line{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.payroll-profile-line strong{color:#171717;font-size:15px}
+.payroll-profile-line span{color:#777;font-size:12px}
+.payroll-rate-line{color:#555}
+.payroll-preview-stats{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding-top:8px;border-top:1px solid #e5e5e8}
+.payroll-preview-stats span{padding:5px 8px;border-radius:5px;background:#ececef;color:#555;font-size:12px}
+.payroll-preview-stats strong{margin-left:auto;color:#171717;font-size:15px}
+.payroll-preview-warning{color:#8b1318;font-size:12px;line-height:1.5}
+@media(max-width:600px){.modal-overlay{align-items:end;padding:0}.form-modal-shell{width:100%;max-height:94vh;border-radius:12px 12px 0 0}.form-modal-header{padding:17px 18px}.form-modal-fields{grid-template-columns:1fr;padding:18px;gap:14px}.form-modal-footer{grid-column:1}.payroll-sensei-field{grid-column:1}.payroll-preview-stats strong{margin-left:0;width:100%}}

@@ -56,6 +56,10 @@ function route_(action, p, token) {
       const salaryAccessError = salaryAccessError_(token);
       if (salaryAccessError) return salaryAccessError;
       return listSheet_('SALARY');
+    case 'salaryPreview':
+      const salaryPreviewAccessError = salaryAccessError_(token);
+      if (salaryPreviewAccessError) return salaryPreviewAccessError;
+      return calculateSalaryRecord_(p || {});
     case 'studentSave':
       return saveSheetRecord_('STUDENTS', 'ID_SISWA', p);
     case 'studentDelete':

@@ -169,6 +169,10 @@ window.API = (() => {
     return call("salary", payload);
   }
 
+  async function salaryPreview(payload = {}) {
+    return call("salaryPreview", payload);
+  }
+
   async function reports(payload = {}) {
     return call("reports", payload);
   }
@@ -248,6 +252,8 @@ window.API = (() => {
     payments,
 
     salary,
+
+    salaryPreview,
 
     reports,
 

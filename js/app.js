@@ -26,6 +26,7 @@ window.App = (() => {
     students: {
       title: "Tambah Siswa",
       editTitle: "Edit Siswa",
+      description: "Lengkapi identitas, kontak keluarga, dan program belajar siswa.",
       idField: "ID_SISWA",
 
       fields: [
@@ -129,6 +130,8 @@ window.App = (() => {
       title: "Tambah Sensei",
 
       editTitle: "Edit Sensei",
+
+      description: "Simpan profil pengajar dan tarif per JP untuk perhitungan payroll.",
 
       idField: "ID_SENSEI",
 
@@ -462,18 +465,11 @@ window.App = (() => {
 
       editTitle: "Edit Payroll",
 
+      description: "Pilih sensei dan periode untuk melihat ringkasan gaji dari absensi.",
+
       idField: "SALARY_ID",
 
       fields: [
-
-        {
-          key: "SALARY_ID",
-          label: "ID Payroll",
-          type: "text",
-          required: false,
-          placeholder: "Kosongkan untuk ID otomatis"
-        },
-
         {
           key: "ID_SENSEI",
           label: "ID Sensei",
@@ -2795,11 +2791,18 @@ window.App = (() => {
 
     try {
 
-      const response =
-        await API.salary();
-
-      const rows =
-        response?.data || [];
+      const [salaryResponse, senseiResponse] = await Promise.all([
+        API.salary(),
+        API.sensei()
+      ]);
+      const senseiRows = Array.isArray(senseiResponse?.data)
+        ? senseiResponse.data.filter(row => String(row.ID_SENSEI || "").trim())
+        : [];
+      const rows = (Array.isArray(salaryResponse?.data) ? salaryResponse.data : [])
+        .map(row => ({
+          ...row,
+          SENSEI_NAME: senseiRows.find(sensei => String(sensei.ID_SENSEI) === String(row.ID_SENSEI))?.NAMA || "Sensei tidak ditemukan"
+        }));
 
 
       el.innerHTML = `
@@ -2835,6 +2838,11 @@ window.App = (() => {
               {
                 key: "ID_SENSEI",
                 label: "ID Sensei"
+              },
+
+              {
+                key: "SENSEI_NAME",
+                label: "Nama Sensei"
               },
 
               {
@@ -2919,7 +2927,9 @@ window.App = (() => {
           () => {
 
             openFormModal(
-              "salary"
+              "salary",
+              null,
+              { senseiRows }
             );
 
           }
@@ -2953,7 +2963,8 @@ window.App = (() => {
 
                 openFormModal(
                   "salary",
-                  row
+                  row,
+                  { senseiRows }
                 );
 
               }
@@ -3187,7 +3198,8 @@ window.App = (() => {
 
   function openFormModal(
     type,
-    existing = null
+    existing = null,
+    options = {}
   ) {
 
     const config =
@@ -3202,6 +3214,11 @@ window.App = (() => {
 
       return;
 
+    }
+
+    if (type === "salary" && !isAdminUser()) {
+      showToast("Payroll hanya dapat dikelola oleh admin.", "error");
+      return;
     }
 
 
@@ -3227,13 +3244,37 @@ window.App = (() => {
       formFields.map(
         field => {
 
-          const rawValue = existing?.[field.key] ?? "";
+          const currentMonth = new Date().toISOString().slice(0, 7);
+          const defaultValue = type === "salary" && field.key === "PERIOD"
+            ? currentMonth
+            : type === "salary" && field.key === "PAYMENT_STATUS"
+              ? "PENDING"
+              : "";
+          const rawValue = existing?.[field.key] ?? defaultValue;
           const value = field.type === "date"
             ? String(rawValue || "").slice(0, 10)
             : field.type === "month"
               ? String(rawValue || "").slice(0, 7)
               : rawValue;
 
+
+          if (type === "salary" && field.key === "ID_SENSEI") {
+            const senseiRows = Array.isArray(options.senseiRows) ? options.senseiRows : [];
+            return `
+              <div class="form-group form-group-wide payroll-sensei-field">
+                <label for="payroll-sensei-id">Sensei</label>
+                <select id="payroll-sensei-id" name="ID_SENSEI" required>
+                  <option value="">Pilih ID Sensei...</option>
+                  ${senseiRows.map(row => `
+                    <option value="${esc(row.ID_SENSEI)}" ${String(value) === String(row.ID_SENSEI) ? "selected" : ""}>
+                      ${esc(row.ID_SENSEI)} · ${esc(row.NAMA || "Tanpa nama")}
+                    </option>
+                  `).join("")}
+                </select>
+                <div class="payroll-sensei-preview muted" id="payroll-sensei-preview">Pilih sensei untuk melihat tarif dan ringkasan payroll.</div>
+              </div>
+            `;
+          }
 
           if (
             field.type ===
@@ -3408,20 +3449,26 @@ window.App = (() => {
       "arima-form-modal";
 
     modal.className =
-      "modal-overlay";
+      `modal-overlay form-modal ${type}-form-modal`;
 
 
     modal.innerHTML = `
 
       <div
-        class="modal"
+        class="modal form-modal-shell"
         role="dialog"
         aria-modal="true"
       >
 
-        <div class="modal-header">
+        <div class="form-modal-header">
 
-          <div>
+          <div class="form-modal-mark" aria-hidden="true">
+            ${type === "students" ? "S" : type === "sensei" ? "T" : "A"}
+          </div>
+
+          <div class="form-modal-heading">
+
+            <span class="form-modal-kicker">ARIMA MANAGEMENT SYSTEM</span>
 
             <h2>
               ${esc(
@@ -3430,6 +3477,8 @@ window.App = (() => {
                   : config.title
               )}
             </h2>
+
+            <p>${esc(config.description || "Lengkapi data yang diperlukan.")}</p>
 
           </div>
 
@@ -3447,13 +3496,13 @@ window.App = (() => {
 
         <form
           id="arima-form"
-          class="form-grid"
+          class="form-grid form-modal-fields"
         >
 
           ${fields}
 
 
-          <div class="modal-footer">
+          <div class="modal-footer form-modal-footer">
 
             <button
               type="button"
@@ -3537,6 +3586,74 @@ window.App = (() => {
         "#arima-form",
         modal
       );
+
+    if (type === "salary") {
+      const senseiSelect = qs("#payroll-sensei-id", modal);
+      const periodInput = form?.elements.PERIOD;
+      const bonusInput = form?.elements.BONUS;
+      const deductionInput = form?.elements.DEDUCTION;
+      const preview = qs("#payroll-sensei-preview", modal);
+      let previewRequest = 0;
+
+      const refreshPayrollPreview = async () => {
+        const requestId = ++previewRequest;
+        const selectedSensei = (options.senseiRows || []).find(
+          row => String(row.ID_SENSEI) === String(senseiSelect?.value || "")
+        );
+
+        if (!selectedSensei) {
+          preview.innerHTML = "Pilih sensei untuk melihat tarif dan ringkasan payroll.";
+          return;
+        }
+
+        const profile = `
+          <div class="payroll-profile-line">
+            <strong>${esc(selectedSensei.NAMA || "Tanpa nama")}</strong>
+            <span>${esc(selectedSensei.ID_SENSEI)}</span>
+          </div>
+          <div class="payroll-rate-line">Tarif: ${formatRupiah(selectedSensei.TARIF_PER_JAM || 0)} / JP</div>
+        `;
+
+        if (!periodInput?.value) {
+          preview.innerHTML = profile + `<div class="muted">Pilih periode untuk menghitung payroll.</div>`;
+          return;
+        }
+
+        preview.innerHTML = profile + `<div class="muted">Menghitung dari absensi...</div>`;
+        try {
+          const response = await API.salaryPreview({
+            ID_SENSEI: senseiSelect.value,
+            PERIOD: periodInput.value,
+            BONUS: bonusInput?.value || "0",
+            DEDUCTION: deductionInput?.value || "0"
+          });
+          if (requestId !== previewRequest) return;
+          if (!response?.success) {
+            preview.innerHTML = profile + `<div class="payroll-preview-warning">${esc(response?.message || "Payroll belum dapat dihitung.")}</div>`;
+            return;
+          }
+
+          const summary = response.data || {};
+          preview.innerHTML = profile + `
+            <div class="payroll-preview-stats">
+              <span>${formatNumber(summary.MEETING_COUNT)} pertemuan</span>
+              <span>${formatNumber(summary.HOUR_COUNT)} JP</span>
+              <strong>${formatRupiah(summary.NET_SALARY)} estimasi bersih</strong>
+            </div>
+          `;
+        } catch (error) {
+          if (requestId === previewRequest) {
+            preview.innerHTML = profile + `<div class="payroll-preview-warning">${esc(error.message || "Gagal memuat ringkasan payroll.")}</div>`;
+          }
+        }
+      };
+
+      senseiSelect?.addEventListener("change", refreshPayrollPreview);
+      periodInput?.addEventListener("change", refreshPayrollPreview);
+      bonusInput?.addEventListener("input", refreshPayrollPreview);
+      deductionInput?.addEventListener("input", refreshPayrollPreview);
+      refreshPayrollPreview();
+    }
 
 
     form?.addEventListener(
