@@ -42,6 +42,8 @@ function route_(action, p) {
       return dashboard_();
     case 'students':
       return listSheet_('STUDENTS');
+    case 'assignStudentIds':
+      return assignMissingStudentIds_();
     case 'sensei':
       return listSheet_('SENSEI');
     case 'attendance':
@@ -404,6 +406,40 @@ function requiredFields_(sheetName) {
     SALARY: ['ID_SENSEI', 'PERIOD', 'PAYMENT_STATUS']
   };
   return fields[sheetName] || [];
+}
+
+function assignMissingStudentIds_() {
+  const sh = ss_().getSheetByName('STUDENTS');
+  if (!sh) return { success: false, message: 'Sheet not found: STUDENTS' };
+
+  const values = sh.getDataRange().getValues();
+  if (!values.length) return { success: false, message: 'Header sheet STUDENTS belum tersedia.' };
+
+  const headers = values[0].map(function (header) { return String(header || '').trim(); });
+  const idIndex = findColumnIndex_(headers, ['ID_SISWA']);
+  if (idIndex < 0) return { success: false, message: 'Kolom ID_SISWA tidak ditemukan.' };
+
+  let assigned = 0;
+  for (let i = 1; i < values.length; i += 1) {
+    const row = values[i];
+    if (!row.some(function (cell) { return String(cell || '').trim() !== ''; })) continue;
+    if (String(row[idIndex] || '').trim()) continue;
+
+    row[idIndex] = nextRecordId_('STUDENTS', values, idIndex);
+    assigned += 1;
+  }
+
+  if (values.length > 1 && assigned) {
+    sh.getRange(2, idIndex + 1, values.length - 1, 1).setValues(
+      values.slice(1).map(function (row) { return [row[idIndex]]; })
+    );
+  }
+
+  return {
+    success: true,
+    message: assigned ? assigned + ' ID siswa berhasil dibuat.' : 'Semua siswa sudah memiliki ID.',
+    data: { assigned: assigned }
+  };
 }
 
 function nextRecordId_(sheetName, values, keyIndex) {

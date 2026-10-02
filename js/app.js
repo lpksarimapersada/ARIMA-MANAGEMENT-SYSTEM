@@ -1372,23 +1372,11 @@ window.App = (() => {
 
     try {
 
-      const [response, studentsResponse, senseiResponse] =
-        await Promise.all([
-          API.dashboard(),
-          API.students(),
-          API.sensei()
-        ]);
+      const response =
+        await API.dashboard();
 
       const data =
         response?.data || {};
-      const students =
-        Array.isArray(studentsResponse?.data)
-          ? studentsResponse.data
-          : [];
-      const sensei =
-        Array.isArray(senseiResponse?.data)
-          ? senseiResponse.data
-          : [];
 
 
       el.innerHTML = `
@@ -1469,59 +1457,6 @@ window.App = (() => {
                 data.pendingBilling
               )}
             </div>
-
-          </div>
-
-        </div>
-
-
-        <div class="section">
-
-          <div class="card">
-
-            <h2>Data Siswa (${formatNumber(students.length)})</h2>
-
-            ${renderTable(
-              students,
-              [
-                { key: "ID_SISWA", label: "ID" },
-                { key: "NAMA", label: "Nama" },
-                { key: "NIK", label: "NIK" },
-                { key: "NO_WA", label: "WhatsApp" },
-                { key: "PROGRAM", label: "Program" },
-                { key: "ASRAMA", label: "Asrama" },
-                { key: "STATUS", label: "Status" }
-              ],
-              { emptyText: "Belum ada data siswa." }
-            )}
-
-          </div>
-
-        </div>
-
-
-        <div class="section">
-
-          <div class="card">
-
-            <h2>Data Sensei (${formatNumber(sensei.length)})</h2>
-
-            ${renderTable(
-              sensei,
-              [
-                { key: "ID_SENSEI", label: "ID" },
-                { key: "NAMA", label: "Nama" },
-                { key: "NO_WA", label: "WhatsApp" },
-                { key: "EMAIL", label: "Email" },
-                {
-                  key: "TARIF_PER_PERTEMUAN",
-                  label: "Tarif / Pertemuan",
-                  render: value => formatRupiah(value)
-                },
-                { key: "STATUS", label: "Status" }
-              ],
-              { emptyText: "Belum ada data sensei." }
-            )}
 
           </div>
 
@@ -2270,151 +2205,264 @@ window.App = (() => {
 
     try {
 
-      const response =
-        await API.attendance();
+      const [attendanceResponse, studentsResponse, senseiResponse] =
+        await Promise.all([
+          API.attendance(),
+          API.students(),
+          API.sensei()
+        ]);
 
-      const rows =
-        response?.data || [];
+      const rows = Array.isArray(attendanceResponse?.data)
+        ? attendanceResponse.data
+        : [];
+      const students = Array.isArray(studentsResponse?.data)
+        ? studentsResponse.data
+        : [];
+      const sensei = Array.isArray(senseiResponse?.data)
+        ? senseiResponse.data
+        : [];
+      const studentsWithoutIds = students.filter(row => !String(row.ID_SISWA || '').trim()).length;
+      const now = new Date();
+      const today = [
+        now.getFullYear(),
+        String(now.getMonth() + 1).padStart(2, '0'),
+        String(now.getDate()).padStart(2, '0')
+      ].join('-');
+      let editingRecord = null;
 
+      const findActor = (type, id) => {
+        const records = type === 'STUDENT' ? students : sensei;
+        const key = type === 'STUDENT' ? 'ID_SISWA' : 'ID_SENSEI';
+        return records.find(row => String(row[key] || '') === String(id || '')) || null;
+      };
+
+      const actorName = row => findActor(row.ACTOR_TYPE, row.ACTOR_ID)?.NAMA || 'ID tidak ditemukan';
 
       el.innerHTML = `
-
         ${pageHeader(
           "Absensi",
-          "Kelola data kehadiran siswa dan sensei.",
-          "Catat Absensi",
-          "btn-add-attendance"
+          "Pilih ID siswa atau sensei untuk mencatat kehadiran."
         )}
 
+        ${studentsWithoutIds ? `
+          <div class="alert error attendance-id-warning">
+            <span>${formatNumber(studentsWithoutIds)} siswa belum memiliki ID. Buat ID agar data siswa dapat dipilih saat absensi.</span>
+            <button type="button" class="btn btn-small" id="btn-assign-student-ids">Buat ID Siswa</button>
+          </div>
+        ` : ""}
 
-        <div class="card">
+        <section class="card attendance-form-card">
+          <div class="section-head">
+            <h2 id="attendance-form-title">Catat Kehadiran</h2>
+            <button type="button" class="btn btn-light hidden" id="attendance-cancel-edit">Batal Edit</button>
+          </div>
 
-          ${renderTable(
-            rows,
-            [
+          <form id="attendance-form" class="form-grid">
+            <div class="form-group">
+              <label for="attendance-actor-type">Jenis peserta</label>
+              <select id="attendance-actor-type" name="ACTOR_TYPE" required>
+                <option value="STUDENT">Siswa</option>
+                <option value="SENSEI">Sensei</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="attendance-actor-id">ID / Nama</label>
+              <select id="attendance-actor-id" name="ACTOR_ID" required></select>
+            </div>
+
+            <div class="attendance-person" id="attendance-person" aria-live="polite">
+              <span class="muted">Pilih peserta untuk melihat datanya.</span>
+            </div>
+
+            <div class="form-group">
+              <label for="attendance-date">Tanggal</label>
+              <input type="date" id="attendance-date" name="TANGGAL" value="${today}" required>
+            </div>
+
+            <div class="form-group">
+              <label for="attendance-status">Status</label>
+              <select id="attendance-status" name="STATUS" required>
+                ${["HADIR", "IZIN", "SAKIT", "ALPA", "TERLAMBAT"].map(status => `
+                  <option value="${status}" ${status === "HADIR" ? "selected" : ""}>${status}</option>
+                `).join("")}
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="attendance-check-in">Jam Masuk</label>
+              <input type="time" id="attendance-check-in" name="JAM_MASUK">
+            </div>
+
+            <div class="form-group">
+              <label for="attendance-check-out">Jam Keluar</label>
+              <input type="time" id="attendance-check-out" name="JAM_KELUAR">
+            </div>
+
+            <div class="form-group">
+              <label for="attendance-session">ID Sesi (opsional)</label>
+              <input type="text" id="attendance-session" name="SESSION_ID">
+            </div>
+
+            <div class="form-group form-group-wide">
+              <label for="attendance-notes">Catatan (opsional)</label>
+              <textarea id="attendance-notes" name="CATATAN" rows="2"></textarea>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary" id="attendance-submit">Simpan Absensi</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="section attendance-history">
+          <div class="section-head"><h2>Riwayat Absensi</h2></div>
+          <div class="card">
+            ${renderTable(
+              rows,
+              [
+                { key: "TANGGAL", label: "Tanggal", render: value => esc(String(value || "").slice(0, 10)) },
+                { key: "ACTOR_TYPE", label: "Jenis", render: value => value === "STUDENT" ? "Siswa" : "Sensei" },
+                { key: "ACTOR_ID", label: "ID" },
+                { key: "NAMA", label: "Nama", render: (value, row) => esc(actorName(row)) },
+                { key: "JAM_MASUK", label: "Masuk" },
+                { key: "JAM_KELUAR", label: "Keluar" },
+                { key: "STATUS", label: "Status" }
+              ],
               {
-                key: "ATTENDANCE_ID",
-                label: "ID"
-              },
-
-              {
-                key: "ACTOR_ID",
-                label: "ID Aktor"
-              },
-
-              {
-                key: "ACTOR_TYPE",
-                label: "Tipe"
-              },
-
-              {
-                key: "SESSION_ID",
-                label: "Session"
-              },
-
-              {
-                key: "TANGGAL",
-                label: "Tanggal"
-              },
-
-              {
-                key: "JAM_MASUK",
-                label: "Masuk"
-              },
-
-              {
-                key: "JAM_KELUAR",
-                label: "Keluar"
-              },
-
-              {
-                key: "STATUS",
-                label: "Status"
-              },
-
-              {
-                key: "CATATAN",
-                label: "Catatan"
+                emptyText: "Belum ada catatan absensi.",
+                actions: row => `
+                  <button type="button" class="btn btn-small" data-edit-attendance="${esc(row.ATTENDANCE_ID || "")}" data-row-number="${esc(row.__ROW_NUMBER || "")}">Edit</button>
+                `
               }
-            ],
-            {
-              actions: row => `
-
-                <button
-                  type="button"
-                  class="btn btn-small"
-                  data-edit-attendance="${esc(
-                    row.ATTENDANCE_ID
-                  )}"
-                >
-                  Edit
-                </button>
-
-              `
-            }
-          )}
-
-        </div>
-
+            )}
+          </div>
+        </section>
       `;
 
+      const form = qs("#attendance-form", el);
+      const actorType = qs("#attendance-actor-type", el);
+      const actorSelect = qs("#attendance-actor-id", el);
+      const personCard = qs("#attendance-person", el);
+      const submit = qs("#attendance-submit", el);
+      const cancelEdit = qs("#attendance-cancel-edit", el);
 
-      const addButton =
-        qs(
-          "#btn-add-attendance"
-        );
-
-      if (addButton) {
-
-        addButton.addEventListener(
-          "click",
-          () => {
-
-            openFormModal(
-              "attendance"
-            );
-
-          }
-        );
-
+      function populateActors(selectedId = "") {
+        const type = actorType.value;
+        const records = type === "STUDENT" ? students : sensei;
+        const key = type === "STUDENT" ? "ID_SISWA" : "ID_SENSEI";
+        const identified = records.filter(row => String(row[key] || "").trim());
+        actorSelect.innerHTML = identified.length
+          ? `<option value="">Pilih ID peserta...</option>${identified.map(row => `
+              <option value="${esc(row[key])}">${esc(row[key])} - ${esc(row.NAMA || "Tanpa nama")}</option>
+            `).join("")}`
+          : `<option value="">${type === "STUDENT" ? "Belum ada ID siswa" : "Belum ada data sensei"}</option>`;
+        actorSelect.value = selectedId;
+        updateActorDetails();
       }
 
-
-      qsa(
-        "[data-edit-attendance]"
-      ).forEach(
-        button => {
-
-          button.addEventListener(
-            "click",
-            () => {
-
-              const id =
-                button.dataset
-                  .editAttendance;
-
-              const row =
-                rows.find(
-                  item =>
-                    String(
-                      item.ATTENDANCE_ID
-                    ) === String(id)
-                );
-
-              if (row) {
-
-                openFormModal(
-                  "attendance",
-                  row
-                );
-
-              }
-
-            }
-          );
-
+      function updateActorDetails() {
+        const actor = findActor(actorType.value, actorSelect.value);
+        if (!actor) {
+          personCard.innerHTML = `<span class="muted">${actorType.value === "STUDENT" && studentsWithoutIds ? "Buat ID siswa terlebih dahulu." : "Pilih peserta dari daftar."}</span>`;
+          return;
         }
-      );
+
+        const detail = actorType.value === "STUDENT"
+          ? `WhatsApp: ${actor.NO_WA || "-"} · Program: ${actor.PROGRAM || "-"}`
+          : `WhatsApp: ${actor.NO_WA || "-"} · Tarif per pertemuan: ${formatRupiah(actor.TARIF_PER_PERTEMUAN || 0)}`;
+        personCard.innerHTML = `
+          <strong>${esc(actor.NAMA || "Tanpa nama")}</strong>
+          <span>ID: ${esc(actorSelect.value)}</span>
+          <span>${esc(detail)}</span>
+        `;
+      }
+
+      function resetAttendanceForm() {
+        editingRecord = null;
+        form.reset();
+        qs("#attendance-date", el).value = today;
+        qs("#attendance-status", el).value = "HADIR";
+        qs("#attendance-form-title", el).textContent = "Catat Kehadiran";
+        submit.textContent = "Simpan Absensi";
+        cancelEdit.classList.add("hidden");
+        populateActors();
+      }
+
+      actorType.addEventListener("change", () => populateActors());
+      actorSelect.addEventListener("change", updateActorDetails);
+      cancelEdit.addEventListener("click", resetAttendanceForm);
+
+      form.addEventListener("submit", async event => {
+        event.preventDefault();
+        if (!actorSelect.value) {
+          showToast("Pilih siswa atau sensei yang memiliki ID.", "error");
+          return;
+        }
+
+        const payload = Object.fromEntries(new FormData(form).entries());
+        payload.CLASS_ID = "";
+        if (editingRecord) {
+          payload.ATTENDANCE_ID = editingRecord.ATTENDANCE_ID || "";
+          payload.__ROW_NUMBER = editingRecord.__ROW_NUMBER;
+        }
+
+        submit.disabled = true;
+        submit.textContent = "Menyimpan...";
+        try {
+          const response = editingRecord
+            ? await API.update("attendance", payload)
+            : await API.create("attendance", payload);
+          if (response?.success === false) throw new Error(response.message || "Gagal menyimpan absensi.");
+          showToast(response?.message || "Absensi berhasil disimpan.");
+          await renderAttendance(el);
+        } catch (error) {
+          submit.disabled = false;
+          submit.textContent = editingRecord ? "Simpan Perubahan" : "Simpan Absensi";
+          showToast(error.message || "Gagal menyimpan absensi.", "error");
+        }
+      });
+
+      qsa("[data-edit-attendance]", el).forEach(button => {
+        button.addEventListener("click", () => {
+          const row = rows.find(item => String(item.__ROW_NUMBER) === String(button.dataset.rowNumber))
+            || rows.find(item => String(item.ATTENDANCE_ID) === String(button.dataset.editAttendance));
+          if (!row) return;
+
+          editingRecord = row;
+          actorType.value = row.ACTOR_TYPE === "SENSEI" ? "SENSEI" : "STUDENT";
+          populateActors(row.ACTOR_ID);
+          qs("#attendance-date", el).value = String(row.TANGGAL || "").slice(0, 10);
+          qs("#attendance-status", el).value = row.STATUS || "HADIR";
+          qs("#attendance-check-in", el).value = String(row.JAM_MASUK || "").includes("T") ? String(row.JAM_MASUK).slice(11, 16) : String(row.JAM_MASUK || "").slice(0, 5);
+          qs("#attendance-check-out", el).value = String(row.JAM_KELUAR || "").includes("T") ? String(row.JAM_KELUAR).slice(11, 16) : String(row.JAM_KELUAR || "").slice(0, 5);
+          qs("#attendance-session", el).value = row.SESSION_ID || "";
+          qs("#attendance-notes", el).value = row.CATATAN || "";
+          qs("#attendance-form-title", el).textContent = "Edit Absensi";
+          submit.textContent = "Simpan Perubahan";
+          cancelEdit.classList.remove("hidden");
+          form.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+      });
+
+      qs("#btn-assign-student-ids", el)?.addEventListener("click", async buttonEvent => {
+        if (!window.confirm(`Buat ID untuk ${studentsWithoutIds} siswa yang belum memiliki ID? ID yang sudah ada tidak diubah.`)) return;
+        const button = buttonEvent.currentTarget;
+        button.disabled = true;
+        button.textContent = "Membuat ID...";
+        try {
+          const result = await API.assignStudentIds();
+          if (result?.success === false) throw new Error(result.message || "Gagal membuat ID siswa.");
+          showToast(result?.message || "ID siswa berhasil dibuat.");
+          await renderAttendance(el);
+        } catch (error) {
+          button.disabled = false;
+          button.textContent = "Buat ID Siswa";
+          showToast(error.message || "Gagal membuat ID siswa.", "error");
+        }
+      });
+
+      populateActors();
 
     } catch (error) {
 

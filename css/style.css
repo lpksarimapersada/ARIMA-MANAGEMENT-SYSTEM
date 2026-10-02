@@ -20,3 +20,16 @@
 .data-table th,.data-table td{text-align:left;padding:12px 13px;border-bottom:1px solid #eee;font-size:13px}
 .data-table th{background:#fafafa;font-size:11px;text-transform:uppercase;color:#666}
 @media(max-width:760px){.arima-layout{grid-template-columns:1fr}.sidebar{position:static;height:auto}.sidebar-nav{grid-template-columns:repeat(2,minmax(0,1fr))}.sidebar-footer{margin-top:12px}.page-content{padding:18px}.main-area{min-height:0}}
+.attendance-form-card .form-grid{align-items:start}
+.attendance-form-card .form-group{display:grid;gap:6px;min-width:0}
+.attendance-form-card .form-group label{font-size:13px;font-weight:600;color:#333}
+.attendance-form-card input,.attendance-form-card select,.attendance-form-card textarea{width:100%;min-height:42px;padding:9px 11px;border:1px solid #d8d8dc;border-radius:6px;background:#fff;color:#171717}
+.attendance-form-card textarea{resize:vertical}
+.attendance-person{grid-column:1/-1;display:grid;gap:4px;padding:13px 15px;border-left:3px solid var(--accent);background:#f7f7f8;color:#555;font-size:13px}
+.attendance-person strong{color:#171717;font-size:16px}
+.form-group-wide{grid-column:1/-1}
+.form-actions{grid-column:1/-1;display:flex;justify-content:flex-end}
+.attendance-id-warning{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
+.attendance-id-warning .btn{flex:none;background:#fff;color:#8b1318}
+.attendance-history h2,.attendance-form-card h2{margin:0;font-size:18px}
+@media(max-width:760px){.attendance-id-warning{align-items:stretch;flex-direction:column}.form-group-wide,.attendance-person,.form-actions{grid-column:auto}.form-actions .btn{width:100%}}
