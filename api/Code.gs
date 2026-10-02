@@ -24,13 +24,13 @@ function doPost(e) {
     const body = JSON.parse(String(e && e.postData && e.postData.contents ? e.postData.contents : '{}'));
     const action = body && body.action ? body.action : 'health';
     const payload = body && body.payload ? body.payload : {};
-    return json_(route_(action, payload));
+    return json_(route_(action, payload, body && body.token));
   } catch (err) {
     return json_({ success: false, message: String(err && err.message ? err.message : err) });
   }
 }
 
-function route_(action, p) {
+function route_(action, p, token) {
   switch (String(action || '')) {
     case 'health':
       return health_();
@@ -45,7 +45,7 @@ function route_(action, p) {
     case 'assignStudentIds':
       return assignMissingStudentIds_();
     case 'sensei':
-      return listSheet_('SENSEI');
+      return senseiList_(token);
     case 'attendance':
       return listSheet_('ATTENDANCE');
     case 'billing':
@@ -53,13 +53,15 @@ function route_(action, p) {
     case 'payments':
       return listSheet_('PAYMENTS');
     case 'salary':
+      const salaryAccessError = salaryAccessError_(token);
+      if (salaryAccessError) return salaryAccessError;
       return listSheet_('SALARY');
     case 'studentSave':
       return saveSheetRecord_('STUDENTS', 'ID_SISWA', p);
     case 'studentDelete':
       return deleteSheetRecord_('STUDENTS', 'ID_SISWA', p);
     case 'senseiSave':
-      return saveSheetRecord_('SENSEI', 'ID_SENSEI', p);
+      return saveSenseiRecord_(p, token);
     case 'senseiDelete':
       return deleteSheetRecord_('SENSEI', 'ID_SENSEI', p);
     case 'attendanceSave':
@@ -69,6 +71,8 @@ function route_(action, p) {
     case 'paymentSave':
       return saveSheetRecord_('PAYMENTS', 'PAYMENT_ID', p);
     case 'salarySave':
+      const salarySaveAccessError = salaryAccessError_(token);
+      if (salarySaveAccessError) return salarySaveAccessError;
       return saveSheetRecord_('SALARY', 'SALARY_ID', p);
     default:
       return { success: false, message: 'Unknown action: ' + action };
@@ -94,6 +98,59 @@ function health_() {
 
 function logout_() {
   return { success: true, message: 'Logout berhasil.' };
+}
+
+function tokenUser_(token) {
+  const parts = String(token || '').split('.');
+  if (parts.length !== 2) return null;
+
+  try {
+    const payloadText = Utilities.newBlob(Utilities.base64Decode(parts[0])).getDataAsString('UTF-8');
+    const expectedSignature = toBase64Url_(Utilities.computeHmacSha256Signature(payloadText, buildAuthSecret_()));
+    if (parts[1] !== expectedSignature) return null;
+    const payload = JSON.parse(payloadText);
+    if (!payload.id || Number(payload.exp) <= Date.now()) return null;
+    return payload;
+  } catch (error) {
+    return null;
+  }
+}
+
+function isAdminToken_(token) {
+  const user = tokenUser_(token);
+  return String(user && user.role || '').trim().toUpperCase() === 'ADMIN';
+}
+
+function adminOnlyResponse_() {
+  return { success: false, code: 'FORBIDDEN', message: 'Data payroll hanya dapat diakses oleh admin.' };
+}
+
+function salaryAccessError_(token) {
+  const user = tokenUser_(token);
+  if (!user) {
+    return { success: false, code: 'AUTH_REQUIRED', message: 'Sesi login perlu diperbarui. Silakan keluar lalu login kembali.' };
+  }
+  return String(user.role || '').trim().toUpperCase() === 'ADMIN' ? null : adminOnlyResponse_();
+}
+
+function senseiList_(token) {
+  const response = listSheet_('SENSEI');
+  if (!response.success || isAdminToken_(token)) return response;
+
+  response.data.forEach(function (row) {
+    delete row.TARIF_PER_PERTEMUAN;
+    delete row.TARIF_PER_JAM;
+  });
+  return response;
+}
+
+function saveSenseiRecord_(payload, token) {
+  if (isAdminToken_(token)) return saveSheetRecord_('SENSEI', 'ID_SENSEI', payload);
+
+  const record = Object.assign({}, payload && typeof payload === 'object' ? payload : {});
+  delete record.TARIF_PER_PERTEMUAN;
+  delete record.TARIF_PER_JAM;
+  return saveSheetRecord_('SENSEI', 'ID_SENSEI', record);
 }
 
 function buildAuthSecret_() {
@@ -360,7 +417,9 @@ function login_(p) {
     exp: Date.now() + (60 * 60 * 1000)
   });
 
-  const token = Utilities.base64Encode(tokenPayload) + '.' + Utilities.base64Encode(buildAuthSecret_());
+  const token = Utilities.base64Encode(tokenPayload) + '.' + toBase64Url_(
+    Utilities.computeHmacSha256Signature(tokenPayload, buildAuthSecret_())
+  );
 
   return {
     success: true,
@@ -477,6 +536,101 @@ function normalizeRecordValue_(field, value) {
   return number;
 }
 
+function periodKey_(value) {
+  if (value instanceof Date) return Utilities.formatDate(value, ARIMA.TIMEZONE, 'yyyy-MM');
+  return String(value || '').trim().slice(0, 7);
+}
+
+function clockMinutes_(value) {
+  if (value instanceof Date) return value.getHours() * 60 + value.getMinutes();
+  if (typeof value === 'number' && value >= 0 && value < 1) return Math.round(value * 1440);
+
+  const text = String(value || '').trim();
+  const match = text.match(/(?:T|^)(\d{1,2}):(\d{2})/);
+  return match ? Number(match[1]) * 60 + Number(match[2]) : null;
+}
+
+function calculateSalaryRecord_(record) {
+  const senseiSheet = ss_().getSheetByName('SENSEI');
+  const attendanceSheet = ss_().getSheetByName('ATTENDANCE');
+  if (!senseiSheet || !attendanceSheet) {
+    return { success: false, message: 'Sheet SENSEI atau ATTENDANCE tidak ditemukan.' };
+  }
+
+  const senseiValues = senseiSheet.getDataRange().getValues();
+  const senseiHeaders = senseiValues[0].map(String);
+  const senseiIdIndex = findColumnIndex_(senseiHeaders, ['ID_SENSEI']);
+  const rateIndex = findColumnIndex_(senseiHeaders, ['TARIF_PER_JAM']);
+  const sensei = senseiValues.slice(1).find(function (row) {
+    return String(row[senseiIdIndex] || '').trim() === String(record.ID_SENSEI || '').trim();
+  });
+  if (!sensei || rateIndex < 0) return { success: false, message: 'Sensei atau tarif per JP tidak ditemukan.' };
+
+  const rate = Number(sensei[rateIndex]);
+  if (!Number.isFinite(rate) || rate <= 0) {
+    return { success: false, message: 'Tarif per JP sensei harus lebih dari 0.' };
+  }
+
+  const period = periodKey_(record.PERIOD);
+  if (!/^\d{4}-\d{2}$/.test(period)) {
+    return { success: false, message: 'Periode payroll harus menggunakan format bulan dan tahun.' };
+  }
+
+  const attendanceValues = attendanceSheet.getDataRange().getValues();
+  const headers = attendanceValues[0].map(String);
+  const actorIdIndex = findColumnIndex_(headers, ['ACTOR_ID']);
+  const actorTypeIndex = findColumnIndex_(headers, ['ACTOR_TYPE']);
+  const dateIndex = findColumnIndex_(headers, ['TANGGAL']);
+  const statusIndex = findColumnIndex_(headers, ['STATUS']);
+  const startIndex = findColumnIndex_(headers, ['JAM_MASUK']);
+  const endIndex = findColumnIndex_(headers, ['JAM_KELUAR']);
+  if ([actorIdIndex, actorTypeIndex, dateIndex, statusIndex, startIndex, endIndex].some(function (index) { return index < 0; })) {
+    return { success: false, message: 'Kolom absensi untuk perhitungan JP belum lengkap.' };
+  }
+
+  let meetingCount = 0;
+  let totalMinutes = 0;
+  let incompleteTimes = 0;
+  attendanceValues.slice(1).forEach(function (row) {
+    const status = String(row[statusIndex] || '').trim().toUpperCase();
+    if (String(row[actorIdIndex] || '').trim() !== String(record.ID_SENSEI || '').trim()) return;
+    if (String(row[actorTypeIndex] || '').trim().toUpperCase() !== 'SENSEI') return;
+    if (periodKey_(row[dateIndex]) !== period) return;
+    if (status !== 'HADIR' && status !== 'TERLAMBAT') return;
+
+    meetingCount += 1;
+    const start = clockMinutes_(row[startIndex]);
+    const end = clockMinutes_(row[endIndex]);
+    if (start === null || end === null || start === end) {
+      incompleteTimes += 1;
+      return;
+    }
+    totalMinutes += end > start ? end - start : end + 1440 - start;
+  });
+
+  if (incompleteTimes) {
+    return { success: false, message: incompleteTimes + ' absensi hadir sensei belum memiliki waktu masuk dan keluar.' };
+  }
+
+  const jpCount = Math.round((totalMinutes / 45) * 100) / 100;
+  const baseAmount = Math.round(jpCount * rate);
+  const bonus = Number(record.BONUS || 0);
+  const deduction = Number(record.DEDUCTION || 0);
+  if (!Number.isFinite(bonus) || !Number.isFinite(deduction)) {
+    return { success: false, message: 'Bonus dan potongan harus berupa angka.' };
+  }
+
+  return {
+    success: true,
+    data: {
+      MEETING_COUNT: meetingCount,
+      HOUR_COUNT: jpCount,
+      BASE_AMOUNT: baseAmount,
+      NET_SALARY: baseAmount + bonus - deduction
+    }
+  };
+}
+
 function saveSheetRecord_(sheetName, keyField, payload) {
   const sh = ss_().getSheetByName(sheetName);
   if (!sh) return { success: false, message: 'Sheet not found: ' + sheetName };
@@ -488,13 +642,19 @@ function saveSheetRecord_(sheetName, keyField, payload) {
   const keyIndex = findColumnIndex_(headers, [keyField]);
   if (keyIndex < 0) return { success: false, message: 'Kolom ' + keyField + ' tidak ditemukan.' };
 
-  const record = payload && typeof payload === 'object' ? payload : {};
+  const record = Object.assign({}, payload && typeof payload === 'object' ? payload : {});
   const mode = String(record.__MODE || 'upsert');
   const missing = requiredFields_(sheetName).filter(function (field) {
     return String(record[field] || '').trim() === '';
   });
   if (missing.length) {
     return { success: false, message: 'Kolom wajib belum diisi: ' + missing.join(', ') };
+  }
+
+  if (sheetName === 'SALARY') {
+    const calculation = calculateSalaryRecord_(record);
+    if (!calculation.success) return calculation;
+    Object.assign(record, calculation.data);
   }
 
   const requestedKey = String(record[keyField] || '').trim();

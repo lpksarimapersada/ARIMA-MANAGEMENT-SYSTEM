@@ -167,16 +167,8 @@ window.App = (() => {
         },
 
         {
-          key: "TARIF_PER_PERTEMUAN",
-          label: "Tarif per Pertemuan",
-          type: "number",
-          required: false,
-          placeholder: "0"
-        },
-
-        {
           key: "TARIF_PER_JAM",
-          label: "Tarif per Jam",
+          label: "Tarif per JP (45 menit)",
           type: "number",
           required: false,
           placeholder: "0"
@@ -497,27 +489,6 @@ window.App = (() => {
         },
 
         {
-          key: "MEETING_COUNT",
-          label: "Jumlah Pertemuan",
-          type: "number",
-          required: false
-        },
-
-        {
-          key: "HOUR_COUNT",
-          label: "Jumlah Jam",
-          type: "number",
-          required: false
-        },
-
-        {
-          key: "BASE_AMOUNT",
-          label: "Gaji Pokok",
-          type: "number",
-          required: false
-        },
-
-        {
           key: "BONUS",
           label: "Bonus",
           type: "number",
@@ -527,13 +498,6 @@ window.App = (() => {
         {
           key: "DEDUCTION",
           label: "Potongan",
-          type: "number",
-          required: false
-        },
-
-        {
-          key: "NET_SALARY",
-          label: "Gaji Bersih",
           type: "number",
           required: false
         },
@@ -918,6 +882,12 @@ window.App = (() => {
 
   }
 
+  function isAdminUser() {
+    return String(user?.role || user?.ROLE || "")
+      .trim()
+      .toUpperCase() === "ADMIN";
+  }
+
 
   function logout() {
 
@@ -984,6 +954,10 @@ window.App = (() => {
       return;
     }
 
+    const visibleMenus = menus.filter(
+      menu => menu[0] !== "salary" || isAdminUser()
+    );
+
     root.innerHTML = `
 
       <div class="arima-layout">
@@ -1011,7 +985,7 @@ window.App = (() => {
             id="arima-menu"
           >
 
-            ${menus.map(
+            ${visibleMenus.map(
               menu => `
 
                 <button
@@ -1972,6 +1946,21 @@ window.App = (() => {
       const rows =
         response?.data || [];
 
+      const columns = [
+        { key: "ID_SENSEI", label: "ID" },
+        { key: "NAMA", label: "Nama" },
+        { key: "NO_WA", label: "WhatsApp" },
+        { key: "EMAIL", label: "Email" },
+        { key: "STATUS", label: "Status" }
+      ];
+      if (isAdminUser()) {
+        columns.splice(4, 0, {
+          key: "TARIF_PER_JAM",
+          label: "Tarif / JP (45 menit)",
+          render: value => formatRupiah(value)
+        });
+      }
+
 
       el.innerHTML = `
 
@@ -1987,46 +1976,7 @@ window.App = (() => {
 
           ${renderTable(
             rows,
-            [
-              {
-                key: "ID_SENSEI",
-                label: "ID"
-              },
-
-              {
-                key: "NAMA",
-                label: "Nama"
-              },
-
-              {
-                key: "NO_WA",
-                label: "WhatsApp"
-              },
-
-              {
-                key: "EMAIL",
-                label: "Email"
-              },
-
-              {
-                key: "TARIF_PER_PERTEMUAN",
-                label: "Tarif / Pertemuan",
-                render: value =>
-                  formatRupiah(value)
-              },
-
-              {
-                key: "TARIF_PER_JAM",
-                label: "Tarif / Jam",
-                render: value =>
-                  formatRupiah(value)
-              },
-
-              {
-                key: "STATUS",
-                label: "Status"
-              }
-            ],
+            columns,
             {
               actions: row => `
 
@@ -2290,19 +2240,21 @@ window.App = (() => {
             </div>
 
             <div class="form-group">
-              <label for="attendance-check-in">Jam Masuk</label>
+              <label id="attendance-check-in-label" for="attendance-check-in">Jam Masuk</label>
               <input type="time" id="attendance-check-in" name="JAM_MASUK">
             </div>
 
             <div class="form-group">
-              <label for="attendance-check-out">Jam Keluar</label>
+              <label id="attendance-check-out-label" for="attendance-check-out">Jam Keluar</label>
               <input type="time" id="attendance-check-out" name="JAM_KELUAR">
             </div>
 
-            <div class="form-group">
+            <div class="form-group" id="attendance-session-group">
               <label for="attendance-session">ID Sesi (opsional)</label>
               <input type="text" id="attendance-session" name="SESSION_ID">
             </div>
+
+            <div class="attendance-jp-note hidden" id="attendance-jp-note">Durasi mengajar dihitung dengan 1 JP = 45 menit.</div>
 
             <div class="form-group form-group-wide">
               <label for="attendance-notes">Catatan (opsional)</label>
@@ -2348,6 +2300,7 @@ window.App = (() => {
       const cancelEdit = qs("#attendance-cancel-edit", el);
 
       function populateActors(selectedId = "") {
+        updateAttendanceTimeFields();
         const type = actorType.value;
         const records = type === "STUDENT" ? students : sensei;
         const key = type === "STUDENT" ? "ID_SISWA" : "ID_SENSEI";
@@ -2370,12 +2323,21 @@ window.App = (() => {
 
         const detail = actorType.value === "STUDENT"
           ? `WhatsApp: ${actor.NO_WA || "-"} · Program: ${actor.PROGRAM || "-"}`
-          : `WhatsApp: ${actor.NO_WA || "-"} · Tarif per pertemuan: ${formatRupiah(actor.TARIF_PER_PERTEMUAN || 0)}`;
+          : `WhatsApp: ${actor.NO_WA || "-"} · Status: ${actor.STATUS || "-"}`;
         personCard.innerHTML = `
           <strong>${esc(actor.NAMA || "Tanpa nama")}</strong>
           <span>ID: ${esc(actorSelect.value)}</span>
           <span>${esc(detail)}</span>
         `;
+      }
+
+      function updateAttendanceTimeFields() {
+        const senseiSelected = actorType.value === "SENSEI";
+        qs("#attendance-check-in-label", el).textContent = senseiSelected ? "Jam Mengajar Mulai" : "Jam Masuk";
+        qs("#attendance-check-out-label", el).textContent = senseiSelected ? "Jam Mengajar Selesai" : "Jam Keluar";
+        qs("#attendance-session-group", el).classList.toggle("hidden", senseiSelected);
+        qs("#attendance-jp-note", el).classList.toggle("hidden", !senseiSelected);
+        if (senseiSelected) qs("#attendance-session", el).value = "";
       }
 
       function resetAttendanceForm() {
@@ -2402,6 +2364,7 @@ window.App = (() => {
 
         const payload = Object.fromEntries(new FormData(form).entries());
         payload.CLASS_ID = "";
+        if (payload.ACTOR_TYPE === "SENSEI") payload.SESSION_ID = "";
         if (editingRecord) {
           payload.ATTENDANCE_ID = editingRecord.ATTENDANCE_ID || "";
           payload.__ROW_NUMBER = editingRecord.__ROW_NUMBER;
@@ -2820,6 +2783,16 @@ window.App = (() => {
     el
   ) {
 
+    if (!isAdminUser()) {
+      el.innerHTML = `
+        <div class="card">
+          <h2>Akses Ditolak</h2>
+          <p class="muted">Menu payroll hanya tersedia untuk admin.</p>
+        </div>
+      `;
+      return;
+    }
+
     try {
 
       const response =
@@ -2833,10 +2806,20 @@ window.App = (() => {
 
         ${pageHeader(
           "Payroll Sensei",
-          "Kelola pembayaran honor sensei.",
+          "Gaji otomatis dari absensi sensei, berdasarkan tarif per JP (45 menit).",
           "Tambah Payroll",
           "btn-add-salary"
         )}
+
+
+        <div class="section">
+
+          <div class="card">
+            <strong>Rumus payroll</strong>
+            <p class="muted">Total menit mengajar ÷ 45 × tarif per JP. Hanya absensi HADIR dan TERLAMBAT yang dihitung.</p>
+          </div>
+
+        </div>
 
 
         <div class="card">
@@ -2866,7 +2849,7 @@ window.App = (() => {
 
               {
                 key: "HOUR_COUNT",
-                label: "Jam"
+                label: "JP (45 menit)"
               },
 
               {
@@ -3236,8 +3219,12 @@ window.App = (() => {
       !!existing;
 
 
+    const formFields = type === "sensei" && !isAdminUser()
+      ? config.fields.filter(field => field.key !== "TARIF_PER_JAM")
+      : config.fields;
+
     const fields =
-      config.fields.map(
+      formFields.map(
         field => {
 
           const rawValue = existing?.[field.key] ?? "";
@@ -3587,7 +3574,7 @@ window.App = (() => {
             {};
 
 
-          config.fields.forEach(
+          formFields.forEach(
             field => {
 
               payload[
