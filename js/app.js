@@ -1,10 +1,6 @@
 window.App = (() => {
   "use strict";
 
-  /* =========================================================
-   * MENU
-   * ========================================================= */
-
   const menus = [
     ["dashboard", "Dashboard", "▦"],
     ["students", "Siswa", "♙"],
@@ -19,17 +15,17 @@ window.App = (() => {
 
   let user = null;
 
-
-  /* =========================================================
-   * FORM CONFIG
-   * Sesuai SCHEMA Spreadsheet
-   * ========================================================= */
+  /*
+   * =========================================================
+   * FORM CONFIGURATION
+   * =========================================================
+   */
 
   const FORM_CONFIG = {
 
     students: {
       title: "Tambah Siswa",
-      editTitle: "Edit Data Siswa",
+      editTitle: "Edit Siswa",
       idField: "ID_SISWA",
 
       fields: [
@@ -40,20 +36,23 @@ window.App = (() => {
           required: false,
           placeholder: "Kosongkan untuk ID otomatis"
         },
+
         {
           key: "NAMA",
-          label: "Nama Lengkap",
+          label: "Nama Siswa",
           type: "text",
           required: true,
           placeholder: "Nama lengkap siswa"
         },
+
         {
           key: "NIK",
           label: "NIK",
           type: "text",
           required: false,
-          placeholder: "16 digit NIK"
+          placeholder: "Nomor Induk Kependudukan"
         },
+
         {
           key: "NO_WA",
           label: "No. WhatsApp",
@@ -61,13 +60,15 @@ window.App = (() => {
           required: true,
           placeholder: "08xxxxxxxxxx"
         },
+
         {
           key: "NAMA_ORANG_TUA",
           label: "Nama Orang Tua / Wali",
           type: "text",
-          required: false,
+          required: true,
           placeholder: "Nama orang tua / wali"
         },
+
         {
           key: "NO_WA_ORANG_TUA",
           label: "No. WhatsApp Orang Tua / Wali",
@@ -75,6 +76,7 @@ window.App = (() => {
           required: false,
           placeholder: "08xxxxxxxxxx"
         },
+
         {
           key: "PROGRAM",
           label: "Program",
@@ -82,11 +84,12 @@ window.App = (() => {
           required: true,
           options: [
             "MAGANG",
-            "SSW (TOKUTEI GINOU)",
-            "ENGINEER",
-            "ENGINEERING"
+            "SSW",
+            "ENGINEERING",
+            "ENGINEER"
           ]
         },
+
         {
           key: "ASRAMA",
           label: "Asrama",
@@ -97,12 +100,14 @@ window.App = (() => {
             "TIDAK"
           ]
         },
+
         {
           key: "TANGGAL_MASUK",
           label: "Tanggal Masuk",
           type: "date",
           required: true
         },
+
         {
           key: "STATUS",
           label: "Status",
@@ -120,11 +125,15 @@ window.App = (() => {
 
 
     sensei: {
+
       title: "Tambah Sensei",
-      editTitle: "Edit Data Sensei",
+
+      editTitle: "Edit Sensei",
+
       idField: "ID_SENSEI",
 
       fields: [
+
         {
           key: "ID_SENSEI",
           label: "ID Sensei",
@@ -132,6 +141,7 @@ window.App = (() => {
           required: false,
           placeholder: "Kosongkan untuk ID otomatis"
         },
+
         {
           key: "NAMA",
           label: "Nama Sensei",
@@ -139,6 +149,7 @@ window.App = (() => {
           required: true,
           placeholder: "Nama lengkap sensei"
         },
+
         {
           key: "NO_WA",
           label: "No. WhatsApp",
@@ -146,6 +157,7 @@ window.App = (() => {
           required: false,
           placeholder: "08xxxxxxxxxx"
         },
+
         {
           key: "EMAIL",
           label: "Email",
@@ -153,6 +165,7 @@ window.App = (() => {
           required: false,
           placeholder: "email@example.com"
         },
+
         {
           key: "TARIF_PER_PERTEMUAN",
           label: "Tarif per Pertemuan",
@@ -160,6 +173,7 @@ window.App = (() => {
           required: false,
           placeholder: "0"
         },
+
         {
           key: "TARIF_PER_JAM",
           label: "Tarif per Jam",
@@ -167,6 +181,7 @@ window.App = (() => {
           required: false,
           placeholder: "0"
         },
+
         {
           key: "STATUS",
           label: "Status",
@@ -177,16 +192,22 @@ window.App = (() => {
             "NONAKTIF"
           ]
         }
+
       ]
+
     },
 
 
     attendance: {
+
       title: "Catat Absensi",
+
       editTitle: "Edit Absensi",
+
       idField: "ATTENDANCE_ID",
 
       fields: [
+
         {
           key: "ATTENDANCE_ID",
           label: "ID Absensi",
@@ -194,53 +215,63 @@ window.App = (() => {
           required: false,
           placeholder: "Kosongkan untuk ID otomatis"
         },
+
         {
           key: "ACTOR_ID",
           label: "ID Siswa / Sensei",
           type: "text",
           required: true,
-          placeholder: "Contoh: SISWA001"
+          placeholder: "ID aktor"
         },
+
         {
           key: "ACTOR_TYPE",
-          label: "Tipe",
+          label: "Tipe Aktor",
           type: "select",
           required: true,
           options: [
-            "SISWA",
+            "STUDENT",
             "SENSEI"
           ]
         },
+
         {
           key: "SESSION_ID",
           label: "Session ID",
           type: "text",
-          required: false
+          required: false,
+          placeholder: "Session ID"
         },
+
         {
           key: "CLASS_ID",
           label: "Class ID",
           type: "text",
-          required: false
+          required: false,
+          placeholder: "Class ID"
         },
+
         {
           key: "TANGGAL",
           label: "Tanggal",
           type: "date",
           required: true
         },
+
         {
           key: "JAM_MASUK",
           label: "Jam Masuk",
           type: "time",
           required: false
         },
+
         {
           key: "JAM_KELUAR",
           label: "Jam Keluar",
           type: "time",
           required: false
         },
+
         {
           key: "STATUS",
           label: "Status",
@@ -254,22 +285,29 @@ window.App = (() => {
             "TERLAMBAT"
           ]
         },
+
         {
           key: "CATATAN",
           label: "Catatan",
           type: "textarea",
           required: false
         }
+
       ]
+
     },
 
 
     billing: {
-      title: "Buat Tagihan",
+
+      title: "Tambah Tagihan",
+
       editTitle: "Edit Tagihan",
+
       idField: "BILLING_ID",
 
       fields: [
+
         {
           key: "BILLING_ID",
           label: "ID Tagihan",
@@ -277,48 +315,50 @@ window.App = (() => {
           required: false,
           placeholder: "Kosongkan untuk ID otomatis"
         },
+
         {
           key: "ID_SISWA",
           label: "ID Siswa",
           type: "text",
-          required: true,
-          placeholder: "Contoh: SISWA001"
+          required: true
         },
+
         {
           key: "DESCRIPTION",
           label: "Deskripsi",
           type: "text",
           required: true,
-          placeholder: "Contoh: Biaya belajar Oktober"
+          placeholder: "Contoh: Biaya belajar bulan Oktober"
         },
+
         {
           key: "CATEGORY",
           label: "Kategori",
           type: "select",
           required: true,
           options: [
-            "BIAYA_BELAJAR",
-            "JFT",
-            "SSW",
-            "JLPT",
-            "MAGANG",
-            "DOKUMEN",
+            "BELAJAR",
+            "ASRAMA",
+            "JOB",
             "LAINNYA"
           ]
         },
+
         {
           key: "AMOUNT",
-          label: "Jumlah Tagihan",
+          label: "Jumlah",
           type: "number",
           required: true,
           placeholder: "0"
         },
+
         {
           key: "DUE_DATE",
           label: "Jatuh Tempo",
           type: "date",
           required: true
         },
+
         {
           key: "STATUS",
           label: "Status",
@@ -326,28 +366,36 @@ window.App = (() => {
           required: true,
           options: [
             "PENDING",
-            "SEBAGIAN",
+            "BELUM BAYAR",
+            "BELUM LUNAS",
             "LUNAS",
-            "TERLAMBAT",
-            "BATAL"
+            "TERTUNGGAK",
+            "CICILAN"
           ]
         },
+
         {
           key: "NOTES",
           label: "Catatan",
           type: "textarea",
           required: false
         }
+
       ]
+
     },
 
 
     payments: {
-      title: "Input Pembayaran",
+
+      title: "Tambah Pembayaran",
+
       editTitle: "Edit Pembayaran",
+
       idField: "PAYMENT_ID",
 
       fields: [
+
         {
           key: "PAYMENT_ID",
           label: "ID Pembayaran",
@@ -355,30 +403,35 @@ window.App = (() => {
           required: false,
           placeholder: "Kosongkan untuk ID otomatis"
         },
+
         {
           key: "BILLING_ID",
           label: "ID Tagihan",
           type: "text",
           required: true
         },
+
         {
           key: "ID_SISWA",
           label: "ID Siswa",
           type: "text",
           required: true
         },
+
         {
           key: "PAYMENT_DATE",
           label: "Tanggal Pembayaran",
           type: "date",
           required: true
         },
+
         {
           key: "AMOUNT",
           label: "Jumlah Pembayaran",
           type: "number",
           required: true
         },
+
         {
           key: "PAYMENT_METHOD",
           label: "Metode Pembayaran",
@@ -391,28 +444,36 @@ window.App = (() => {
             "LAINNYA"
           ]
         },
+
         {
           key: "REFERENCE_NO",
-          label: "Nomor Referensi",
+          label: "No. Referensi",
           type: "text",
           required: false
         },
+
         {
           key: "NOTES",
           label: "Catatan",
           type: "textarea",
           required: false
         }
+
       ]
+
     },
 
 
     salary: {
-      title: "Rekap Payroll Sensei",
-      editTitle: "Edit Payroll Sensei",
+
+      title: "Payroll Sensei",
+
+      editTitle: "Edit Payroll",
+
       idField: "SALARY_ID",
 
       fields: [
+
         {
           key: "SALARY_ID",
           label: "ID Payroll",
@@ -420,61 +481,70 @@ window.App = (() => {
           required: false,
           placeholder: "Kosongkan untuk ID otomatis"
         },
+
         {
           key: "ID_SENSEI",
           label: "ID Sensei",
           type: "text",
           required: true
         },
+
         {
           key: "PERIOD",
           label: "Periode",
           type: "month",
           required: true
         },
+
         {
           key: "MEETING_COUNT",
           label: "Jumlah Pertemuan",
           type: "number",
           required: false
         },
+
         {
           key: "HOUR_COUNT",
           label: "Jumlah Jam",
           type: "number",
           required: false
         },
+
         {
           key: "BASE_AMOUNT",
           label: "Gaji Pokok",
           type: "number",
-          required: true
+          required: false
         },
+
         {
           key: "BONUS",
           label: "Bonus",
           type: "number",
           required: false
         },
+
         {
           key: "DEDUCTION",
           label: "Potongan",
           type: "number",
           required: false
         },
+
         {
           key: "NET_SALARY",
           label: "Gaji Bersih",
           type: "number",
-          required: false,
-          placeholder: "Bisa dihitung oleh backend"
+          required: false
         },
+
         {
           key: "PAYMENT_DATE",
           label: "Tanggal Pembayaran",
           type: "date",
           required: false
         },
+
         {
           key: "PAYMENT_STATUS",
           label: "Status Pembayaran",
@@ -483,382 +553,559 @@ window.App = (() => {
           options: [
             "PENDING",
             "DIBAYAR",
-            "BATAL"
+            "LUNAS"
           ]
         },
+
         {
           key: "NOTES",
           label: "Catatan",
           type: "textarea",
           required: false
         }
+
       ]
+
     }
 
   };
 
 
-  /* =========================================================
-   * TABLE CONFIG
-   * ========================================================= */
+  /*
+   * =========================================================
+   * UTILITIES
+   * =========================================================
+   */
 
-  const TABLE_CONFIG = {
+  function esc(value) {
 
-    students: {
-      api: "students",
-      title: "Data Siswa",
-      description: "Kelola identitas dan program siswa.",
-      addLabel: "+ Tambah Siswa",
-      form: "students",
+    return String(value ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
 
-      columns: [
-        "ID_SISWA",
-        "NAMA",
-        "NIK",
-        "NO_WA",
-        "PROGRAM",
-        "ASRAMA",
-        "TANGGAL_MASUK",
-        "STATUS"
-      ],
-
-      search: [
-        "ID_SISWA",
-        "NAMA",
-        "NIK",
-        "NO_WA",
-        "PROGRAM",
-        "STATUS"
-      ]
-    },
+  }
 
 
-    sensei: {
-      api: "sensei",
-      title: "Data Sensei",
-      description: "Kelola data pengajar dan tarif.",
-      addLabel: "+ Tambah Sensei",
-      form: "sensei",
+  function formatNumber(value) {
 
-      columns: [
-        "ID_SENSEI",
-        "NAMA",
-        "NO_WA",
-        "EMAIL",
-        "TARIF_PER_PERTEMUAN",
-        "TARIF_PER_JAM",
-        "STATUS"
-      ],
+    const number = Number(value || 0);
 
-      search: [
-        "ID_SENSEI",
-        "NAMA",
-        "NO_WA",
-        "EMAIL",
-        "STATUS"
-      ]
-    },
+    return new Intl.NumberFormat(
+      "id-ID"
+    ).format(
+      Number.isFinite(number)
+        ? number
+        : 0
+    );
+
+  }
 
 
-    attendance: {
-      api: "attendance",
-      title: "Absensi",
-      description: "Pencatatan kehadiran siswa dan sensei.",
-      addLabel: "+ Catat Absensi",
-      form: "attendance",
+  function formatRupiah(value) {
 
-      columns: [
-        "ATTENDANCE_ID",
-        "ACTOR_ID",
-        "ACTOR_TYPE",
-        "SESSION_ID",
-        "CLASS_ID",
-        "TANGGAL",
-        "JAM_MASUK",
-        "JAM_KELUAR",
-        "STATUS",
-        "CATATAN"
-      ],
+    const number = Number(value || 0);
 
-      search: [
-        "ATTENDANCE_ID",
-        "ACTOR_ID",
-        "SESSION_ID",
-        "CLASS_ID",
-        "STATUS"
-      ]
-    },
+    return new Intl.NumberFormat(
+      "id-ID",
+      {
+        style: "currency",
+        currency: "IDR",
+        maximumFractionDigits: 0
+      }
+    ).format(
+      Number.isFinite(number)
+        ? number
+        : 0
+    );
+
+  }
 
 
-    billing: {
-      api: "billing",
-      title: "Tagihan",
-      description: "Kelola tagihan siswa.",
-      addLabel: "+ Buat Tagihan",
-      form: "billing",
+  function renderError(
+    el,
+    error
+  ) {
 
-      columns: [
-        "BILLING_ID",
-        "ID_SISWA",
-        "DESCRIPTION",
-        "CATEGORY",
-        "AMOUNT",
-        "DUE_DATE",
-        "STATUS",
-        "NOTES"
-      ],
+    console.error(
+      "ARIMA APP ERROR:",
+      error
+    );
 
-      search: [
-        "BILLING_ID",
-        "ID_SISWA",
-        "DESCRIPTION",
-        "CATEGORY",
-        "STATUS"
-      ]
-    },
+    el.innerHTML = `
 
+      <div class="card">
 
-    payments: {
-      api: "payments",
-      title: "Pembayaran",
-      description: "Kelola pembayaran siswa.",
-      addLabel: "+ Input Pembayaran",
-      form: "payments",
+        <h3>
+          Terjadi kesalahan
+        </h3>
 
-      columns: [
-        "PAYMENT_ID",
-        "BILLING_ID",
-        "ID_SISWA",
-        "PAYMENT_DATE",
-        "AMOUNT",
-        "PAYMENT_METHOD",
-        "REFERENCE_NO",
-        "NOTES"
-      ],
+        <p class="muted">
+          ${esc(
+            error?.message ||
+            error ||
+            "Terjadi kesalahan pada aplikasi."
+          )}
+        </p>
 
-      search: [
-        "PAYMENT_ID",
-        "BILLING_ID",
-        "ID_SISWA",
-        "REFERENCE_NO",
-        "PAYMENT_METHOD"
-      ]
-    },
+      </div>
+
+    `;
+
+  }
 
 
-    salary: {
-      api: "salary",
-      title: "Payroll Sensei",
-      description: "Kelola payroll dan pembayaran sensei.",
-      addLabel: "+ Rekap Payroll",
-      form: "salary",
+  function showToast(
+    message,
+    type = "success"
+  ) {
 
-      columns: [
-        "SALARY_ID",
-        "ID_SENSEI",
-        "PERIOD",
-        "MEETING_COUNT",
-        "HOUR_COUNT",
-        "BASE_AMOUNT",
-        "BONUS",
-        "DEDUCTION",
-        "NET_SALARY",
-        "PAYMENT_DATE",
-        "PAYMENT_STATUS",
-        "NOTES"
-      ],
+    let toast =
+      document.getElementById(
+        "arima-toast"
+      );
 
-      search: [
-        "SALARY_ID",
-        "ID_SENSEI",
-        "PERIOD",
-        "PAYMENT_STATUS"
-      ]
+    if (!toast) {
+
+      toast =
+        document.createElement(
+          "div"
+        );
+
+      toast.id =
+        "arima-toast";
+
+      toast.style.position =
+        "fixed";
+
+      toast.style.right =
+        "24px";
+
+      toast.style.bottom =
+        "24px";
+
+      toast.style.zIndex =
+        "99999";
+
+      toast.style.padding =
+        "14px 18px";
+
+      toast.style.borderRadius =
+        "10px";
+
+      toast.style.boxShadow =
+        "0 10px 30px rgba(0,0,0,.18)";
+
+      toast.style.background =
+        "#111827";
+
+      toast.style.color =
+        "#fff";
+
+      toast.style.fontSize =
+        "14px";
+
+      document.body.appendChild(
+        toast
+      );
+
     }
 
-  };
+    toast.textContent =
+      message;
+
+    toast.dataset.type =
+      type;
+
+    clearTimeout(
+      toast._timer
+    );
+
+    toast._timer =
+      setTimeout(() => {
+
+        toast.remove();
+
+      }, 3000);
+
+  }
 
 
-  /* =========================================================
-   * INITIALIZATION
-   * ========================================================= */
+  function qs(
+    selector,
+    root = document
+  ) {
 
-  async function init() {
+    return root.querySelector(
+      selector
+    );
+
+  }
+
+
+  function qsa(
+    selector,
+    root = document
+  ) {
+
+    return Array.from(
+      root.querySelectorAll(
+        selector
+      )
+    );
+
+  }
+
+
+  function getAppRoot() {
+
+    return (
+      document.getElementById(
+        "app"
+      ) ||
+      document.getElementById(
+        "app-root"
+      ) ||
+      document.querySelector(
+        "main"
+      ) ||
+      document.body
+    );
+
+  }
+
+
+  function getContentRoot() {
+
+    return (
+      document.getElementById(
+        "page-content"
+      ) ||
+      document.getElementById(
+        "content"
+      ) ||
+      document.getElementById(
+        "app-content"
+      ) ||
+      document.querySelector(
+        ".page-content"
+      ) ||
+      getAppRoot()
+    );
+
+  }
+
+
+  /*
+   * =========================================================
+   * AUTH
+   * =========================================================
+   */
+
+  function getStoredUser() {
 
     try {
 
-      user = Auth.require();
+      const raw =
+        localStorage.getItem(
+          "ARIMA_USER"
+        );
 
-      if (!user) {
-        return;
+      if (!raw) {
+        return null;
       }
 
-      renderShell();
-
-      await load("dashboard");
+      return JSON.parse(
+        raw
+      );
 
     } catch (error) {
 
-      console.error(
-        "App initialization error:",
+      console.warn(
+        "Gagal membaca user:",
         error
       );
 
-      const app =
-        document.getElementById("app");
-
-      if (app) {
-        renderError(
-          app,
-          error
-        );
-      }
+      return null;
 
     }
 
   }
 
 
-  /* =========================================================
-   * SHELL
-   * ========================================================= */
+  function requireAuth() {
 
-  function renderShell() {
+    user =
+      getStoredUser();
 
-    const app =
-      document.getElementById("app");
+    if (!user) {
 
-    if (!app) {
-      throw new Error(
-        "Element #app tidak ditemukan."
-      );
+      const loginPage =
+        "login.html";
+
+      if (
+        !location.pathname.endsWith(
+          loginPage
+        )
+      ) {
+
+        location.href =
+          loginPage;
+
+        return false;
+
+      }
+
     }
 
-    app.innerHTML = `
+    return true;
 
-      <div class="shell">
+  }
 
-        <aside class="sidebar">
 
-          <div class="side-brand">
+  function logout() {
 
-            <img
-              src="assets/logo.webp"
-              alt="LPKS Arima Persada"
-            >
+    try {
 
-            <strong>
-              ARIMA<br>
-              MANAGEMENT
-            </strong>
+      localStorage.removeItem(
+        "ARIMA_USER"
+      );
+
+      localStorage.removeItem(
+        "ARIMA_SESSION"
+      );
+
+    } catch (error) {
+
+      console.warn(
+        error
+      );
+
+    }
+
+    location.href =
+      "login.html";
+
+  }
+
+
+  /*
+   * =========================================================
+   * LAYOUT
+   * =========================================================
+   */
+
+  function renderLayout() {
+
+    const root =
+      getAppRoot();
+
+    if (!root) {
+      return;
+    }
+
+    root.innerHTML = `
+
+      <div class="arima-layout">
+
+        <aside
+          class="sidebar"
+          id="arima-sidebar"
+        >
+
+          <div class="sidebar-brand">
+
+            <div class="brand-title">
+              ARIMA
+            </div>
+
+            <div class="brand-subtitle">
+              MANAGEMENT SYSTEM
+            </div>
 
           </div>
 
-          <nav class="nav">
 
-            ${menus.map(menu => `
+          <nav
+            class="sidebar-nav"
+            id="arima-menu"
+          >
 
-              <a
-                href="#"
-                data-page="${esc(menu[0])}"
-              >
+            ${menus.map(
+              menu => `
 
-                ${menu[2]}
-                &nbsp;
-                ${esc(menu[1])}
+                <button
+                  type="button"
+                  class="nav-item"
+                  data-page="${esc(menu[0])}"
+                >
 
-              </a>
+                  <span class="nav-icon">
+                    ${menu[2]}
+                  </span>
 
-            `).join("")}
+                  <span>
+                    ${esc(menu[1])}
+                  </span>
 
-            <a
-              href="#"
-              id="logout"
-            >
-              ↪ &nbsp; Keluar
-            </a>
+                </button>
+
+              `
+            ).join("")}
 
           </nav>
+
+
+          <div class="sidebar-footer">
+
+            <button
+              type="button"
+              id="btn-logout"
+              class="nav-item logout-button"
+            >
+
+              <span class="nav-icon">
+                ⇥
+              </span>
+
+              <span>
+                Keluar
+              </span>
+
+            </button>
+
+          </div>
 
         </aside>
 
 
-        <main class="main">
+        <section
+          class="main-area"
+        >
 
-          <header class="topbar">
+          <header
+            class="topbar"
+          >
 
             <div>
-              <strong>
-                ${esc(
-                  ARIMA_CONFIG.COMPANY_NAME ||
-                  "LPKS Arima Persada"
-                )}
-              </strong>
+
+              <button
+                type="button"
+                id="btn-sidebar"
+                class="icon-button"
+                aria-label="Menu"
+              >
+                ☰
+              </button>
+
             </div>
 
-            <div class="muted">
 
-              ${esc(user?.name || "")}
-              ·
-              ${esc(user?.role || "")}
+            <div
+              class="topbar-user"
+            >
+
+              <span
+                id="topbar-user-name"
+              >
+                ${esc(
+                  user?.name ||
+                  user?.NAME ||
+                  ""
+                )}
+              </span>
 
             </div>
 
           </header>
 
 
-          <section
-            class="content"
-            id="page"
-          ></section>
+          <main
+            id="page-content"
+            class="page-content"
+          >
 
-        </main>
+            <div class="card">
+              Memuat aplikasi...
+            </div>
+
+          </main>
+
+        </section>
 
       </div>
 
     `;
 
 
-    document
-      .querySelectorAll("[data-page]")
-      .forEach(link => {
+    const menu =
+      qs(
+        "#arima-menu"
+      );
 
-        link.addEventListener(
-          "click",
-          event => {
+    if (menu) {
 
-            event.preventDefault();
+      menu.addEventListener(
+        "click",
+        event => {
 
-            load(
-              link.dataset.page
+          const button =
+            event.target.closest(
+              "[data-page]"
             );
 
+          if (!button) {
+            return;
           }
-        );
 
-      });
+          const page =
+            button.dataset.page;
+
+          load(page);
+
+        }
+      );
+
+    }
 
 
-    const logout =
-      document.getElementById("logout");
+    const logoutButton =
+      qs(
+        "#btn-logout"
+      );
 
-    if (logout) {
+    if (logoutButton) {
 
-      logout.addEventListener(
+      logoutButton.addEventListener(
         "click",
-        async event => {
+        logout
+      );
 
-          event.preventDefault();
+    }
 
-          try {
 
-            await Auth.logout();
+    const sidebarButton =
+      qs(
+        "#btn-sidebar"
+      );
 
-          } catch (error) {
+    if (sidebarButton) {
 
-            console.error(
-              "Logout error:",
-              error
+      sidebarButton.addEventListener(
+        "click",
+        () => {
+
+          const sidebar =
+            qs(
+              "#arima-sidebar"
+            );
+
+          if (sidebar) {
+
+            sidebar.classList.toggle(
+              "collapsed"
             );
 
           }
@@ -871,117 +1118,162 @@ window.App = (() => {
   }
 
 
-  /* =========================================================
-   * LOAD PAGE
-   * ========================================================= */
+  function setActiveMenu(
+    page
+  ) {
 
-  async function load(page) {
+    qsa(
+      "[data-page]"
+    ).forEach(
+      button => {
 
-    const pageElement =
-      document.getElementById("page");
+        button.classList.toggle(
+          "active",
+          button.dataset.page === page
+        );
 
-    if (!pageElement) {
+      }
+    );
+
+  }
+
+
+  /*
+   * =========================================================
+   * PAGE LOAD
+   * =========================================================
+   */
+
+  async function load(
+    page
+  ) {
+
+    const el =
+      getContentRoot();
+
+    if (!el) {
       return;
     }
 
+    setActiveMenu(
+      page
+    );
 
-    document
-      .querySelectorAll("[data-page]")
-      .forEach(link => {
-
-        link.classList.toggle(
-          "active",
-          link.dataset.page === page
-        );
-
-      });
-
-
-    pageElement.innerHTML = `
+    el.innerHTML = `
 
       <div class="card">
-        Memuat...
+
+        <div class="muted">
+          Memuat...
+        </div>
+
       </div>
 
     `;
 
 
-    const renderers = {
-
-      dashboard:
-        renderDashboard,
-
-      students:
-        () =>
-          renderCrudPage(
-            pageElement,
-            "students"
-          ),
-
-      sensei:
-        () =>
-          renderCrudPage(
-            pageElement,
-            "sensei"
-          ),
-
-      attendance:
-        () =>
-          renderCrudPage(
-            pageElement,
-            "attendance"
-          ),
-
-      billing:
-        () =>
-          renderCrudPage(
-            pageElement,
-            "billing"
-          ),
-
-      payments:
-        () =>
-          renderCrudPage(
-            pageElement,
-            "payments"
-          ),
-
-      salary:
-        () =>
-          renderCrudPage(
-            pageElement,
-            "salary"
-          ),
-
-      reports:
-        renderReports,
-
-      settings:
-        renderSettings
-
-    };
-
-
-    const renderer =
-      renderers[page] ||
-      renderDashboard;
-
-
     try {
 
-      await renderer(
-        pageElement
-      );
+      switch (
+        String(page || "")
+          .toLowerCase()
+      ) {
+
+        case "dashboard":
+
+          await renderDashboard(
+            el
+          );
+
+          break;
+
+
+        case "students":
+
+          await renderStudents(
+            el
+          );
+
+          break;
+
+
+        case "sensei":
+
+          await renderSensei(
+            el
+          );
+
+          break;
+
+
+        case "attendance":
+
+          await renderAttendance(
+            el
+          );
+
+          break;
+
+
+        case "billing":
+
+          await renderBilling(
+            el
+          );
+
+          break;
+
+
+        case "payments":
+
+          await renderPayments(
+            el
+          );
+
+          break;
+
+
+        case "salary":
+
+          await renderSalary(
+            el
+          );
+
+          break;
+
+
+        case "reports":
+
+          await renderReports(
+            el
+          );
+
+          break;
+
+
+        case "settings":
+
+          await renderSettings(
+            el
+          );
+
+          break;
+
+
+        default:
+
+          await renderDashboard(
+            el
+          );
+
+          break;
+
+      }
 
     } catch (error) {
 
-      console.error(
-        "Page load error:",
-        error
-      );
-
       renderError(
-        pageElement,
+        el,
         error
       );
 
@@ -990,187 +1282,23 @@ window.App = (() => {
   }
 
 
-  /* =========================================================
+  /*
+   * =========================================================
    * DASHBOARD
-   * ========================================================= */
+   * =========================================================
+   */
 
-  async function renderDashboard(el) {
+  async function renderDashboard(
+    el
+  ) {
 
     try {
 
-      const results =
-        await Promise.allSettled([
+      const response =
+        await API.dashboard();
 
-          API.dashboard(),
-
-          API.students(),
-
-          API.sensei(),
-
-          API.attendance(),
-
-          API.billing(),
-
-          API.payments(),
-
-          API.salary()
-
-        ]);
-
-
-      const dashboard =
-        getResultData(
-          results[0]
-        );
-
-      const students =
-        getResultArray(
-          results[1]
-        );
-
-      const sensei =
-        getResultArray(
-          results[2]
-        );
-
-      const attendance =
-        getResultArray(
-          results[3]
-        );
-
-      const billing =
-        getResultArray(
-          results[4]
-        );
-
-      const payments =
-        getResultArray(
-          results[5]
-        );
-
-      const salary =
-        getResultArray(
-          results[6]
-        );
-
-
-      const activeStudents =
-        dashboard.students ??
-        students.filter(
-          row =>
-            String(
-              row.STATUS || ""
-            ).toUpperCase() === "AKTIF"
-        ).length;
-
-
-      const activeSensei =
-        dashboard.sensei ??
-        sensei.filter(
-          row =>
-            String(
-              row.STATUS || ""
-            ).toUpperCase() === "AKTIF"
-        ).length;
-
-
-      const attendancePercent =
-        dashboard.attendance ?? 0;
-
-
-      const pendingBilling =
-        dashboard.pendingBilling ??
-        billing.filter(
-          row =>
-            [
-              "PENDING",
-              "BELUM BAYAR",
-              "BELUM LUNAS",
-              "TERTUNGGAK",
-              "CICILAN",
-              "SEBAGIAN",
-              "TERLAMBAT"
-            ].includes(
-              String(
-                row.STATUS || ""
-              ).toUpperCase()
-            )
-        ).length;
-
-
-      const totalStudents =
-        students.length;
-
-
-      const totalSensei =
-        sensei.length;
-
-
-      const totalAttendance =
-        attendance.length;
-
-
-      const totalBilling =
-        billing.length;
-
-
-      const totalPayments =
-        payments.length;
-
-
-      const pendingBillingAmount =
-        billing
-          .filter(row =>
-            [
-              "PENDING",
-              "BELUM BAYAR",
-              "BELUM LUNAS",
-              "TERTUNGGAK",
-              "CICILAN",
-              "SEBAGIAN",
-              "TERLAMBAT"
-            ].includes(
-              String(
-                row.STATUS || ""
-              ).toUpperCase()
-            )
-          )
-          .reduce(
-            (
-              total,
-              row
-            ) =>
-              total +
-              numberValue(
-                row.AMOUNT
-              ),
-            0
-          );
-
-
-      const totalPaymentAmount =
-        payments.reduce(
-          (
-            total,
-            row
-          ) =>
-            total +
-            numberValue(
-              row.AMOUNT
-            ),
-          0
-        );
-
-
-      const pendingSalary =
-        salary.filter(
-          row =>
-            String(
-              row.PAYMENT_STATUS ||
-              ""
-            ).toUpperCase() ===
-            "PENDING"
-        ).length;
+      const data =
+        response?.data || {};
 
 
       el.innerHTML = `
@@ -1193,19 +1321,17 @@ window.App = (() => {
         </div>
 
 
-        <!-- STATISTIK UTAMA -->
-
         <div class="cards">
 
           <div class="card">
 
             <div class="muted">
-              SISWA AKTIF
+              Siswa Aktif
             </div>
 
             <div class="metric">
               ${formatNumber(
-                activeStudents
+                data.students
               )}
             </div>
 
@@ -1215,12 +1341,12 @@ window.App = (() => {
           <div class="card">
 
             <div class="muted">
-              SENSEI AKTIF
+              Sensei Aktif
             </div>
 
             <div class="metric">
               ${formatNumber(
-                activeSensei
+                data.sensei
               )}
             </div>
 
@@ -1230,12 +1356,12 @@ window.App = (() => {
           <div class="card">
 
             <div class="muted">
-              KEHADIRAN
+              Kehadiran
             </div>
 
             <div class="metric">
               ${formatNumber(
-                attendancePercent
+                data.attendance
               )}%
             </div>
 
@@ -1245,12 +1371,12 @@ window.App = (() => {
           <div class="card">
 
             <div class="muted">
-              TAGIHAN PENDING
+              Tagihan Pending
             </div>
 
             <div class="metric">
               ${formatNumber(
-                pendingBilling
+                data.pendingBilling
               )}
             </div>
 
@@ -1258,209 +1384,6 @@ window.App = (() => {
 
         </div>
 
-
-        <!-- TOTAL DATA -->
-
-        <div class="section">
-
-          <div class="page-title">
-
-            <div>
-
-              <h2>
-                TOTAL DATA
-              </h2>
-
-              <p class="muted">
-                Rekap seluruh data sistem.
-              </p>
-
-            </div>
-
-          </div>
-
-
-          <div class="cards">
-
-            <div class="card">
-
-              <div class="muted">
-                Siswa
-              </div>
-
-              <div class="metric">
-                ${formatNumber(
-                  totalStudents
-                )}
-              </div>
-
-            </div>
-
-
-            <div class="card">
-
-              <div class="muted">
-                Sensei
-              </div>
-
-              <div class="metric">
-                ${formatNumber(
-                  totalSensei
-                )}
-              </div>
-
-            </div>
-
-
-            <div class="card">
-
-              <div class="muted">
-                Absensi
-              </div>
-
-              <div class="metric">
-                ${formatNumber(
-                  totalAttendance
-                )}
-              </div>
-
-            </div>
-
-
-            <div class="card">
-
-              <div class="muted">
-                Tagihan
-              </div>
-
-              <div class="metric">
-                ${formatNumber(
-                  totalBilling
-                )}
-              </div>
-
-            </div>
-
-
-            <div class="card">
-
-              <div class="muted">
-                Pembayaran
-              </div>
-
-              <div class="metric">
-                ${formatNumber(
-                  totalPayments
-                )}
-              </div>
-
-            </div>
-
-          </div>
-
-        </div>
-
-
-        <!-- KEUANGAN -->
-
-        <div class="section">
-
-          <div class="page-title">
-
-            <div>
-
-              <h2>
-                KEUANGAN
-              </h2>
-
-              <p class="muted">
-                Ringkasan transaksi keuangan.
-              </p>
-
-            </div>
-
-          </div>
-
-
-          <div class="cards">
-
-            <div class="card">
-
-              <div class="muted">
-                Tagihan pending
-              </div>
-
-              <div class="metric">
-                ${formatCurrency(
-                  pendingBillingAmount
-                )}
-              </div>
-
-            </div>
-
-
-            <div class="card">
-
-              <div class="muted">
-                Total pembayaran
-              </div>
-
-              <div class="metric">
-                ${formatCurrency(
-                  totalPaymentAmount
-                )}
-              </div>
-
-            </div>
-
-          </div>
-
-        </div>
-
-
-        <!-- PAYROLL -->
-
-        <div class="section">
-
-          <div class="page-title">
-
-            <div>
-
-              <h2>
-                PAYROLL
-              </h2>
-
-              <p class="muted">
-                Ringkasan status payroll Sensei.
-              </p>
-
-            </div>
-
-          </div>
-
-
-          <div class="cards">
-
-            <div class="card">
-
-              <div class="muted">
-                Payroll pending
-              </div>
-
-              <div class="metric">
-                ${formatNumber(
-                  pendingSalary
-                )}
-              </div>
-
-            </div>
-
-          </div>
-
-        </div>
-
-
-        <!-- WELCOME -->
 
         <div class="section">
 
@@ -1469,14 +1392,15 @@ window.App = (() => {
             <strong>
               Selamat datang,
               ${esc(
-                user?.name || ""
+                user?.name ||
+                user?.NAME ||
+                "User"
               )}
             </strong>
 
             <p class="muted">
               Gunakan menu di sebelah kiri
-              untuk mengelola sistem
-              ARIMA Management.
+              untuk mengelola sistem.
             </p>
 
           </div>
@@ -1487,11 +1411,6 @@ window.App = (() => {
 
     } catch (error) {
 
-      console.error(
-        "Dashboard error:",
-        error
-      );
-
       renderError(
         el,
         error
@@ -1500,379 +1419,11 @@ window.App = (() => {
     }
 
   }
-
-
-  /* =========================================================
-   * CRUD PAGE
-   * ========================================================= */
-
-  async function renderCrudPage(
-    el,
-    type
-  ) {
-
-    const config =
-      TABLE_CONFIG[type];
-
-
-    if (!config) {
-
-      renderError(
-        el,
-        new Error(
-          "Konfigurasi halaman tidak ditemukan: " +
-          type
-        )
-      );
-
-      return;
-
-    }
-
-
-    let rows = [];
-
-
-    try {
-
-      const response =
-        await API[config.api]();
-
-
-      rows =
-        Array.isArray(
-          response?.data
-        )
-          ? response.data
-          : [];
-
-
-    } catch (error) {
-
-      renderError(
-        el,
-        error
-      );
-
-      return;
-
-    }
-
-
-    let filteredRows =
-      [...rows];
-
-
-    el.innerHTML = `
-
-      <div class="page-title">
-
-        <div>
-
-          <h1>
-            ${esc(
-              config.title
-            )}
-          </h1>
-
-          <p>
-            ${esc(
-              config.description
-            )}
-          </p>
-
-        </div>
-
-
-        <button
-          class="btn btn-primary"
-          id="addRecord"
-        >
-          ${esc(
-            config.addLabel
-          )}
-        </button>
-
-      </div>
-
-
-      <div
-        class="card"
-        style="margin-bottom:16px"
-      >
-
-        <div class="field">
-
-          <label>
-            Cari Data
-          </label>
-
-          <input
-            type="search"
-            id="tableSearch"
-            placeholder="Cari berdasarkan data..."
-          >
-
-        </div>
-
-      </div>
-
-
-      <div id="crudTable">
-
-        ${renderTable(
-          filteredRows,
-          config.columns,
-          {
-            editable: true
-          }
-        )}
-
-      </div>
-
-    `;
-
-
-    const addButton =
-      document.getElementById(
-        "addRecord"
-      );
-
-
-    if (addButton) {
-
-      addButton.addEventListener(
-        "click",
-        () => {
-
-          openForm(
-            config.form,
-            null,
-            async () => {
-
-              await refresh();
-
-            }
-          );
-
-        }
-      );
-
-    }
-
-
-    const search =
-      document.getElementById(
-        "tableSearch"
-      );
-
-
-    if (search) {
-
-      search.addEventListener(
-        "input",
-        () => {
-
-          const query =
-            search.value
-              .trim()
-              .toLowerCase();
-
-
-          if (!query) {
-
-            filteredRows =
-              [...rows];
-
-          } else {
-
-            filteredRows =
-              rows.filter(
-                row =>
-                  config.search.some(
-                    key =>
-                      String(
-                        row?.[key] ??
-                        ""
-                      )
-                        .toLowerCase()
-                        .includes(
-                          query
-                        )
-                  )
-              );
-
-          }
-
-
-          updateTable();
-
-        }
-      );
-
-    }
-
-
-    bindTableActions();
-
-
-    function updateTable() {
-
-      const tableElement =
-        document.getElementById(
-          "crudTable"
-        );
-
-
-      if (!tableElement) {
-        return;
-      }
-
-
-      tableElement.innerHTML =
-        renderTable(
-          filteredRows,
-          config.columns,
-          {
-            editable: true
-          }
-        );
-
-
-      bindTableActions();
-
-    }
-
-
-    function bindTableActions() {
-
-      document
-        .querySelectorAll(
-          ".btn-edit"
-        )
-        .forEach(
-          button => {
-
-            button.addEventListener(
-              "click",
-              () => {
-
-                const index =
-                  Number(
-                    button.dataset.index
-                  );
-
-
-                const record =
-                  filteredRows[index];
-
-
-                if (!record) {
-                  return;
-                }
-
-
-                openForm(
-                  config.form,
-                  record,
-                  async () => {
-
-                    await refresh();
-
-                  }
-                );
-
-              }
-            );
-
-          }
-        );
-
-
-      document
-        .querySelectorAll(
-          ".btn-delete"
-        )
-        .forEach(
-          button => {
-
-            button.addEventListener(
-              "click",
-              async () => {
-
-                const index =
-                  Number(
-                    button.dataset.index
-                  );
-
-
-                const record =
-                  filteredRows[index];
-
-
-                if (!record) {
-                  return;
-                }
-
-
-                await deleteRecord(
-                  type,
-                  record
-                );
-
-              }
-            );
-
-          }
-        );
-
-    }
-
-
-    async function refresh() {
-
-      try {
-
-        const response =
-          await API[config.api]();
-
-
-        rows =
-          Array.isArray(
-            response?.data
-          )
-            ? response.data
-            : [];
-
-
-        filteredRows =
-          [...rows];
-
-
-        if (search) {
-          search.value = "";
-        }
-
-
-        updateTable();
-
-      } catch (error) {
-
-        toast(
-          error.message ||
-          "Gagal memuat data."
-        );
-
-      }
-
-    }
-
-  }
-
-
-  /* =========================================================
-   * TABLE
-   * ========================================================= */
+  /*
+   * =========================================================
+   * GENERIC TABLE
+   * =========================================================
+   */
 
   function renderTable(
     rows,
@@ -1880,21 +1431,37 @@ window.App = (() => {
     options = {}
   ) {
 
-    const editable =
-      options.editable === true;
-
-
-    const safeRows =
+    const data =
       Array.isArray(rows)
         ? rows
         : [];
 
+    const emptyText =
+      options.emptyText ||
+      "Belum ada data.";
 
-    let html = `
+    if (!data.length) {
+
+      return `
+
+        <div class="card">
+
+          <div class="muted">
+            ${esc(emptyText)}
+          </div>
+
+        </div>
+
+      `;
+
+    }
+
+
+    return `
 
       <div class="table-wrap">
 
-        <table class="table">
+        <table class="data-table">
 
           <thead>
 
@@ -1902,19 +1469,19 @@ window.App = (() => {
 
               ${columns.map(
                 column => `
+
                   <th>
                     ${esc(
-                      fieldLabel(
-                        column
-                      )
+                      column.label ||
+                      column.key
                     )}
                   </th>
+
                 `
               ).join("")}
 
-
               ${
-                editable
+                options.actions
                   ? "<th>Aksi</th>"
                   : ""
               }
@@ -1926,150 +1493,79 @@ window.App = (() => {
 
           <tbody>
 
-    `;
+            ${data.map(
+              (row, index) => `
 
+                <tr>
 
-    if (!safeRows.length) {
+                  ${columns.map(
+                    column => {
 
-      html += `
+                      let value =
+                        row[
+                          column.key
+                        ];
 
-        <tr>
+                      if (
+                        typeof column.render ===
+                        "function"
+                      ) {
 
-          <td
-            colspan="${
-              columns.length +
-              (editable ? 1 : 0)
-            }"
-            class="muted"
-          >
-            Belum ada data.
-          </td>
+                        value =
+                          column.render(
+                            value,
+                            row,
+                            index
+                          );
 
-        </tr>
+                      }
 
-      `;
+                      return `
 
-    } else {
+                        <td>
+                          ${
+                            value === null ||
+                            value === undefined
+                              ? ""
+                              : value
+                          }
+                        </td>
 
-      safeRows.forEach(
-        (row, index) => {
-
-          html += `
-
-            <tr>
-
-              ${columns.map(
-                column => {
-
-                  let value =
-                    row?.[column] ??
-                    "";
-
-
-                  if (
-                    column.includes(
-                      "AMOUNT"
-                    ) ||
-                    column.includes(
-                      "SALARY"
-                    ) ||
-                    column.includes(
-                      "BONUS"
-                    ) ||
-                    column.includes(
-                      "DEDUCTION"
-                    ) ||
-                    column.includes(
-                      "BASE_AMOUNT"
-                    ) ||
-                    column.includes(
-                      "NET_SALARY"
-                    )
-                  ) {
-
-                    if (
-                      value !== ""
-                    ) {
-
-                      value =
-                        formatCurrency(
-                          value
-                        );
+                      `;
 
                     }
+                  ).join("")}
 
+
+                  ${
+                    options.actions
+                      ? `
+
+                        <td>
+
+                          <div
+                            class="table-actions"
+                          >
+
+                            ${
+                              options.actions(
+                                row,
+                                index
+                              )
+                            }
+
+                          </div>
+
+                        </td>
+
+                      `
+                      : ""
                   }
 
+                </tr>
 
-                  return `
-
-                    <td>
-                      ${esc(
-                        value
-                      )}
-                    </td>
-
-                  `;
-
-                }
-              ).join("")}
-
-
-              ${
-                editable
-                  ? `
-
-                    <td>
-
-                      <div
-                        class="table-actions"
-                      >
-
-                        <button
-                          type="button"
-                          class="btn btn-light btn-edit"
-                          data-index="${index}"
-                        >
-                          Edit
-                        </button>
-
-                        ${
-                          canDelete(
-                            columns
-                          )
-                            ? `
-
-                              <button
-                                type="button"
-                                class="btn btn-danger btn-delete"
-                                data-index="${index}"
-                              >
-                                Hapus
-                              </button>
-
-                            `
-                            : ""
-                        }
-
-                      </div>
-
-                    </td>
-
-                  `
-                  : ""
-              }
-
-            </tr>
-
-          `;
-
-        }
-      );
-
-    }
-
-
-    html += `
+              `
+            ).join("")}
 
           </tbody>
 
@@ -2079,194 +1575,1435 @@ window.App = (() => {
 
     `;
 
+  }
 
-    return html;
+
+  /*
+   * =========================================================
+   * PAGE HEADER
+   * =========================================================
+   */
+
+  function pageHeader(
+    title,
+    description,
+    buttonText = "",
+    buttonId = ""
+  ) {
+
+    return `
+
+      <div class="page-title">
+
+        <div>
+
+          <h1>
+            ${esc(title)}
+          </h1>
+
+          ${
+            description
+              ? `
+
+                <p>
+                  ${esc(description)}
+                </p>
+
+              `
+              : ""
+          }
+
+        </div>
+
+
+        ${
+          buttonText
+            ? `
+
+              <button
+                type="button"
+                class="btn btn-primary"
+                id="${esc(buttonId)}"
+              >
+
+                + ${esc(buttonText)}
+
+              </button>
+
+            `
+            : ""
+        }
+
+      </div>
+
+    `;
 
   }
 
 
-  function canDelete(columns) {
+  /*
+   * =========================================================
+   * STUDENTS
+   * =========================================================
+   */
 
-    const id =
-      columns?.[0];
+  async function renderStudents(
+    el
+  ) {
+
+    try {
+
+      const response =
+        await API.students();
+
+      const rows =
+        response?.data || [];
 
 
-    return (
-      id === "ID_SISWA" ||
-      id === "ID_SENSEI"
-    );
+      el.innerHTML = `
+
+        ${pageHeader(
+          "Data Siswa",
+          "Kelola data siswa LPKS Arima Persada.",
+          "Tambah Siswa",
+          "btn-add-student"
+        )}
+
+
+        <div class="card">
+
+          ${renderTable(
+            rows,
+            [
+              {
+                key: "ID_SISWA",
+                label: "ID"
+              },
+
+              {
+                key: "NAMA",
+                label: "Nama"
+              },
+
+              {
+                key: "NIK",
+                label: "NIK"
+              },
+
+              {
+                key: "NO_WA",
+                label: "WhatsApp"
+              },
+
+              {
+                key: "PROGRAM",
+                label: "Program"
+              },
+
+              {
+                key: "ASRAMA",
+                label: "Asrama"
+              },
+
+              {
+                key: "STATUS",
+                label: "Status"
+              }
+            ],
+            {
+              actions: row => `
+
+                <button
+                  type="button"
+                  class="btn btn-small"
+                  data-edit-student="${esc(
+                    row.ID_SISWA
+                  )}"
+                >
+                  Edit
+                </button>
+
+                <button
+                  type="button"
+                  class="btn btn-small btn-danger"
+                  data-delete-student="${esc(
+                    row.ID_SISWA
+                  )}"
+                >
+                  Hapus
+                </button>
+
+              `
+            }
+          )}
+
+        </div>
+
+      `;
+
+
+      const addButton =
+        qs(
+          "#btn-add-student"
+        );
+
+      if (addButton) {
+
+        addButton.addEventListener(
+          "click",
+          () => {
+
+            openFormModal(
+              "students"
+            );
+
+          }
+        );
+
+      }
+
+
+      qsa(
+        "[data-edit-student]"
+      ).forEach(
+        button => {
+
+          button.addEventListener(
+            "click",
+            () => {
+
+              const id =
+                button.dataset
+                  .editStudent;
+
+              const row =
+                rows.find(
+                  item =>
+                    String(
+                      item.ID_SISWA
+                    ) === String(id)
+                );
+
+              if (row) {
+
+                openFormModal(
+                  "students",
+                  row
+                );
+
+              }
+
+            }
+          );
+
+        }
+      );
+
+
+      qsa(
+        "[data-delete-student]"
+      ).forEach(
+        button => {
+
+          button.addEventListener(
+            "click",
+            async () => {
+
+              const id =
+                button.dataset
+                  .deleteStudent;
+
+              if (
+                !confirm(
+                  "Hapus data siswa ini?"
+                )
+              ) {
+                return;
+              }
+
+              try {
+
+                await API.delete(
+                  "students",
+                  {
+                    ID_SISWA: id
+                  }
+                );
+
+                showToast(
+                  "Data siswa berhasil dihapus."
+                );
+
+                await renderStudents(
+                  el
+                );
+
+              } catch (error) {
+
+                showToast(
+                  error.message ||
+                  "Gagal menghapus data.",
+                  "error"
+                );
+
+              }
+
+            }
+          );
+
+        }
+      );
+
+    } catch (error) {
+
+      renderError(
+        el,
+        error
+      );
+
+    }
 
   }
 
 
-  /* =========================================================
-   * FIELD LABEL
-   * ========================================================= */
+  /*
+   * =========================================================
+   * SENSEI
+   * =========================================================
+   */
 
-  function fieldLabel(key) {
+  async function renderSensei(
+    el
+  ) {
 
-    const labels = {
+    try {
 
-      ID_SISWA:
-        "ID Siswa",
+      const response =
+        await API.sensei();
 
-      NAMA:
-        "Nama",
-
-      NIK:
-        "NIK",
-
-      NO_WA:
-        "No. WhatsApp",
-
-      NAMA_ORANG_TUA:
-        "Nama Orang Tua / Wali",
-
-      NO_WA_ORANG_TUA:
-        "No. WA Orang Tua",
-
-      PROGRAM:
-        "Program",
-
-      ASRAMA:
-        "Asrama",
-
-      TANGGAL_MASUK:
-        "Tanggal Masuk",
-
-      STATUS:
-        "Status",
-
-      ID_SENSEI:
-        "ID Sensei",
-
-      EMAIL:
-        "Email",
-
-      TARIF_PER_PERTEMUAN:
-        "Tarif / Pertemuan",
-
-      TARIF_PER_JAM:
-        "Tarif / Jam",
-
-      ATTENDANCE_ID:
-        "ID Absensi",
-
-      ACTOR_ID:
-        "Actor ID",
-
-      ACTOR_TYPE:
-        "Tipe",
-
-      SESSION_ID:
-        "Session ID",
-
-      CLASS_ID:
-        "Class ID",
-
-      TANGGAL:
-        "Tanggal",
-
-      JAM_MASUK:
-        "Jam Masuk",
-
-      JAM_KELUAR:
-        "Jam Keluar",
-
-      CATATAN:
-        "Catatan",
-
-      BILLING_ID:
-        "ID Tagihan",
-
-      DESCRIPTION:
-        "Deskripsi",
-
-      CATEGORY:
-        "Kategori",
-
-      AMOUNT:
-        "Jumlah",
-
-      DUE_DATE:
-        "Jatuh Tempo",
-
-      NOTES:
-        "Catatan",
-
-      PAYMENT_ID:
-        "ID Pembayaran",
-
-      PAYMENT_DATE:
-        "Tanggal Pembayaran",
-
-      PAYMENT_METHOD:
-        "Metode Pembayaran",
-
-      REFERENCE_NO:
-        "No. Referensi",
-
-      SALARY_ID:
-        "ID Payroll",
-
-      PERIOD:
-        "Periode",
-
-      MEETING_COUNT:
-        "Jumlah Pertemuan",
-
-      HOUR_COUNT:
-        "Jumlah Jam",
-
-      BASE_AMOUNT:
-        "Gaji Pokok",
-
-      BONUS:
-        "Bonus",
-
-      DEDUCTION:
-        "Potongan",
-
-      NET_SALARY:
-        "Gaji Bersih",
-
-      PAYMENT_STATUS:
-        "Status Pembayaran"
-
-    };
+      const rows =
+        response?.data || [];
 
 
-    return (
-      labels[key] ||
-      String(key)
-        .replaceAll(
-          "_",
-          " "
-        )
-    );
+      el.innerHTML = `
+
+        ${pageHeader(
+          "Data Sensei",
+          "Kelola data pengajar LPKS Arima Persada.",
+          "Tambah Sensei",
+          "btn-add-sensei"
+        )}
+
+
+        <div class="card">
+
+          ${renderTable(
+            rows,
+            [
+              {
+                key: "ID_SENSEI",
+                label: "ID"
+              },
+
+              {
+                key: "NAMA",
+                label: "Nama"
+              },
+
+              {
+                key: "NO_WA",
+                label: "WhatsApp"
+              },
+
+              {
+                key: "EMAIL",
+                label: "Email"
+              },
+
+              {
+                key: "TARIF_PER_PERTEMUAN",
+                label: "Tarif / Pertemuan",
+                render: value =>
+                  formatRupiah(value)
+              },
+
+              {
+                key: "TARIF_PER_JAM",
+                label: "Tarif / Jam",
+                render: value =>
+                  formatRupiah(value)
+              },
+
+              {
+                key: "STATUS",
+                label: "Status"
+              }
+            ],
+            {
+              actions: row => `
+
+                <button
+                  type="button"
+                  class="btn btn-small"
+                  data-edit-sensei="${esc(
+                    row.ID_SENSEI
+                  )}"
+                >
+                  Edit
+                </button>
+
+                <button
+                  type="button"
+                  class="btn btn-small btn-danger"
+                  data-delete-sensei="${esc(
+                    row.ID_SENSEI
+                  )}"
+                >
+                  Hapus
+                </button>
+
+              `
+            }
+          )}
+
+        </div>
+
+      `;
+
+
+      const addButton =
+        qs(
+          "#btn-add-sensei"
+        );
+
+      if (addButton) {
+
+        addButton.addEventListener(
+          "click",
+          () => {
+
+            openFormModal(
+              "sensei"
+            );
+
+          }
+        );
+
+      }
+
+
+      qsa(
+        "[data-edit-sensei]"
+      ).forEach(
+        button => {
+
+          button.addEventListener(
+            "click",
+            () => {
+
+              const id =
+                button.dataset
+                  .editSensei;
+
+              const row =
+                rows.find(
+                  item =>
+                    String(
+                      item.ID_SENSEI
+                    ) === String(id)
+                );
+
+              if (row) {
+
+                openFormModal(
+                  "sensei",
+                  row
+                );
+
+              }
+
+            }
+          );
+
+        }
+      );
+
+
+      qsa(
+        "[data-delete-sensei]"
+      ).forEach(
+        button => {
+
+          button.addEventListener(
+            "click",
+            async () => {
+
+              const id =
+                button.dataset
+                  .deleteSensei;
+
+              if (
+                !confirm(
+                  "Hapus data sensei ini?"
+                )
+              ) {
+                return;
+              }
+
+              try {
+
+                await API.delete(
+                  "sensei",
+                  {
+                    ID_SENSEI: id
+                  }
+                );
+
+                showToast(
+                  "Data sensei berhasil dihapus."
+                );
+
+                await renderSensei(
+                  el
+                );
+
+              } catch (error) {
+
+                showToast(
+                  error.message ||
+                  "Gagal menghapus data.",
+                  "error"
+                );
+
+              }
+
+            }
+          );
+
+        }
+      );
+
+    } catch (error) {
+
+      renderError(
+        el,
+        error
+      );
+
+    }
 
   }
 
 
-  /* =========================================================
-   * FORM
-   * ========================================================= */
+  /*
+   * =========================================================
+   * ATTENDANCE
+   * =========================================================
+   */
 
-  function openForm(
-    formType,
-    existing = null,
-    onSaved = null
+  async function renderAttendance(
+    el
+  ) {
+
+    try {
+
+      const response =
+        await API.attendance();
+
+      const rows =
+        response?.data || [];
+
+
+      el.innerHTML = `
+
+        ${pageHeader(
+          "Absensi",
+          "Kelola data kehadiran siswa dan sensei.",
+          "Catat Absensi",
+          "btn-add-attendance"
+        )}
+
+
+        <div class="card">
+
+          ${renderTable(
+            rows,
+            [
+              {
+                key: "ATTENDANCE_ID",
+                label: "ID"
+              },
+
+              {
+                key: "ACTOR_ID",
+                label: "ID Aktor"
+              },
+
+              {
+                key: "ACTOR_TYPE",
+                label: "Tipe"
+              },
+
+              {
+                key: "SESSION_ID",
+                label: "Session"
+              },
+
+              {
+                key: "TANGGAL",
+                label: "Tanggal"
+              },
+
+              {
+                key: "JAM_MASUK",
+                label: "Masuk"
+              },
+
+              {
+                key: "JAM_KELUAR",
+                label: "Keluar"
+              },
+
+              {
+                key: "STATUS",
+                label: "Status"
+              },
+
+              {
+                key: "CATATAN",
+                label: "Catatan"
+              }
+            ],
+            {
+              actions: row => `
+
+                <button
+                  type="button"
+                  class="btn btn-small"
+                  data-edit-attendance="${esc(
+                    row.ATTENDANCE_ID
+                  )}"
+                >
+                  Edit
+                </button>
+
+              `
+            }
+          )}
+
+        </div>
+
+      `;
+
+
+      const addButton =
+        qs(
+          "#btn-add-attendance"
+        );
+
+      if (addButton) {
+
+        addButton.addEventListener(
+          "click",
+          () => {
+
+            openFormModal(
+              "attendance"
+            );
+
+          }
+        );
+
+      }
+
+
+      qsa(
+        "[data-edit-attendance]"
+      ).forEach(
+        button => {
+
+          button.addEventListener(
+            "click",
+            () => {
+
+              const id =
+                button.dataset
+                  .editAttendance;
+
+              const row =
+                rows.find(
+                  item =>
+                    String(
+                      item.ATTENDANCE_ID
+                    ) === String(id)
+                );
+
+              if (row) {
+
+                openFormModal(
+                  "attendance",
+                  row
+                );
+
+              }
+
+            }
+          );
+
+        }
+      );
+
+    } catch (error) {
+
+      renderError(
+        el,
+        error
+      );
+
+    }
+
+  }
+
+
+  /*
+   * =========================================================
+   * BILLING
+   * =========================================================
+   */
+
+  async function renderBilling(
+    el
+  ) {
+
+    try {
+
+      const response =
+        await API.billing();
+
+      const rows =
+        response?.data || [];
+
+
+      el.innerHTML = `
+
+        ${pageHeader(
+          "Tagihan",
+          "Kelola tagihan siswa.",
+          "Tambah Tagihan",
+          "btn-add-billing"
+        )}
+
+
+        <div class="card">
+
+          ${renderTable(
+            rows,
+            [
+              {
+                key: "BILLING_ID",
+                label: "ID"
+              },
+
+              {
+                key: "ID_SISWA",
+                label: "ID Siswa"
+              },
+
+              {
+                key: "DESCRIPTION",
+                label: "Deskripsi"
+              },
+
+              {
+                key: "CATEGORY",
+                label: "Kategori"
+              },
+
+              {
+                key: "AMOUNT",
+                label: "Jumlah",
+                render: value =>
+                  formatRupiah(value)
+              },
+
+              {
+                key: "DUE_DATE",
+                label: "Jatuh Tempo"
+              },
+
+              {
+                key: "STATUS",
+                label: "Status"
+              },
+
+              {
+                key: "NOTES",
+                label: "Catatan"
+              }
+            ],
+            {
+              actions: row => `
+
+                <button
+                  type="button"
+                  class="btn btn-small"
+                  data-edit-billing="${esc(
+                    row.BILLING_ID
+                  )}"
+                >
+                  Edit
+                </button>
+
+              `
+            }
+          )}
+
+        </div>
+
+      `;
+
+
+      const addButton =
+        qs(
+          "#btn-add-billing"
+        );
+
+      if (addButton) {
+
+        addButton.addEventListener(
+          "click",
+          () => {
+
+            openFormModal(
+              "billing"
+            );
+
+          }
+        );
+
+      }
+
+
+      qsa(
+        "[data-edit-billing]"
+      ).forEach(
+        button => {
+
+          button.addEventListener(
+            "click",
+            () => {
+
+              const id =
+                button.dataset
+                  .editBilling;
+
+              const row =
+                rows.find(
+                  item =>
+                    String(
+                      item.BILLING_ID
+                    ) === String(id)
+                );
+
+              if (row) {
+
+                openFormModal(
+                  "billing",
+                  row
+                );
+
+              }
+
+            }
+          );
+
+        }
+      );
+
+    } catch (error) {
+
+      renderError(
+        el,
+        error
+      );
+
+    }
+
+  }
+
+
+  /*
+   * =========================================================
+   * PAYMENTS
+   * =========================================================
+   */
+
+  async function renderPayments(
+    el
+  ) {
+
+    try {
+
+      const response =
+        await API.payments();
+
+      const rows =
+        response?.data || [];
+
+
+      el.innerHTML = `
+
+        ${pageHeader(
+          "Pembayaran",
+          "Kelola pembayaran siswa.",
+          "Tambah Pembayaran",
+          "btn-add-payment"
+        )}
+
+
+        <div class="card">
+
+          ${renderTable(
+            rows,
+            [
+              {
+                key: "PAYMENT_ID",
+                label: "ID"
+              },
+
+              {
+                key: "BILLING_ID",
+                label: "ID Tagihan"
+              },
+
+              {
+                key: "ID_SISWA",
+                label: "ID Siswa"
+              },
+
+              {
+                key: "PAYMENT_DATE",
+                label: "Tanggal"
+              },
+
+              {
+                key: "AMOUNT",
+                label: "Jumlah",
+                render: value =>
+                  formatRupiah(value)
+              },
+
+              {
+                key: "PAYMENT_METHOD",
+                label: "Metode"
+              },
+
+              {
+                key: "REFERENCE_NO",
+                label: "Referensi"
+              },
+
+              {
+                key: "NOTES",
+                label: "Catatan"
+              }
+            ],
+            {
+              actions: row => `
+
+                <button
+                  type="button"
+                  class="btn btn-small"
+                  data-edit-payment="${esc(
+                    row.PAYMENT_ID
+                  )}"
+                >
+                  Edit
+                </button>
+
+              `
+            }
+          )}
+
+        </div>
+
+      `;
+
+
+      const addButton =
+        qs(
+          "#btn-add-payment"
+        );
+
+      if (addButton) {
+
+        addButton.addEventListener(
+          "click",
+          () => {
+
+            openFormModal(
+              "payments"
+            );
+
+          }
+        );
+
+      }
+
+
+      qsa(
+        "[data-edit-payment]"
+      ).forEach(
+        button => {
+
+          button.addEventListener(
+            "click",
+            () => {
+
+              const id =
+                button.dataset
+                  .editPayment;
+
+              const row =
+                rows.find(
+                  item =>
+                    String(
+                      item.PAYMENT_ID
+                    ) === String(id)
+                );
+
+              if (row) {
+
+                openFormModal(
+                  "payments",
+                  row
+                );
+
+              }
+
+            }
+          );
+
+        }
+      );
+
+    } catch (error) {
+
+      renderError(
+        el,
+        error
+      );
+
+    }
+
+  }
+
+
+  /*
+   * =========================================================
+   * SALARY
+   * =========================================================
+   */
+
+  async function renderSalary(
+    el
+  ) {
+
+    try {
+
+      const response =
+        await API.salary();
+
+      const rows =
+        response?.data || [];
+
+
+      el.innerHTML = `
+
+        ${pageHeader(
+          "Payroll Sensei",
+          "Kelola pembayaran honor sensei.",
+          "Tambah Payroll",
+          "btn-add-salary"
+        )}
+
+
+        <div class="card">
+
+          ${renderTable(
+            rows,
+            [
+              {
+                key: "SALARY_ID",
+                label: "ID"
+              },
+
+              {
+                key: "ID_SENSEI",
+                label: "ID Sensei"
+              },
+
+              {
+                key: "PERIOD",
+                label: "Periode"
+              },
+
+              {
+                key: "MEETING_COUNT",
+                label: "Pertemuan"
+              },
+
+              {
+                key: "HOUR_COUNT",
+                label: "Jam"
+              },
+
+              {
+                key: "BASE_AMOUNT",
+                label: "Gaji Pokok",
+                render: value =>
+                  formatRupiah(value)
+              },
+
+              {
+                key: "BONUS",
+                label: "Bonus",
+                render: value =>
+                  formatRupiah(value)
+              },
+
+              {
+                key: "DEDUCTION",
+                label: "Potongan",
+                render: value =>
+                  formatRupiah(value)
+              },
+
+              {
+                key: "NET_SALARY",
+                label: "Gaji Bersih",
+                render: value =>
+                  formatRupiah(value)
+              },
+
+              {
+                key: "PAYMENT_STATUS",
+                label: "Status"
+              }
+            ],
+            {
+              actions: row => `
+
+                <button
+                  type="button"
+                  class="btn btn-small"
+                  data-edit-salary="${esc(
+                    row.SALARY_ID
+                  )}"
+                >
+                  Edit
+                </button>
+
+              `
+            }
+          )}
+
+        </div>
+
+      `;
+
+
+      const addButton =
+        qs(
+          "#btn-add-salary"
+        );
+
+      if (addButton) {
+
+        addButton.addEventListener(
+          "click",
+          () => {
+
+            openFormModal(
+              "salary"
+            );
+
+          }
+        );
+
+      }
+
+
+      qsa(
+        "[data-edit-salary]"
+      ).forEach(
+        button => {
+
+          button.addEventListener(
+            "click",
+            () => {
+
+              const id =
+                button.dataset
+                  .editSalary;
+
+              const row =
+                rows.find(
+                  item =>
+                    String(
+                      item.SALARY_ID
+                    ) === String(id)
+                );
+
+              if (row) {
+
+                openFormModal(
+                  "salary",
+                  row
+                );
+
+              }
+
+            }
+          );
+
+        }
+      );
+
+    } catch (error) {
+
+      renderError(
+        el,
+        error
+      );
+
+    }
+
+  }
+
+
+  /*
+   * =========================================================
+   * REPORTS
+   * =========================================================
+   */
+
+  async function renderReports(
+    el
+  ) {
+
+    try {
+
+      const response =
+        await API.dashboard();
+
+      const data =
+        response?.data || {};
+
+
+      el.innerHTML = `
+
+        ${pageHeader(
+          "Laporan",
+          "Ringkasan data operasional."
+        )}
+
+
+        <div class="cards">
+
+          <div class="card">
+
+            <div class="muted">
+              Siswa Aktif
+            </div>
+
+            <div class="metric">
+              ${formatNumber(
+                data.students
+              )}
+            </div>
+
+          </div>
+
+
+          <div class="card">
+
+            <div class="muted">
+              Sensei Aktif
+            </div>
+
+            <div class="metric">
+              ${formatNumber(
+                data.sensei
+              )}
+            </div>
+
+          </div>
+
+
+          <div class="card">
+
+            <div class="muted">
+              Kehadiran
+            </div>
+
+            <div class="metric">
+              ${formatNumber(
+                data.attendance
+              )}%
+            </div>
+
+          </div>
+
+
+          <div class="card">
+
+            <div class="muted">
+              Tagihan Pending
+            </div>
+
+            <div class="metric">
+              ${formatNumber(
+                data.pendingBilling
+              )}
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div class="section">
+
+          <div class="card">
+
+            <h3>
+              Informasi
+            </h3>
+
+            <p class="muted">
+              Gunakan menu data untuk melihat
+              dan mengelola data secara detail.
+            </p>
+
+          </div>
+
+        </div>
+
+      `;
+
+    } catch (error) {
+
+      renderError(
+        el,
+        error
+      );
+
+    }
+
+  }
+
+
+  /*
+   * =========================================================
+   * SETTINGS
+   * =========================================================
+   */
+
+  async function renderSettings(
+    el
+  ) {
+
+    el.innerHTML = `
+
+      ${pageHeader(
+        "Pengaturan",
+        "Informasi sistem ARIMA Management System."
+      )}
+
+
+      <div class="card">
+
+        <div class="setting-row">
+
+          <div>
+
+            <strong>
+              Nama Aplikasi
+            </strong>
+
+            <div class="muted">
+              ARIMA MANAGEMENT SYSTEM
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div class="setting-row">
+
+          <div>
+
+            <strong>
+              Perusahaan
+            </strong>
+
+            <div class="muted">
+              LPKS Arima Persada
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div class="setting-row">
+
+          <div>
+
+            <strong>
+              User Login
+            </strong>
+
+            <div class="muted">
+              ${esc(
+                user?.name ||
+                user?.NAME ||
+                "-"
+              )}
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    `;
+
+  }
+
+
+  /*
+   * =========================================================
+   * FORM MODAL
+   * =========================================================
+   */
+
+  function openFormModal(
+    type,
+    existing = null
   ) {
 
     const config =
-      FORM_CONFIG[formType];
-
+      FORM_CONFIG[type];
 
     if (!config) {
 
-      toast(
-        "Form tidak ditemukan: " +
-        formType
+      showToast(
+        "Form belum tersedia.",
+        "error"
       );
 
       return;
@@ -2274,8 +3011,192 @@ window.App = (() => {
     }
 
 
+    const old =
+      document.getElementById(
+        "arima-form-modal"
+      );
+
+    if (old) {
+      old.remove();
+    }
+
+
     const isEdit =
       !!existing;
+
+
+    const fields =
+      config.fields.map(
+        field => {
+
+          const value =
+            existing?.[
+              field.key
+            ] ?? "";
+
+
+          if (
+            field.type ===
+            "select"
+          ) {
+
+            return `
+
+              <div class="form-group">
+
+                <label>
+                  ${esc(
+                    field.label
+                  )}
+
+                  ${
+                    field.required
+                      ? "<span>*</span>"
+                      : ""
+                  }
+
+                </label>
+
+
+                <select
+                  name="${esc(field.key)}"
+                  ${
+                    field.required
+                      ? "required"
+                      : ""
+                  }
+                >
+
+                  <option value="">
+                    Pilih...
+                  </option>
+
+                  ${(
+                    field.options ||
+                    []
+                  ).map(
+                    option => `
+
+                      <option
+                        value="${esc(option)}"
+                        ${
+                          String(
+                            value
+                          ) ===
+                          String(
+                            option
+                          )
+                            ? "selected"
+                            : ""
+                        }
+                      >
+                        ${esc(option)}
+                      </option>
+
+                    `
+                  ).join("")}
+
+                </select>
+
+              </div>
+
+            `;
+
+          }
+
+
+          if (
+            field.type ===
+            "textarea"
+          ) {
+
+            return `
+
+              <div class="form-group">
+
+                <label>
+                  ${esc(
+                    field.label
+                  )}
+
+                  ${
+                    field.required
+                      ? "<span>*</span>"
+                      : ""
+                  }
+
+                </label>
+
+
+                <textarea
+                  name="${esc(field.key)}"
+                  placeholder="${esc(
+                    field.placeholder ||
+                    ""
+                  )}"
+                  ${
+                    field.required
+                      ? "required"
+                      : ""
+                  }
+                >${esc(
+                  value
+                )}</textarea>
+
+              </div>
+
+            `;
+
+          }
+
+
+          return `
+
+            <div class="form-group">
+
+              <label>
+
+                ${esc(
+                  field.label
+                )}
+
+                ${
+                  field.required
+                    ? "<span>*</span>"
+                    : ""
+                }
+
+              </label>
+
+
+              <input
+                type="${esc(
+                  field.type ||
+                  "text"
+                )}"
+                name="${esc(
+                  field.key
+                )}"
+                value="${esc(
+                  value
+                )}"
+                placeholder="${esc(
+                  field.placeholder ||
+                  ""
+                )}"
+                ${
+                  field.required
+                    ? "required"
+                    : ""
+                }
+              />
+
+            </div>
+
+          `;
+
+        }
+      ).join("");
 
 
     const modal =
@@ -2283,16 +3204,22 @@ window.App = (() => {
         "div"
       );
 
+    modal.id =
+      "arima-form-modal";
 
     modal.className =
-      "modal-backdrop";
+      "modal-overlay";
 
 
     modal.innerHTML = `
 
-      <div class="modal">
+      <div
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+      >
 
-        <div class="section-head">
+        <div class="modal-header">
 
           <div>
 
@@ -2309,36 +3236,29 @@ window.App = (() => {
 
           <button
             type="button"
-            class="btn btn-light"
-            id="closeModal"
+            class="modal-close"
+            id="modal-close"
           >
-            Tutup
+            ×
           </button>
 
         </div>
 
 
-        <form id="recordForm">
+        <form
+          id="arima-form"
+          class="form-grid"
+        >
 
-          <div class="form-grid">
-
-            ${config.fields.map(
-              field =>
-                renderField(
-                  field,
-                  existing
-                )
-            ).join("")}
-
-          </div>
+          ${fields}
 
 
-          <div class="modal-actions">
+          <div class="modal-footer">
 
             <button
               type="button"
-              class="btn btn-light"
-              id="cancelForm"
+              class="btn"
+              id="modal-cancel"
             >
               Batal
             </button>
@@ -2347,9 +3267,13 @@ window.App = (() => {
             <button
               type="submit"
               class="btn btn-primary"
-              id="saveForm"
+              id="modal-submit"
             >
-              Simpan
+              ${
+                isEdit
+                  ? "Simpan Perubahan"
+                  : "Simpan"
+              }
             </button>
 
           </div>
@@ -2366,615 +3290,198 @@ window.App = (() => {
     );
 
 
-    const close = () => {
+    function close() {
+
       modal.remove();
-    };
+
+    }
 
 
-    modal
-      .querySelector(
-        "#closeModal"
-      )
-      .addEventListener(
-        "click",
-        close
+    qs(
+      "#modal-close",
+      modal
+    )?.addEventListener(
+      "click",
+      close
+    );
+
+
+    qs(
+      "#modal-cancel",
+      modal
+    )?.addEventListener(
+      "click",
+      close
+    );
+
+
+    modal.addEventListener(
+      "click",
+      event => {
+
+        if (
+          event.target ===
+          modal
+        ) {
+
+          close();
+
+        }
+
+      }
+    );
+
+
+    const form =
+      qs(
+        "#arima-form",
+        modal
       );
 
 
-    modal
-      .querySelector(
-        "#cancelForm"
-      )
-      .addEventListener(
-        "click",
-        close
-      );
+    form?.addEventListener(
+      "submit",
+      async event => {
+
+        event.preventDefault();
 
 
-    modal
-      .querySelector(
-        "#recordForm"
-      )
-      .addEventListener(
-        "submit",
-        async event => {
+        const submit =
+          qs(
+            "#modal-submit",
+            modal
+          );
 
-          event.preventDefault();
+        if (submit) {
+
+          submit.disabled =
+            true;
+
+          submit.textContent =
+            "Menyimpan...";
+
+        }
 
 
-          const button =
-            modal.querySelector(
-              "#saveForm"
+        try {
+
+          const formData =
+            new FormData(
+              form
             );
 
-
-          const original =
-            button.textContent;
-
-
-          try {
-
-            button.disabled =
-              true;
-
-            button.textContent =
-              "Menyimpan...";
+          const payload =
+            {};
 
 
-            const payload =
-              collectFormData(
-                modal,
-                config
-              );
+          config.fields.forEach(
+            field => {
 
-
-            validateFormData(
-              payload,
-              config
-            );
-
-
-            await saveRecord(
-              formType,
-              payload
-            );
-
-
-            toast(
-              isEdit
-                ? "Data berhasil diperbarui."
-                : "Data berhasil ditambahkan."
-            );
-
-
-            close();
-
-
-            if (
-              typeof onSaved ===
-              "function"
-            ) {
-
-              await onSaved();
+              payload[
+                field.key
+              ] =
+                formData.get(
+                  field.key
+                ) || "";
 
             }
+          );
 
 
-          } catch (error) {
-
-            console.error(
-              "Save error:",
-              error
-            );
+          let response;
 
 
-            toast(
-              error.message ||
+          if (isEdit) {
+
+            response =
+              await API.update(
+                type,
+                payload
+              );
+
+          } else {
+
+            response =
+              await API.create(
+                type,
+                payload
+              );
+
+          }
+
+
+          if (
+            response &&
+            response.success === false
+          ) {
+
+            throw new Error(
+              response.message ||
               "Gagal menyimpan data."
             );
 
+          }
 
-            button.disabled =
+
+          showToast(
+            isEdit
+              ? "Data berhasil diperbarui."
+              : "Data berhasil ditambahkan."
+          );
+
+
+          close();
+
+
+          await load(
+            type
+          );
+
+
+        } catch (error) {
+
+          showToast(
+            error.message ||
+            "Gagal menyimpan data.",
+            "error"
+          );
+
+
+          if (submit) {
+
+            submit.disabled =
               false;
 
-            button.textContent =
-              original;
+            submit.textContent =
+              isEdit
+                ? "Simpan Perubahan"
+                : "Simpan";
 
           }
-
-        }
-      );
-
-  }
-
-
-  function renderField(
-    field,
-    existing
-  ) {
-
-    const value =
-      existing?.[field.key] ??
-      "";
-
-
-    const required =
-      field.required
-        ? "required"
-        : "";
-
-
-    const id =
-      "field_" +
-      field.key;
-
-
-    const full =
-      field.type ===
-      "textarea"
-        ? "full"
-        : "";
-
-
-    let control = "";
-
-
-    if (
-      field.type ===
-      "select"
-    ) {
-
-      control = `
-
-        <select
-          id="${esc(id)}"
-          name="${esc(field.key)}"
-          ${required}
-        >
-
-          <option value="">
-            Pilih...
-          </option>
-
-          ${(field.options || [])
-            .map(
-              option => `
-
-                <option
-                  value="${esc(option)}"
-                  ${
-                    String(value) ===
-                    String(option)
-                      ? "selected"
-                      : ""
-                  }
-                >
-                  ${esc(option)}
-                </option>
-
-              `
-            )
-            .join("")}
-
-        </select>
-
-      `;
-
-    } else if (
-      field.type ===
-      "textarea"
-    ) {
-
-      control = `
-
-        <textarea
-          id="${esc(id)}"
-          name="${esc(field.key)}"
-          rows="4"
-          ${required}
-          placeholder="${esc(
-            field.placeholder ||
-            ""
-          )}"
-        >${esc(
-          value
-        )}</textarea>
-
-      `;
-
-    } else {
-
-      control = `
-
-        <input
-          id="${esc(id)}"
-          name="${esc(field.key)}"
-          type="${esc(
-            field.type ||
-            "text"
-          )}"
-          value="${esc(
-            normalizeInputValue(
-              field,
-              value
-            )
-          )}"
-          ${required}
-          placeholder="${esc(
-            field.placeholder ||
-            ""
-          )}"
-        >
-
-      `;
-
-    }
-
-
-    return `
-
-      <div
-        class="field ${full}"
-      >
-
-        <label
-          for="${esc(id)}"
-        >
-          ${esc(
-            field.label ||
-            field.key
-          )}
-
-          ${
-            field.required
-              ? `<span style="color:red">*</span>`
-              : ""
-          }
-
-        </label>
-
-        ${control}
-
-      </div>
-
-    `;
-
-  }
-
-
-  function normalizeInputValue(
-    field,
-    value
-  ) {
-
-    if (
-      value === null ||
-      value === undefined
-    ) {
-      return "";
-    }
-
-
-    if (
-      field.type ===
-      "date"
-    ) {
-
-      return normalizeDate(
-        value
-      );
-
-    }
-
-
-    return String(value);
-
-  }
-
-
-  function normalizeDate(
-    value
-  ) {
-
-    if (!value) {
-      return "";
-    }
-
-
-    const text =
-      String(value);
-
-
-    if (
-      /^\d{4}-\d{2}-\d{2}$/.test(
-        text
-      )
-    ) {
-
-      return text;
-
-    }
-
-
-    const date =
-      new Date(value);
-
-
-    if (
-      Number.isNaN(
-        date.getTime()
-      )
-    ) {
-
-      return "";
-
-    }
-
-
-    return [
-      date.getFullYear(),
-      String(
-        date.getMonth() + 1
-      ).padStart(
-        2,
-        "0"
-      ),
-      String(
-        date.getDate()
-      ).padStart(
-        2,
-        "0"
-      )
-    ].join("-");
-
-  }
-
-
-  function collectFormData(
-    modal,
-    config
-  ) {
-
-    const form =
-      modal.querySelector(
-        "#recordForm"
-      );
-
-
-    const data = {};
-
-
-    config.fields.forEach(
-      field => {
-
-        const element =
-          form.elements[
-            field.key
-          ];
-
-
-        if (!element) {
-          return;
-        }
-
-
-        let value =
-          element.value;
-
-
-        if (
-          field.type ===
-          "number"
-        ) {
-
-          value =
-            value === ""
-              ? ""
-              : Number(value);
-
-        }
-
-
-        data[field.key] =
-          value;
-
-      }
-    );
-
-
-    return data;
-
-  }
-
-
-  function validateFormData(
-    payload,
-    config
-  ) {
-
-    const errors = [];
-
-
-    config.fields.forEach(
-      field => {
-
-        if (
-          !field.required
-        ) {
-          return;
-        }
-
-
-        const value =
-          payload[field.key];
-
-
-        if (
-          value === "" ||
-          value === null ||
-          value === undefined
-        ) {
-
-          errors.push(
-            field.label ||
-            field.key
-          );
 
         }
 
       }
     );
 
-
-    if (
-      errors.length
-    ) {
-
-      throw new Error(
-        "Field wajib belum diisi: " +
-        errors.join(", ")
-      );
-
-    }
-
   }
 
 
-  /* =========================================================
-   * SAVE
-   * ========================================================= */
+  /*
+   * =========================================================
+   * INIT
+   * =========================================================
+   */
 
-  async function saveRecord(
-    type,
-    payload
-  ) {
+  async function init() {
 
-    const actions = {
-
-      students:
-        "studentSave",
-
-      sensei:
-        "senseiSave",
-
-      attendance:
-        "attendanceSave",
-
-      billing:
-        "billingSave",
-
-      payments:
-        "paymentSave",
-
-      salary:
-        "salarySave"
-
-    };
-
-
-    const action =
-      actions[type];
-
-
-    if (!action) {
-
-      throw new Error(
-        "Action penyimpanan tidak ditemukan: " +
-        type
-      );
-
-    }
-
-
-    const result =
-      await API.call(
-        action,
-        payload
-      );
+    console.log(
+      "ARIMA MANAGEMENT SYSTEM initializing..."
+    );
 
 
     if (
-      !result ||
-      result.success !== true
-    ) {
-
-      throw new Error(
-        result?.message ||
-        "Data gagal disimpan."
-      );
-
-    }
-
-
-    return result;
-
-  }
-
-
-  /* =========================================================
-   * DELETE
-   * ========================================================= */
-
-  async function deleteRecord(
-    type,
-    record
-  ) {
-
-    const actions = {
-
-      students:
-        "studentDelete",
-
-      sensei:
-        "senseiDelete"
-
-    };
-
-
-    const action =
-      actions[type];
-
-
-    if (!action) {
-
-      toast(
-        "Penghapusan untuk menu ini belum tersedia."
-      );
-
-      return;
-
-    }
-
-
-    const config =
-      TABLE_CONFIG[type];
-
-
-    const idField =
-      config?.columns?.[0];
-
-
-    const id =
-      record?.[idField];
-
-
-    if (!id) {
-
-      toast(
-        "ID data tidak ditemukan."
-      );
-
-      return;
-
-    }
-
-
-    if (
-      !window.confirm(
-        "Yakin ingin menghapus data " +
-        id +
-        "?"
-      )
+      !requireAuth()
     ) {
 
       return;
@@ -2982,571 +3489,21 @@ window.App = (() => {
     }
 
 
-    try {
+    renderLayout();
 
-      const result =
-        await API.call(
-          action,
-          {
-            id: id
-          }
-        );
 
-
-      if (
-        !result ||
-        result.success !== true
-      ) {
-
-        throw new Error(
-          result?.message ||
-          "Data gagal dihapus."
-        );
-
-      }
-
-
-      toast(
-        "Data berhasil dihapus."
-      );
-
-
-      const active =
-        document.querySelector(
-          "[data-page].active"
-        );
-
-
-      await load(
-        active?.dataset?.page ||
-        "dashboard"
-      );
-
-
-    } catch (error) {
-
-      console.error(
-        "Delete error:",
-        error
-      );
-
-
-      toast(
-        error.message ||
-        "Gagal menghapus data."
-      );
-
-    }
-
-  }
-
-
-  /* =========================================================
-   * REPORTS
-   * ========================================================= */
-
-  async function renderReports(
-    el
-  ) {
-
-    el.innerHTML = `
-
-      <div class="page-title">
-
-        <div>
-
-          <h1>
-            Laporan
-          </h1>
-
-          <p>
-            Ringkasan operasional
-            dan keuangan.
-          </p>
-
-        </div>
-
-      </div>
-
-
-      <div class="cards">
-
-        <div class="card">
-
-          <strong>
-            Laporan Absensi
-          </strong>
-
-          <p class="muted">
-            Rekap kehadiran siswa
-            dan sensei.
-          </p>
-
-          <button
-            class="btn btn-dark"
-            style="margin-top:10px"
-            onclick="App.load('attendance')"
-          >
-            Buka
-          </button>
-
-        </div>
-
-
-        <div class="card">
-
-          <strong>
-            Laporan Tagihan
-          </strong>
-
-          <p class="muted">
-            Rekap tagihan dan
-            status pembayaran.
-          </p>
-
-          <button
-            class="btn btn-dark"
-            style="margin-top:10px"
-            onclick="App.load('billing')"
-          >
-            Buka
-          </button>
-
-        </div>
-
-
-        <div class="card">
-
-          <strong>
-            Laporan Payroll
-          </strong>
-
-          <p class="muted">
-            Rekap payroll Sensei.
-          </p>
-
-          <button
-            class="btn btn-dark"
-            style="margin-top:10px"
-            onclick="App.load('salary')"
-          >
-            Buka
-          </button>
-
-        </div>
-
-      </div>
-
-    `;
-
-  }
-
-
-  /* =========================================================
-   * SETTINGS
-   * ========================================================= */
-
-  async function renderSettings(
-    el
-  ) {
-
-    el.innerHTML = `
-
-      <div class="page-title">
-
-        <div>
-
-          <h1>
-            Pengaturan
-          </h1>
-
-          <p>
-            Konfigurasi aplikasi
-            dan integrasi database.
-          </p>
-
-        </div>
-
-      </div>
-
-
-      <div class="card">
-
-        <div class="field">
-
-          <label>
-            Google Spreadsheet ID
-          </label>
-
-          <input
-            value="${esc(
-              ARIMA_CONFIG.SPREADSHEET_ID ||
-              ""
-            )}"
-            readonly
-          >
-
-        </div>
-
-
-        <div class="field">
-
-          <label>
-            API URL
-          </label>
-
-          <input
-            value="${esc(
-              ARIMA_CONFIG.API_URL ||
-              ""
-            )}"
-            readonly
-          >
-
-        </div>
-
-
-        <p class="muted">
-          Backend aplikasi menggunakan
-          Google Apps Script.
-        </p>
-
-      </div>
-
-    `;
-
-  }
-
-
-  /* =========================================================
-   * HELPERS
-   * ========================================================= */
-
-  function getResultData(
-    result
-  ) {
-
-    if (
-      result?.status ===
-      "fulfilled"
-    ) {
-
-      return result.value?.data ||
-        {};
-
-    }
-
-    return {};
-
-  }
-
-
-  function getResultArray(
-    result
-  ) {
-
-    if (
-      result?.status ===
-      "fulfilled"
-    ) {
-
-      return Array.isArray(
-        result.value?.data
-      )
-        ? result.value.data
-        : [];
-
-    }
-
-    return [];
-
-  }
-
-
-  function numberValue(
-    value
-  ) {
-
-    if (
-      typeof value ===
-      "number"
-    ) {
-
-      return Number.isFinite(
-        value
-      )
-        ? value
-        : 0;
-
-    }
-
-
-    let text =
-      String(
-        value ?? ""
-      ).trim();
-
-
-    if (!text) {
-      return 0;
-    }
-
-
-    text =
-      text.replace(
-        /[^\d,.-]/g,
-        ""
-      );
-
-
-    if (
-      text.includes(",") &&
-      text.includes(".")
-    ) {
-
-      text =
-        text.replace(
-          /\./g,
-          ""
-        ).replace(
-          ",",
-          "."
-        );
-
-    } else if (
-      text.includes(".")
-    ) {
-
-      const parts =
-        text.split(".");
-
-
-      if (
-        parts.length > 2
-      ) {
-
-        text =
-          text.replace(
-            /\./g,
-            ""
-          );
-
-      }
-
-    } else if (
-      text.includes(",")
-    ) {
-
-      const parts =
-        text.split(",");
-
-
-      if (
-        parts.length === 2 &&
-        parts[1].length <= 2
-      ) {
-
-        text =
-          text.replace(
-            ",",
-            "."
-          );
-
-      } else {
-
-        text =
-          text.replace(
-            /,/g,
-            ""
-          );
-
-      }
-
-    }
-
-
-    const number =
-      Number(text);
-
-
-    return Number.isFinite(
-      number
-    )
-      ? number
-      : 0;
-
-  }
-
-
-  function formatNumber(
-    value
-  ) {
-
-    return new Intl.NumberFormat(
-      "id-ID"
-    ).format(
-      Number(value) || 0
+    await load(
+      "dashboard"
     );
 
   }
 
 
-  function formatCurrency(
-    value
-  ) {
-
-    return new Intl.NumberFormat(
-      "id-ID",
-      {
-        style: "currency",
-        currency: "IDR",
-        maximumFractionDigits: 0
-      }
-    ).format(
-      numberValue(value)
-    );
-
-  }
-
-
-  function esc(
-    value
-  ) {
-
-    return String(
-      value ?? ""
-    ).replace(
-      /[&<>"']/g,
-      character => ({
-        "&":
-          "&amp;",
-        "<":
-          "&lt;",
-        ">":
-          "&gt;",
-        '"':
-          "&quot;",
-        "'":
-          "&#39;"
-      }[character])
-    );
-
-  }
-
-
-  function renderError(
-    el,
-    error
-  ) {
-
-    const message =
-      error?.message ||
-      "Terjadi kesalahan.";
-
-
-    el.innerHTML = `
-
-      <div class="card">
-
-        <h3>
-          Terjadi kesalahan
-        </h3>
-
-        <p class="muted">
-          ${esc(
-            message
-          )}
-        </p>
-
-        <button
-          class="btn btn-primary"
-          id="retryButton"
-        >
-          Coba Lagi
-        </button>
-
-      </div>
-
-    `;
-
-
-    const retry =
-      document.getElementById(
-        "retryButton"
-      );
-
-
-    if (retry) {
-
-      retry.addEventListener(
-        "click",
-        () => {
-
-          const active =
-            document.querySelector(
-              "[data-page].active"
-            );
-
-
-          load(
-            active?.dataset?.page ||
-            "dashboard"
-          );
-
-        }
-      );
-
-    }
-
-  }
-
-
-  function toast(
-    message
-  ) {
-
-    document
-      .querySelectorAll(
-        ".toast"
-      )
-      .forEach(
-        element =>
-          element.remove()
-      );
-
-
-    const element =
-      document.createElement(
-        "div"
-      );
-
-
-    element.className =
-      "toast";
-
-
-    element.textContent =
-      message;
-
-
-    document.body.appendChild(
-      element
-    );
-
-
-    setTimeout(
-      () => {
-        element.remove();
-      },
-      2600
-    );
-
-  }
-
-
-  /* =========================================================
+  /*
+   * =========================================================
    * PUBLIC API
-   * ========================================================= */
+   * =========================================================
+   */
 
   return {
 
@@ -3554,47 +3511,25 @@ window.App = (() => {
 
     load,
 
-    form: (
-      type,
-      existing = null,
-      onSaved = null
-    ) => {
+    logout,
 
-      const map = {
+    renderDashboard,
 
-        Siswa:
-          "students",
+    renderStudents,
 
-        Sensei:
-          "sensei",
+    renderSensei,
 
-        Absensi:
-          "attendance",
+    renderAttendance,
 
-        Tagihan:
-          "billing",
+    renderBilling,
 
-        Pembayaran:
-          "payments",
+    renderPayments,
 
-        Payroll:
-          "salary"
+    renderSalary,
 
-      };
+    renderReports,
 
-
-      const normalized =
-        map[type] ||
-        type;
-
-
-      openForm(
-        normalized,
-        existing,
-        onSaved
-      );
-
-    }
+    renderSettings
 
   };
 
