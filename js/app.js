@@ -1,5 +1,15 @@
+/* =========================================================
+   ARIMA MANAGEMENT SYSTEM
+   APP.JS - FRONTEND
+   LPKS ARIMA PERSADA
+   ========================================================= */
+
 window.App = (() => {
   "use strict";
+
+  /* =========================================================
+     MENU
+     ========================================================= */
 
   const menus = [
     ["dashboard", "Dashboard", "▦"],
@@ -15,11 +25,9 @@ window.App = (() => {
 
   let user = null;
 
-  /*
-   * =========================================================
-   * FORM CONFIGURATION
-   * =========================================================
-   */
+  /* =========================================================
+     FORM CONFIG
+     ========================================================= */
 
   const FORM_CONFIG = {
 
@@ -36,47 +44,36 @@ window.App = (() => {
           required: false,
           placeholder: "Kosongkan untuk ID otomatis"
         },
-
         {
           key: "NAMA",
           label: "Nama Siswa",
           type: "text",
-          required: true,
-          placeholder: "Nama lengkap siswa"
+          required: true
         },
-
         {
           key: "NIK",
           label: "NIK",
           type: "text",
-          required: false,
-          placeholder: "Nomor Induk Kependudukan"
+          required: false
         },
-
         {
           key: "NO_WA",
           label: "No. WhatsApp",
           type: "text",
-          required: true,
-          placeholder: "08xxxxxxxxxx"
+          required: true
         },
-
         {
           key: "NAMA_ORANG_TUA",
           label: "Nama Orang Tua / Wali",
           type: "text",
-          required: true,
-          placeholder: "Nama orang tua / wali"
+          required: true
         },
-
         {
           key: "NO_WA_ORANG_TUA",
           label: "No. WhatsApp Orang Tua / Wali",
           type: "text",
-          required: false,
-          placeholder: "08xxxxxxxxxx"
+          required: false
         },
-
         {
           key: "PROGRAM",
           label: "Program",
@@ -89,7 +86,6 @@ window.App = (() => {
             "ENGINEER"
           ]
         },
-
         {
           key: "ASRAMA",
           label: "Asrama",
@@ -100,14 +96,12 @@ window.App = (() => {
             "TIDAK"
           ]
         },
-
         {
           key: "TANGGAL_MASUK",
           label: "Tanggal Masuk",
           type: "date",
           required: true
         },
-
         {
           key: "STATUS",
           label: "Status",
@@ -123,65 +117,48 @@ window.App = (() => {
       ]
     },
 
-
     sensei: {
-
       title: "Tambah Sensei",
-
       editTitle: "Edit Sensei",
-
       idField: "ID_SENSEI",
 
       fields: [
-
         {
           key: "ID_SENSEI",
           label: "ID Sensei",
           type: "text",
-          required: false,
-          placeholder: "Kosongkan untuk ID otomatis"
+          required: false
         },
-
         {
           key: "NAMA",
           label: "Nama Sensei",
           type: "text",
-          required: true,
-          placeholder: "Nama lengkap sensei"
+          required: true
         },
-
         {
           key: "NO_WA",
           label: "No. WhatsApp",
           type: "text",
-          required: false,
-          placeholder: "08xxxxxxxxxx"
+          required: false
         },
-
         {
           key: "EMAIL",
           label: "Email",
           type: "email",
-          required: false,
-          placeholder: "email@example.com"
+          required: false
         },
-
         {
           key: "TARIF_PER_PERTEMUAN",
           label: "Tarif per Pertemuan",
           type: "number",
-          required: false,
-          placeholder: "0"
+          required: false
         },
-
         {
           key: "TARIF_PER_JAM",
           label: "Tarif per Jam",
           type: "number",
-          required: false,
-          placeholder: "0"
+          required: false
         },
-
         {
           key: "STATUS",
           label: "Status",
@@ -192,38 +169,27 @@ window.App = (() => {
             "NONAKTIF"
           ]
         }
-
       ]
-
     },
 
-
     attendance: {
-
       title: "Catat Absensi",
-
       editTitle: "Edit Absensi",
-
       idField: "ATTENDANCE_ID",
 
       fields: [
-
         {
           key: "ATTENDANCE_ID",
           label: "ID Absensi",
           type: "text",
-          required: false,
-          placeholder: "Kosongkan untuk ID otomatis"
+          required: false
         },
-
         {
           key: "ACTOR_ID",
           label: "ID Siswa / Sensei",
           type: "text",
-          required: true,
-          placeholder: "ID aktor"
+          required: true
         },
-
         {
           key: "ACTOR_TYPE",
           label: "Tipe Aktor",
@@ -234,44 +200,36 @@ window.App = (() => {
             "SENSEI"
           ]
         },
-
         {
           key: "SESSION_ID",
           label: "Session ID",
           type: "text",
-          required: false,
-          placeholder: "Session ID"
+          required: false
         },
-
         {
           key: "CLASS_ID",
           label: "Class ID",
           type: "text",
-          required: false,
-          placeholder: "Class ID"
+          required: false
         },
-
         {
           key: "TANGGAL",
           label: "Tanggal",
           type: "date",
           required: true
         },
-
         {
           key: "JAM_MASUK",
           label: "Jam Masuk",
           type: "time",
           required: false
         },
-
         {
           key: "JAM_KELUAR",
           label: "Jam Keluar",
           type: "time",
           required: false
         },
-
         {
           key: "STATUS",
           label: "Status",
@@ -285,52 +243,39 @@ window.App = (() => {
             "TERLAMBAT"
           ]
         },
-
         {
           key: "CATATAN",
           label: "Catatan",
           type: "textarea",
           required: false
         }
-
       ]
-
     },
 
-
     billing: {
-
       title: "Tambah Tagihan",
-
       editTitle: "Edit Tagihan",
-
       idField: "BILLING_ID",
 
       fields: [
-
         {
           key: "BILLING_ID",
           label: "ID Tagihan",
           type: "text",
-          required: false,
-          placeholder: "Kosongkan untuk ID otomatis"
+          required: false
         },
-
         {
           key: "ID_SISWA",
           label: "ID Siswa",
           type: "text",
           required: true
         },
-
         {
           key: "DESCRIPTION",
           label: "Deskripsi",
           type: "text",
-          required: true,
-          placeholder: "Contoh: Biaya belajar bulan Oktober"
+          required: true
         },
-
         {
           key: "CATEGORY",
           label: "Kategori",
@@ -343,22 +288,18 @@ window.App = (() => {
             "LAINNYA"
           ]
         },
-
         {
           key: "AMOUNT",
           label: "Jumlah",
           type: "number",
-          required: true,
-          placeholder: "0"
+          required: true
         },
-
         {
           key: "DUE_DATE",
           label: "Jatuh Tempo",
           type: "date",
           required: true
         },
-
         {
           key: "STATUS",
           label: "Status",
@@ -373,65 +314,51 @@ window.App = (() => {
             "CICILAN"
           ]
         },
-
         {
           key: "NOTES",
           label: "Catatan",
           type: "textarea",
           required: false
         }
-
       ]
-
     },
 
-
     payments: {
-
       title: "Tambah Pembayaran",
-
       editTitle: "Edit Pembayaran",
-
       idField: "PAYMENT_ID",
 
       fields: [
-
         {
           key: "PAYMENT_ID",
           label: "ID Pembayaran",
           type: "text",
-          required: false,
-          placeholder: "Kosongkan untuk ID otomatis"
+          required: false
         },
-
         {
           key: "BILLING_ID",
           label: "ID Tagihan",
           type: "text",
           required: true
         },
-
         {
           key: "ID_SISWA",
           label: "ID Siswa",
           type: "text",
           required: true
         },
-
         {
           key: "PAYMENT_DATE",
           label: "Tanggal Pembayaran",
           type: "date",
           required: true
         },
-
         {
           key: "AMOUNT",
           label: "Jumlah Pembayaran",
           type: "number",
           required: true
         },
-
         {
           key: "PAYMENT_METHOD",
           label: "Metode Pembayaran",
@@ -444,107 +371,87 @@ window.App = (() => {
             "LAINNYA"
           ]
         },
-
         {
           key: "REFERENCE_NO",
           label: "No. Referensi",
           type: "text",
           required: false
         },
-
         {
           key: "NOTES",
           label: "Catatan",
           type: "textarea",
           required: false
         }
-
       ]
-
     },
 
-
     salary: {
-
-      title: "Payroll Sensei",
-
+      title: "Tambah Payroll",
       editTitle: "Edit Payroll",
-
       idField: "SALARY_ID",
 
       fields: [
-
         {
           key: "SALARY_ID",
           label: "ID Payroll",
           type: "text",
-          required: false,
-          placeholder: "Kosongkan untuk ID otomatis"
+          required: false
         },
-
         {
           key: "ID_SENSEI",
           label: "ID Sensei",
           type: "text",
           required: true
         },
-
         {
           key: "PERIOD",
           label: "Periode",
           type: "month",
           required: true
         },
-
         {
           key: "MEETING_COUNT",
           label: "Jumlah Pertemuan",
           type: "number",
           required: false
         },
-
         {
           key: "HOUR_COUNT",
           label: "Jumlah Jam",
           type: "number",
           required: false
         },
-
         {
           key: "BASE_AMOUNT",
           label: "Gaji Pokok",
           type: "number",
           required: false
         },
-
         {
           key: "BONUS",
           label: "Bonus",
           type: "number",
           required: false
         },
-
         {
           key: "DEDUCTION",
           label: "Potongan",
           type: "number",
           required: false
         },
-
         {
           key: "NET_SALARY",
           label: "Gaji Bersih",
           type: "number",
           required: false
         },
-
         {
           key: "PAYMENT_DATE",
           label: "Tanggal Pembayaran",
           type: "date",
           required: false
         },
-
         {
           key: "PAYMENT_STATUS",
           label: "Status Pembayaran",
@@ -556,92 +463,80 @@ window.App = (() => {
             "LUNAS"
           ]
         },
-
         {
           key: "NOTES",
           label: "Catatan",
           type: "textarea",
           required: false
         }
-
       ]
-
     }
-
   };
 
-
-  /*
-   * =========================================================
-   * UTILITIES
-   * =========================================================
-   */
+  /* =========================================================
+     UTILITIES
+     ========================================================= */
 
   function esc(value) {
-
     return String(value ?? "")
       .replace(/&/g, "&amp;")
       .replace(/</g, "&lt;")
       .replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;")
       .replace(/'/g, "&#039;");
-
   }
 
+  function number(value) {
+    const n = Number(value || 0);
+    return Number.isFinite(n) ? n : 0;
+  }
 
   function formatNumber(value) {
-
-    const number = Number(value || 0);
-
-    return new Intl.NumberFormat(
-      "id-ID"
-    ).format(
-      Number.isFinite(number)
-        ? number
-        : 0
+    return new Intl.NumberFormat("id-ID").format(
+      number(value)
     );
-
   }
-
 
   function formatRupiah(value) {
-
-    const number = Number(value || 0);
-
-    return new Intl.NumberFormat(
-      "id-ID",
-      {
-        style: "currency",
-        currency: "IDR",
-        maximumFractionDigits: 0
-      }
-    ).format(
-      Number.isFinite(number)
-        ? number
-        : 0
-    );
-
+    return new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      maximumFractionDigits: 0
+    }).format(number(value));
   }
 
+  function qs(selector, root = document) {
+    return root.querySelector(selector);
+  }
 
-  function renderError(
-    el,
-    error
-  ) {
+  function qsa(selector, root = document) {
+    return Array.from(root.querySelectorAll(selector));
+  }
 
-    console.error(
-      "ARIMA APP ERROR:",
-      error
+  function getAppRoot() {
+    return (
+      document.getElementById("app") ||
+      document.getElementById("app-root") ||
+      document.body
     );
+  }
+
+  function getContentRoot() {
+    return (
+      document.getElementById("page-content") ||
+      document.getElementById("content") ||
+      document.getElementById("app-content") ||
+      document.querySelector(".content") ||
+      getAppRoot()
+    );
+  }
+
+  function renderError(el, error) {
+    console.error("ARIMA APP ERROR:", error);
 
     el.innerHTML = `
-
       <div class="card">
-
-        <h3>
-          Terjadi kesalahan
-        </h3>
-
+        <h3>Terjadi kesalahan</h3>
         <p class="muted">
           ${esc(
             error?.message ||
@@ -649,606 +544,476 @@ window.App = (() => {
             "Terjadi kesalahan pada aplikasi."
           )}
         </p>
-
       </div>
-
     `;
-
   }
 
-
-  function showToast(
-    message,
-    type = "success"
-  ) {
-
-    let toast =
-      document.getElementById(
-        "arima-toast"
-      );
+  function showToast(message, type = "success") {
+    let toast = document.getElementById("arima-toast");
 
     if (!toast) {
-
-      toast =
-        document.createElement(
-          "div"
-        );
-
-      toast.id =
-        "arima-toast";
-
-      toast.style.position =
-        "fixed";
-
-      toast.style.right =
-        "24px";
-
-      toast.style.bottom =
-        "24px";
-
-      toast.style.zIndex =
-        "99999";
-
-      toast.style.padding =
-        "14px 18px";
-
-      toast.style.borderRadius =
-        "10px";
-
-      toast.style.boxShadow =
-        "0 10px 30px rgba(0,0,0,.18)";
-
-      toast.style.background =
-        "#111827";
-
-      toast.style.color =
-        "#fff";
-
-      toast.style.fontSize =
-        "14px";
-
-      document.body.appendChild(
-        toast
-      );
-
+      toast = document.createElement("div");
+      toast.id = "arima-toast";
+      toast.className = "toast";
+      document.body.appendChild(toast);
     }
 
-    toast.textContent =
-      message;
+    toast.textContent = message;
 
-    toast.dataset.type =
-      type;
+    if (type === "error") {
+      toast.style.background = "#8d1015";
+    } else {
+      toast.style.background = "#111";
+    }
 
-    clearTimeout(
-      toast._timer
-    );
+    clearTimeout(toast._timer);
 
-    toast._timer =
-      setTimeout(() => {
-
-        toast.remove();
-
-      }, 3000);
-
+    toast._timer = setTimeout(() => {
+      toast.remove();
+    }, 3000);
   }
 
-
-  function qs(
-    selector,
-    root = document
-  ) {
-
-    return root.querySelector(
-      selector
-    );
-
-  }
-
-
-  function qsa(
-    selector,
-    root = document
-  ) {
-
-    return Array.from(
-      root.querySelectorAll(
-        selector
-      )
-    );
-
-  }
-
-
-  function getAppRoot() {
-
-    return (
-      document.getElementById(
-        "app"
-      ) ||
-      document.getElementById(
-        "app-root"
-      ) ||
-      document.querySelector(
-        "main"
-      ) ||
-      document.body
-    );
-
-  }
-
-
-  function getContentRoot() {
-
-    return (
-      document.getElementById(
-        "page-content"
-      ) ||
-      document.getElementById(
-        "content"
-      ) ||
-      document.getElementById(
-        "app-content"
-      ) ||
-      document.querySelector(
-        ".page-content"
-      ) ||
-      getAppRoot()
-    );
-
-  }
-
-
-  /*
-   * =========================================================
-   * AUTH
-   * =========================================================
-   */
+  /* =========================================================
+     AUTH
+     ========================================================= */
 
   function getStoredUser() {
+    const keys = [
+      "arima_session",
+      "ARIMA_SESSION",
+      "ARIMA_USER"
+    ];
 
-    try {
+    for (const key of keys) {
+      try {
+        const raw = localStorage.getItem(key);
 
-      // Prefer the shared Auth module.
-      if (
-        window.Auth &&
-        typeof window.Auth.current === "function"
-      ) {
+        if (!raw) continue;
 
-        const current =
-          window.Auth.current();
+        const parsed = JSON.parse(raw);
 
-        if (current) {
-          return current;
-        }
-
-      }
-
-      // Fallback for compatibility with older builds.
-      const keys = [
-        "arima_session",
-        "ARIMA_USER",
-        "ARIMA_SESSION"
-      ];
-
-      for (const key of keys) {
-
-        const raw =
-          localStorage.getItem(key);
-
-        if (!raw) {
-          continue;
-        }
-
-        const parsed =
-          JSON.parse(raw);
-
-        if (parsed && typeof parsed === "object") {
+        if (parsed) {
           return parsed;
         }
-
+      } catch (error) {
+        console.warn(
+          "Gagal membaca session:",
+          key,
+          error
+        );
       }
-
-      return null;
-
-    } catch (error) {
-
-      console.warn(
-        "Gagal membaca user/session:",
-        error
-      );
-
-      return null;
-
     }
 
+    return null;
   }
 
+  function saveUserSession(currentUser) {
+    if (!currentUser) return;
 
-  function requireAuth() {
+    user = currentUser;
 
-    const currentUser =
-      getStoredUser();
-
-    if (!currentUser) {
-
-      console.warn(
-        "ARIMA: session tidak ditemukan. Mengarahkan ke login."
-      );
-
-      window.location.replace(
-        "login.html"
-      );
-
-      return null;
-
-    }
-
-    user =
-      currentUser;
-
-    // Keep both session keys synchronized so an old cached
-    // page cannot accidentally log the user out.
     try {
-
-      const value =
-        JSON.stringify(
-          currentUser
-        );
-
       localStorage.setItem(
         "arima_session",
-        value
+        JSON.stringify(currentUser)
+      );
+
+      localStorage.setItem(
+        "ARIMA_SESSION",
+        JSON.stringify(currentUser)
       );
 
       localStorage.setItem(
         "ARIMA_USER",
-        value
+        JSON.stringify(currentUser)
       );
-
     } catch (error) {
-
       console.warn(
-        "Gagal menyinkronkan session:",
+        "Gagal menyimpan session:",
         error
       );
-
     }
-
-    return currentUser;
-
   }
 
+  function requireAuth() {
+    user = getStoredUser();
 
-  function logout() {
-
-    try {
-
+    if (!user) {
       if (
-        window.Auth &&
-        typeof window.Auth.logout === "function"
+        !location.pathname.endsWith(
+          "login.html"
+        )
       ) {
-
-        window.Auth.logout();
-        return;
-
+        location.href = "login.html";
       }
 
-      localStorage.removeItem(
-        "arima_session"
-      );
-
-      localStorage.removeItem(
-        "ARIMA_USER"
-      );
-
-      localStorage.removeItem(
-        "ARIMA_SESSION"
-      );
-
-      localStorage.removeItem(
-        "ARIMA_TOKEN"
-      );
-
-      sessionStorage.removeItem(
-        "ARIMA_TOKEN"
-      );
-
-    } catch (error) {
-
-      console.warn(
-        "Logout error:",
-        error
-      );
-
+      return false;
     }
 
-    window.location.replace(
-      "login.html"
-    );
+    /*
+      Sinkronkan session lama dengan format baru.
+    */
+    saveUserSession(user);
 
+    return true;
   }
 
+  function logout() {
+    [
+      "arima_session",
+      "ARIMA_SESSION",
+      "ARIMA_USER"
+    ].forEach(key => {
+      try {
+        localStorage.removeItem(key);
+      } catch (error) {
+        console.warn(error);
+      }
+    });
 
-  /*
-   * =========================================================
-   * LAYOUT
-   * =========================================================
-   */
+    location.href = "login.html";
+  }
+
+  /* =========================================================
+     LAYOUT
+     ========================================================= */
 
   function renderLayout() {
-
-    const root =
-      getAppRoot();
+    const root = getAppRoot();
 
     if (!root) {
+      console.error("Element #app tidak ditemukan.");
       return;
     }
 
     root.innerHTML = `
+      <div class="shell">
 
-      <div class="arima-layout">
+        <aside class="sidebar" id="arima-sidebar">
 
-        <aside
-          class="sidebar"
-          id="arima-sidebar"
-        >
+          <div class="side-brand">
 
-          <div class="sidebar-brand">
+            <img
+              src="assets/logo.webp"
+              alt="LPKS Arima Persada"
+            >
 
-            <div class="brand-title">
-              ARIMA
-            </div>
-
-            <div class="brand-subtitle">
-              MANAGEMENT SYSTEM
+            <div>
+              <strong>
+                ARIMA
+                <br>
+                MANAGEMENT SYSTEM
+              </strong>
             </div>
 
           </div>
 
+          <nav class="nav" id="arima-menu">
 
-          <nav
-            class="sidebar-nav"
-            id="arima-menu"
-          >
-
-            ${menus.map(
-              menu => `
-
-                <button
-                  type="button"
-                  class="nav-item"
-                  data-page="${esc(menu[0])}"
-                >
-
-                  <span class="nav-icon">
-                    ${menu[2]}
-                  </span>
-
-                  <span>
-                    ${esc(menu[1])}
-                  </span>
-
-                </button>
-
-              `
-            ).join("")}
+            ${menus.map(menu => `
+              <a
+                href="#"
+                data-page="${esc(menu[0])}"
+              >
+                <span style="display:inline-block;width:24px">
+                  ${menu[2]}
+                </span>
+                ${esc(menu[1])}
+              </a>
+            `).join("")}
 
           </nav>
 
+          <div style="margin-top:20px">
 
-          <div class="sidebar-footer">
-
-            <button
-              type="button"
+            <a
+              href="#"
               id="btn-logout"
-              class="nav-item logout-button"
+              class="nav"
+              style="
+                display:block;
+                color:#c7c7ca;
+                text-decoration:none;
+                padding:11px 12px;
+                border-radius:9px;
+                font-size:14px;
+              "
             >
-
-              <span class="nav-icon">
-                ⇥
-              </span>
-
-              <span>
-                Keluar
-              </span>
-
-            </button>
+              ⇥ &nbsp; Keluar
+            </a>
 
           </div>
 
         </aside>
 
+        <main class="main">
 
-        <section
-          class="main-area"
-        >
-
-          <header
-            class="topbar"
-          >
+          <header class="topbar">
 
             <div>
-
-              <button
-                type="button"
-                id="btn-sidebar"
-                class="icon-button"
-                aria-label="Menu"
-              >
-                ☰
-              </button>
-
+              <strong>
+                ARIMA MANAGEMENT SYSTEM
+              </strong>
             </div>
 
-
-            <div
-              class="topbar-user"
-            >
-
-              <span
-                id="topbar-user-name"
-              >
+            <div>
+              <span class="muted">
                 ${esc(
                   user?.name ||
                   user?.NAME ||
-                  ""
+                  user?.NAMA ||
+                  "User"
                 )}
               </span>
-
             </div>
 
           </header>
 
-
-          <main
+          <section
             id="page-content"
-            class="page-content"
+            class="content"
           >
-
             <div class="card">
               Memuat aplikasi...
             </div>
+          </section>
 
-          </main>
-
-        </section>
+        </main>
 
       </div>
-
     `;
 
-
-    const menu =
-      qs(
-        "#arima-menu"
-      );
+    const menu = qs("#arima-menu");
 
     if (menu) {
-
       menu.addEventListener(
         "click",
         event => {
 
-          const button =
+          const link =
             event.target.closest(
               "[data-page]"
             );
 
-          if (!button) {
-            return;
-          }
+          if (!link) return;
 
-          const page =
-            button.dataset.page;
+          event.preventDefault();
 
-          load(page);
-
+          load(
+            link.dataset.page
+          );
         }
       );
-
     }
-
 
     const logoutButton =
-      qs(
-        "#btn-logout"
-      );
+      qs("#btn-logout");
 
     if (logoutButton) {
-
       logoutButton.addEventListener(
         "click",
-        logout
-      );
-
-    }
-
-
-    const sidebarButton =
-      qs(
-        "#btn-sidebar"
-      );
-
-    if (sidebarButton) {
-
-      sidebarButton.addEventListener(
-        "click",
-        () => {
-
-          const sidebar =
-            qs(
-              "#arima-sidebar"
-            );
-
-          if (sidebar) {
-
-            sidebar.classList.toggle(
-              "collapsed"
-            );
-
-          }
-
+        event => {
+          event.preventDefault();
+          logout();
         }
       );
+    }
+  }
 
+  function setActiveMenu(page) {
+    qsa("[data-page]").forEach(item => {
+      item.classList.toggle(
+        "active",
+        item.dataset.page === page
+      );
+    });
+  }
+
+  /* =========================================================
+     PAGE HEADER
+     ========================================================= */
+
+  function pageHeader(
+    title,
+    description,
+    buttonText = "",
+    buttonId = ""
+  ) {
+    return `
+      <div class="page-title">
+
+        <div>
+
+          <h1>
+            ${esc(title)}
+          </h1>
+
+          ${
+            description
+              ? `
+                <p>
+                  ${esc(description)}
+                </p>
+              `
+              : ""
+          }
+
+        </div>
+
+        ${
+          buttonText
+            ? `
+              <button
+                type="button"
+                class="btn btn-primary"
+                id="${esc(buttonId)}"
+              >
+                + ${esc(buttonText)}
+              </button>
+            `
+            : ""
+        }
+
+      </div>
+    `;
+  }
+
+  /* =========================================================
+     TABLE
+     ========================================================= */
+
+  function renderTable(
+    rows,
+    columns,
+    options = {}
+  ) {
+    const data =
+      Array.isArray(rows)
+        ? rows
+        : [];
+
+    if (!data.length) {
+      return `
+        <div class="card">
+          <div class="muted">
+            ${esc(
+              options.emptyText ||
+              "Belum ada data."
+            )}
+          </div>
+        </div>
+      `;
     }
 
+    return `
+      <div class="table-wrap">
+
+        <table class="table">
+
+          <thead>
+            <tr>
+
+              ${columns.map(column => `
+                <th>
+                  ${esc(
+                    column.label ||
+                    column.key
+                  )}
+                </th>
+              `).join("")}
+
+              ${
+                options.actions
+                  ? "<th>Aksi</th>"
+                  : ""
+              }
+
+            </tr>
+          </thead>
+
+          <tbody>
+
+            ${data.map((row, index) => `
+
+              <tr>
+
+                ${columns.map(column => {
+
+                  let value =
+                    row[column.key];
+
+                  if (
+                    typeof column.render ===
+                    "function"
+                  ) {
+                    value =
+                      column.render(
+                        value,
+                        row,
+                        index
+                      );
+                  }
+
+                  return `
+                    <td>
+                      ${
+                        value === null ||
+                        value === undefined
+                          ? ""
+                          : value
+                      }
+                    </td>
+                  `;
+                }).join("")}
+
+                ${
+                  options.actions
+                    ? `
+                      <td>
+                        <div class="toolbar">
+                          ${
+                            options.actions(
+                              row,
+                              index
+                            )
+                          }
+                        </div>
+                      </td>
+                    `
+                    : ""
+                }
+
+              </tr>
+
+            `).join("")}
+
+          </tbody>
+
+        </table>
+
+      </div>
+    `;
   }
 
+  /* =========================================================
+     LOAD PAGE
+     ========================================================= */
 
-  function setActiveMenu(
-    page
-  ) {
-
-    qsa(
-      "[data-page]"
-    ).forEach(
-      button => {
-
-        button.classList.toggle(
-          "active",
-          button.dataset.page === page
-        );
-
-      }
-    );
-
-  }
-
-
-  /*
-   * =========================================================
-   * PAGE LOAD
-   * =========================================================
-   */
-
-  async function load(
-    page
-  ) {
-
+  async function load(page) {
     const el =
       getContentRoot();
 
-    if (!el) {
-      return;
-    }
+    if (!el) return;
 
-    setActiveMenu(
-      page
-    );
+    setActiveMenu(page);
 
     el.innerHTML = `
-
       <div class="card">
-
         <div class="muted">
           Memuat...
         </div>
-
       </div>
-
     `;
-
 
     try {
 
@@ -1258,126 +1023,270 @@ window.App = (() => {
       ) {
 
         case "dashboard":
-
-          await renderDashboard(
-            el
-          );
-
+          await renderDashboard(el);
           break;
-
 
         case "students":
-
-          await renderStudents(
-            el
-          );
-
+          await renderStudents(el);
           break;
-
 
         case "sensei":
-
-          await renderSensei(
-            el
-          );
-
+          await renderSensei(el);
           break;
-
 
         case "attendance":
-
-          await renderAttendance(
-            el
-          );
-
+          await renderAttendance(el);
           break;
-
 
         case "billing":
-
-          await renderBilling(
-            el
-          );
-
+          await renderBilling(el);
           break;
-
 
         case "payments":
-
-          await renderPayments(
-            el
-          );
-
+          await renderPayments(el);
           break;
-
 
         case "salary":
-
-          await renderSalary(
-            el
-          );
-
+          await renderSalary(el);
           break;
-
 
         case "reports":
-
-          await renderReports(
-            el
-          );
-
+          await renderReports(el);
           break;
-
 
         case "settings":
-
-          await renderSettings(
-            el
-          );
-
+          await renderSettings(el);
           break;
-
 
         default:
-
-          await renderDashboard(
-            el
-          );
-
-          break;
-
+          await renderDashboard(el);
       }
 
     } catch (error) {
-
-      renderError(
-        el,
-        error
-      );
-
+      renderError(el, error);
     }
-
   }
 
+  /* =========================================================
+     DASHBOARD
+     ========================================================= */
 
-  /*
-   * =========================================================
-   * DASHBOARD
-   * =========================================================
-   */
-
-  async function renderDashboard(
-    el
-  ) {
+  async function renderDashboard(el) {
 
     try {
 
-      const response =
+      /*
+        Dashboard utama.
+        API.dashboard() adalah sumber utama
+        untuk statistik aktif.
+      */
+
+      const dashboardResponse =
         await API.dashboard();
 
-      const data =
-        response?.data || {};
+      const dashboard =
+        dashboardResponse?.data || {};
 
+      /*
+        Ambil data detail jika API tersedia.
+        Kalau salah satu gagal, dashboard
+        tetap dapat ditampilkan.
+      */
+
+      let students = [];
+      let sensei = [];
+      let attendance = [];
+      let billing = [];
+      let payments = [];
+      let salary = [];
+
+      const requests = await Promise.allSettled([
+        API.students(),
+        API.sensei(),
+        API.attendance(),
+        API.billing(),
+        API.payments(),
+        API.salary()
+      ]);
+
+      students =
+        requests[0].status === "fulfilled"
+          ? (
+              requests[0].value?.data || []
+            )
+          : [];
+
+      sensei =
+        requests[1].status === "fulfilled"
+          ? (
+              requests[1].value?.data || []
+            )
+          : [];
+
+      attendance =
+        requests[2].status === "fulfilled"
+          ? (
+              requests[2].value?.data || []
+            )
+          : [];
+
+      billing =
+        requests[3].status === "fulfilled"
+          ? (
+              requests[3].value?.data || []
+            )
+          : [];
+
+      payments =
+        requests[4].status === "fulfilled"
+          ? (
+              requests[4].value?.data || []
+            )
+          : [];
+
+      salary =
+        requests[5].status === "fulfilled"
+          ? (
+              requests[5].value?.data || []
+            )
+          )
+          : [];
+
+      const activeStudents =
+        students.length
+          ? students.filter(row =>
+              String(
+                row.STATUS || ""
+              )
+                .trim()
+                .toUpperCase() ===
+              "AKTIF"
+            ).length
+          : number(
+              dashboard.students
+            );
+
+      const activeSensei =
+        sensei.length
+          ? sensei.filter(row =>
+              String(
+                row.STATUS || ""
+              )
+                .trim()
+                .toUpperCase() ===
+              "AKTIF"
+            ).length
+          : number(
+              dashboard.sensei
+            );
+
+      let attendancePercent =
+        number(
+          dashboard.attendance
+        );
+
+      if (attendance.length) {
+
+        const valid =
+          attendance.filter(row =>
+            String(
+              row.STATUS || ""
+            ).trim() !== ""
+          );
+
+        if (valid.length) {
+
+          const hadir =
+            valid.filter(row =>
+              [
+                "HADIR",
+                "H",
+                "MASUK"
+              ].includes(
+                String(
+                  row.STATUS || ""
+                )
+                  .trim()
+                  .toUpperCase()
+              )
+            ).length;
+
+          attendancePercent =
+            Math.round(
+              (hadir /
+                valid.length) *
+              100
+            );
+        }
+      }
+
+      const pendingStatuses = [
+        "PENDING",
+        "BELUM BAYAR",
+        "BELUM LUNAS",
+        "TERTUNGGAK",
+        "CICILAN"
+      ];
+
+      const pendingBilling =
+        billing.length
+          ? billing.filter(row =>
+              pendingStatuses.includes(
+                String(
+                  row.STATUS || ""
+                )
+                  .trim()
+                  .toUpperCase()
+              )
+            ).length
+          : number(
+              dashboard.pendingBilling
+            );
+
+      const pendingBillingAmount =
+        billing
+          .filter(row =>
+            pendingStatuses.includes(
+              String(
+                row.STATUS || ""
+              )
+                .trim()
+                .toUpperCase()
+            )
+          )
+          .reduce(
+            (total, row) =>
+              total +
+              number(
+                row.AMOUNT
+              ),
+            0
+          );
+
+      const totalPayments =
+        payments.reduce(
+          (total, row) =>
+            total +
+            number(
+              row.AMOUNT
+            ),
+          0
+        );
+
+      const pendingPayroll =
+        salary.filter(row =>
+          [
+            "PENDING",
+            "BELUM BAYAR",
+            "BELUM LUNAS"
+          ].includes(
+            String(
+              row.PAYMENT_STATUS || ""
+            )
+              .trim()
+              .toUpperCase()
+          )
+        ).length;
 
       el.innerHTML = `
 
@@ -1402,60 +1311,191 @@ window.App = (() => {
         <div class="cards">
 
           <div class="card">
-
             <div class="muted">
               Siswa Aktif
             </div>
 
             <div class="metric">
               ${formatNumber(
-                data.students
+                activeStudents
               )}
             </div>
-
           </div>
 
 
           <div class="card">
-
             <div class="muted">
               Sensei Aktif
             </div>
 
             <div class="metric">
               ${formatNumber(
-                data.sensei
+                activeSensei
               )}
             </div>
-
           </div>
 
 
           <div class="card">
-
             <div class="muted">
               Kehadiran
             </div>
 
             <div class="metric">
               ${formatNumber(
-                data.attendance
+                attendancePercent
               )}%
             </div>
-
           </div>
 
 
           <div class="card">
-
             <div class="muted">
               Tagihan Pending
             </div>
 
             <div class="metric">
               ${formatNumber(
-                data.pendingBilling
+                pendingBilling
               )}
+            </div>
+          </div>
+
+        </div>
+
+
+        <div class="section">
+
+          <div class="section-head">
+            <h2>
+              Total Data
+            </h2>
+          </div>
+
+          <div class="cards">
+
+            <div class="card">
+              <div class="muted">
+                Siswa
+              </div>
+
+              <div class="metric">
+                ${formatNumber(
+                  students.length
+                )}
+              </div>
+            </div>
+
+
+            <div class="card">
+              <div class="muted">
+                Sensei
+              </div>
+
+              <div class="metric">
+                ${formatNumber(
+                  sensei.length
+                )}
+              </div>
+            </div>
+
+
+            <div class="card">
+              <div class="muted">
+                Absensi
+              </div>
+
+              <div class="metric">
+                ${formatNumber(
+                  attendance.length
+                )}
+              </div>
+            </div>
+
+
+            <div class="card">
+              <div class="muted">
+                Tagihan
+              </div>
+
+              <div class="metric">
+                ${formatNumber(
+                  billing.length
+                )}
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div class="section">
+
+          <div class="section-head">
+            <h2>
+              Keuangan
+            </h2>
+          </div>
+
+          <div class="cards">
+
+            <div class="card">
+
+              <div class="muted">
+                Tagihan Pending
+              </div>
+
+              <div class="metric">
+                ${formatRupiah(
+                  pendingBillingAmount
+                )}
+              </div>
+
+            </div>
+
+
+            <div class="card">
+
+              <div class="muted">
+                Total Pembayaran
+              </div>
+
+              <div class="metric">
+                ${formatRupiah(
+                  totalPayments
+                )}
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div class="section">
+
+          <div class="section-head">
+            <h2>
+              Payroll
+            </h2>
+          </div>
+
+          <div class="cards">
+
+            <div class="card">
+
+              <div class="muted">
+                Payroll Pending
+              </div>
+
+              <div class="metric">
+                ${formatNumber(
+                  pendingPayroll
+                )}
+              </div>
+
             </div>
 
           </div>
@@ -1472,6 +1512,7 @@ window.App = (() => {
               ${esc(
                 user?.name ||
                 user?.NAME ||
+                user?.NAMA ||
                 "User"
               )}
             </strong>
@@ -1488,246 +1529,18 @@ window.App = (() => {
       `;
 
     } catch (error) {
-
       renderError(
         el,
         error
       );
-
     }
-
-  }
-  /*
-   * =========================================================
-   * GENERIC TABLE
-   * =========================================================
-   */
-
-  function renderTable(
-    rows,
-    columns,
-    options = {}
-  ) {
-
-    const data =
-      Array.isArray(rows)
-        ? rows
-        : [];
-
-    const emptyText =
-      options.emptyText ||
-      "Belum ada data.";
-
-    if (!data.length) {
-
-      return `
-
-        <div class="card">
-
-          <div class="muted">
-            ${esc(emptyText)}
-          </div>
-
-        </div>
-
-      `;
-
-    }
-
-
-    return `
-
-      <div class="table-wrap">
-
-        <table class="data-table">
-
-          <thead>
-
-            <tr>
-
-              ${columns.map(
-                column => `
-
-                  <th>
-                    ${esc(
-                      column.label ||
-                      column.key
-                    )}
-                  </th>
-
-                `
-              ).join("")}
-
-              ${
-                options.actions
-                  ? "<th>Aksi</th>"
-                  : ""
-              }
-
-            </tr>
-
-          </thead>
-
-
-          <tbody>
-
-            ${data.map(
-              (row, index) => `
-
-                <tr>
-
-                  ${columns.map(
-                    column => {
-
-                      let value =
-                        row[
-                          column.key
-                        ];
-
-                      if (
-                        typeof column.render ===
-                        "function"
-                      ) {
-
-                        value =
-                          column.render(
-                            value,
-                            row,
-                            index
-                          );
-
-                      }
-
-                      return `
-
-                        <td>
-                          ${
-                            value === null ||
-                            value === undefined
-                              ? ""
-                              : value
-                          }
-                        </td>
-
-                      `;
-
-                    }
-                  ).join("")}
-
-
-                  ${
-                    options.actions
-                      ? `
-
-                        <td>
-
-                          <div
-                            class="table-actions"
-                          >
-
-                            ${
-                              options.actions(
-                                row,
-                                index
-                              )
-                            }
-
-                          </div>
-
-                        </td>
-
-                      `
-                      : ""
-                  }
-
-                </tr>
-
-              `
-            ).join("")}
-
-          </tbody>
-
-        </table>
-
-      </div>
-
-    `;
-
   }
 
+  /* =========================================================
+     STUDENTS
+     ========================================================= */
 
-  /*
-   * =========================================================
-   * PAGE HEADER
-   * =========================================================
-   */
-
-  function pageHeader(
-    title,
-    description,
-    buttonText = "",
-    buttonId = ""
-  ) {
-
-    return `
-
-      <div class="page-title">
-
-        <div>
-
-          <h1>
-            ${esc(title)}
-          </h1>
-
-          ${
-            description
-              ? `
-
-                <p>
-                  ${esc(description)}
-                </p>
-
-              `
-              : ""
-          }
-
-        </div>
-
-
-        ${
-          buttonText
-            ? `
-
-              <button
-                type="button"
-                class="btn btn-primary"
-                id="${esc(buttonId)}"
-              >
-
-                + ${esc(buttonText)}
-
-              </button>
-
-            `
-            : ""
-        }
-
-      </div>
-
-    `;
-
-  }
-
-
-  /*
-   * =========================================================
-   * STUDENTS
-   * =========================================================
-   */
-
-  async function renderStudents(
-    el
-  ) {
+  async function renderStudents(el) {
 
     try {
 
@@ -1736,7 +1549,6 @@ window.App = (() => {
 
       const rows =
         response?.data || [];
-
 
       el.innerHTML = `
 
@@ -1747,7 +1559,6 @@ window.App = (() => {
           "btn-add-student"
         )}
 
-
         <div class="card">
 
           ${renderTable(
@@ -1757,32 +1568,26 @@ window.App = (() => {
                 key: "ID_SISWA",
                 label: "ID"
               },
-
               {
                 key: "NAMA",
                 label: "Nama"
               },
-
               {
                 key: "NIK",
                 label: "NIK"
               },
-
               {
                 key: "NO_WA",
                 label: "WhatsApp"
               },
-
               {
                 key: "PROGRAM",
                 label: "Program"
               },
-
               {
                 key: "ASRAMA",
                 label: "Asrama"
               },
-
               {
                 key: "STATUS",
                 label: "Status"
@@ -1793,7 +1598,7 @@ window.App = (() => {
 
                 <button
                   type="button"
-                  class="btn btn-small"
+                  class="btn btn-light"
                   data-edit-student="${esc(
                     row.ID_SISWA
                   )}"
@@ -1803,7 +1608,7 @@ window.App = (() => {
 
                 <button
                   type="button"
-                  class="btn btn-small btn-danger"
+                  class="btn btn-danger"
                   data-delete-student="${esc(
                     row.ID_SISWA
                   )}"
@@ -1816,143 +1621,106 @@ window.App = (() => {
           )}
 
         </div>
-
       `;
 
-
-      const addButton =
-        qs(
-          "#btn-add-student"
-        );
-
-      if (addButton) {
-
-        addButton.addEventListener(
-          "click",
-          () => {
-
-            openFormModal(
-              "students"
-            );
-
-          }
-        );
-
-      }
-
+      qs(
+        "#btn-add-student"
+      )?.addEventListener(
+        "click",
+        () =>
+          openFormModal(
+            "students"
+          )
+      );
 
       qsa(
         "[data-edit-student]"
-      ).forEach(
-        button => {
+      ).forEach(button => {
 
-          button.addEventListener(
-            "click",
-            () => {
+        button.addEventListener(
+          "click",
+          () => {
 
-              const id =
-                button.dataset
-                  .editStudent;
+            const id =
+              button.dataset
+                .editStudent;
 
-              const row =
-                rows.find(
-                  item =>
-                    String(
-                      item.ID_SISWA
-                    ) === String(id)
-                );
+            const row =
+              rows.find(item =>
+                String(
+                  item.ID_SISWA
+                ) === String(id)
+              );
 
-              if (row) {
-
-                openFormModal(
-                  "students",
-                  row
-                );
-
-              }
-
+            if (row) {
+              openFormModal(
+                "students",
+                row
+              );
             }
-          );
-
-        }
-      );
-
+          }
+        );
+      });
 
       qsa(
         "[data-delete-student]"
-      ).forEach(
-        button => {
+      ).forEach(button => {
 
-          button.addEventListener(
-            "click",
-            async () => {
+        button.addEventListener(
+          "click",
+          async () => {
 
-              const id =
-                button.dataset
-                  .deleteStudent;
+            const id =
+              button.dataset
+                .deleteStudent;
 
-              if (
-                !confirm(
-                  "Hapus data siswa ini?"
-                )
-              ) {
-                return;
-              }
-
-              try {
-
-                await API.delete(
-                  "students",
-                  {
-                    ID_SISWA: id
-                  }
-                );
-
-                showToast(
-                  "Data siswa berhasil dihapus."
-                );
-
-                await renderStudents(
-                  el
-                );
-
-              } catch (error) {
-
-                showToast(
-                  error.message ||
-                  "Gagal menghapus data.",
-                  "error"
-                );
-
-              }
-
+            if (
+              !confirm(
+                "Hapus data siswa ini?"
+              )
+            ) {
+              return;
             }
-          );
 
-        }
-      );
+            try {
+
+              await API.delete(
+                "students",
+                {
+                  ID_SISWA: id
+                }
+              );
+
+              showToast(
+                "Data siswa berhasil dihapus."
+              );
+
+              await renderStudents(
+                el
+              );
+
+            } catch (error) {
+
+              showToast(
+                error.message ||
+                "Gagal menghapus data.",
+                "error"
+              );
+            }
+          }
+        );
+      });
 
     } catch (error) {
-
-      renderError(
-        el,
-        error
-      );
-
+      renderError(el, error);
     }
-
   }
 
+  /* =========================================================
+     SENSEI
+     ========================================================= */
 
-  /*
-   * =========================================================
-   * SENSEI
-   * =========================================================
-   */
-
-  async function renderSensei(
-    el
-  ) {
+  async function renderSensei(el) {
 
     try {
 
@@ -1961,7 +1729,6 @@ window.App = (() => {
 
       const rows =
         response?.data || [];
-
 
       el.innerHTML = `
 
@@ -1972,7 +1739,6 @@ window.App = (() => {
           "btn-add-sensei"
         )}
 
-
         <div class="card">
 
           ${renderTable(
@@ -1982,36 +1748,30 @@ window.App = (() => {
                 key: "ID_SENSEI",
                 label: "ID"
               },
-
               {
                 key: "NAMA",
                 label: "Nama"
               },
-
               {
                 key: "NO_WA",
                 label: "WhatsApp"
               },
-
               {
                 key: "EMAIL",
                 label: "Email"
               },
-
               {
                 key: "TARIF_PER_PERTEMUAN",
                 label: "Tarif / Pertemuan",
                 render: value =>
                   formatRupiah(value)
               },
-
               {
                 key: "TARIF_PER_JAM",
                 label: "Tarif / Jam",
                 render: value =>
                   formatRupiah(value)
               },
-
               {
                 key: "STATUS",
                 label: "Status"
@@ -2022,7 +1782,7 @@ window.App = (() => {
 
                 <button
                   type="button"
-                  class="btn btn-small"
+                  class="btn btn-light"
                   data-edit-sensei="${esc(
                     row.ID_SENSEI
                   )}"
@@ -2032,7 +1792,7 @@ window.App = (() => {
 
                 <button
                   type="button"
-                  class="btn btn-small btn-danger"
+                  class="btn btn-danger"
                   data-delete-sensei="${esc(
                     row.ID_SENSEI
                   )}"
@@ -2045,143 +1805,106 @@ window.App = (() => {
           )}
 
         </div>
-
       `;
 
-
-      const addButton =
-        qs(
-          "#btn-add-sensei"
-        );
-
-      if (addButton) {
-
-        addButton.addEventListener(
-          "click",
-          () => {
-
-            openFormModal(
-              "sensei"
-            );
-
-          }
-        );
-
-      }
-
+      qs(
+        "#btn-add-sensei"
+      )?.addEventListener(
+        "click",
+        () =>
+          openFormModal(
+            "sensei"
+          )
+      );
 
       qsa(
         "[data-edit-sensei]"
-      ).forEach(
-        button => {
+      ).forEach(button => {
 
-          button.addEventListener(
-            "click",
-            () => {
+        button.addEventListener(
+          "click",
+          () => {
 
-              const id =
-                button.dataset
-                  .editSensei;
+            const id =
+              button.dataset
+                .editSensei;
 
-              const row =
-                rows.find(
-                  item =>
-                    String(
-                      item.ID_SENSEI
-                    ) === String(id)
-                );
+            const row =
+              rows.find(item =>
+                String(
+                  item.ID_SENSEI
+                ) === String(id)
+              );
 
-              if (row) {
-
-                openFormModal(
-                  "sensei",
-                  row
-                );
-
-              }
-
+            if (row) {
+              openFormModal(
+                "sensei",
+                row
+              );
             }
-          );
-
-        }
-      );
-
+          }
+        );
+      });
 
       qsa(
         "[data-delete-sensei]"
-      ).forEach(
-        button => {
+      ).forEach(button => {
 
-          button.addEventListener(
-            "click",
-            async () => {
+        button.addEventListener(
+          "click",
+          async () => {
 
-              const id =
-                button.dataset
-                  .deleteSensei;
+            const id =
+              button.dataset
+                .deleteSensei;
 
-              if (
-                !confirm(
-                  "Hapus data sensei ini?"
-                )
-              ) {
-                return;
-              }
-
-              try {
-
-                await API.delete(
-                  "sensei",
-                  {
-                    ID_SENSEI: id
-                  }
-                );
-
-                showToast(
-                  "Data sensei berhasil dihapus."
-                );
-
-                await renderSensei(
-                  el
-                );
-
-              } catch (error) {
-
-                showToast(
-                  error.message ||
-                  "Gagal menghapus data.",
-                  "error"
-                );
-
-              }
-
+            if (
+              !confirm(
+                "Hapus data sensei ini?"
+              )
+            ) {
+              return;
             }
-          );
 
-        }
-      );
+            try {
+
+              await API.delete(
+                "sensei",
+                {
+                  ID_SENSEI: id
+                }
+              );
+
+              showToast(
+                "Data sensei berhasil dihapus."
+              );
+
+              await renderSensei(
+                el
+              );
+
+            } catch (error) {
+
+              showToast(
+                error.message ||
+                "Gagal menghapus data.",
+                "error"
+              );
+            }
+          }
+        );
+      });
 
     } catch (error) {
-
-      renderError(
-        el,
-        error
-      );
-
+      renderError(el, error);
     }
-
   }
 
+  /* =========================================================
+     ATTENDANCE
+     ========================================================= */
 
-  /*
-   * =========================================================
-   * ATTENDANCE
-   * =========================================================
-   */
-
-  async function renderAttendance(
-    el
-  ) {
+  async function renderAttendance(el) {
 
     try {
 
@@ -2190,7 +1913,6 @@ window.App = (() => {
 
       const rows =
         response?.data || [];
-
 
       el.innerHTML = `
 
@@ -2201,7 +1923,6 @@ window.App = (() => {
           "btn-add-attendance"
         )}
 
-
         <div class="card">
 
           ${renderTable(
@@ -2211,45 +1932,33 @@ window.App = (() => {
                 key: "ATTENDANCE_ID",
                 label: "ID"
               },
-
               {
                 key: "ACTOR_ID",
                 label: "ID Aktor"
               },
-
               {
                 key: "ACTOR_TYPE",
                 label: "Tipe"
               },
-
               {
                 key: "SESSION_ID",
                 label: "Session"
               },
-
               {
                 key: "TANGGAL",
                 label: "Tanggal"
               },
-
               {
                 key: "JAM_MASUK",
                 label: "Masuk"
               },
-
               {
                 key: "JAM_KELUAR",
                 label: "Keluar"
               },
-
               {
                 key: "STATUS",
                 label: "Status"
-              },
-
-              {
-                key: "CATATAN",
-                label: "Catatan"
               }
             ],
             {
@@ -2257,7 +1966,7 @@ window.App = (() => {
 
                 <button
                   type="button"
-                  class="btn btn-small"
+                  class="btn btn-light"
                   data-edit-attendance="${esc(
                     row.ATTENDANCE_ID
                   )}"
@@ -2270,88 +1979,57 @@ window.App = (() => {
           )}
 
         </div>
-
       `;
 
-
-      const addButton =
-        qs(
-          "#btn-add-attendance"
-        );
-
-      if (addButton) {
-
-        addButton.addEventListener(
-          "click",
-          () => {
-
-            openFormModal(
-              "attendance"
-            );
-
-          }
-        );
-
-      }
-
+      qs(
+        "#btn-add-attendance"
+      )?.addEventListener(
+        "click",
+        () =>
+          openFormModal(
+            "attendance"
+          )
+      );
 
       qsa(
         "[data-edit-attendance]"
-      ).forEach(
-        button => {
+      ).forEach(button => {
 
-          button.addEventListener(
-            "click",
-            () => {
+        button.addEventListener(
+          "click",
+          () => {
 
-              const id =
-                button.dataset
-                  .editAttendance;
+            const id =
+              button.dataset
+                .editAttendance;
 
-              const row =
-                rows.find(
-                  item =>
-                    String(
-                      item.ATTENDANCE_ID
-                    ) === String(id)
-                );
+            const row =
+              rows.find(item =>
+                String(
+                  item.ATTENDANCE_ID
+                ) === String(id)
+              );
 
-              if (row) {
-
-                openFormModal(
-                  "attendance",
-                  row
-                );
-
-              }
-
+            if (row) {
+              openFormModal(
+                "attendance",
+                row
+              );
             }
-          );
-
-        }
-      );
+          }
+        );
+      });
 
     } catch (error) {
-
-      renderError(
-        el,
-        error
-      );
-
+      renderError(el, error);
     }
-
   }
 
+  /* =========================================================
+     BILLING
+     ========================================================= */
 
-  /*
-   * =========================================================
-   * BILLING
-   * =========================================================
-   */
-
-  async function renderBilling(
-    el
-  ) {
+  async function renderBilling(el) {
 
     try {
 
@@ -2360,7 +2038,6 @@ window.App = (() => {
 
       const rows =
         response?.data || [];
-
 
       el.innerHTML = `
 
@@ -2371,7 +2048,6 @@ window.App = (() => {
           "btn-add-billing"
         )}
 
-
         <div class="card">
 
           ${renderTable(
@@ -2381,42 +2057,31 @@ window.App = (() => {
                 key: "BILLING_ID",
                 label: "ID"
               },
-
               {
                 key: "ID_SISWA",
                 label: "ID Siswa"
               },
-
               {
                 key: "DESCRIPTION",
                 label: "Deskripsi"
               },
-
               {
                 key: "CATEGORY",
                 label: "Kategori"
               },
-
               {
                 key: "AMOUNT",
                 label: "Jumlah",
                 render: value =>
                   formatRupiah(value)
               },
-
               {
                 key: "DUE_DATE",
                 label: "Jatuh Tempo"
               },
-
               {
                 key: "STATUS",
                 label: "Status"
-              },
-
-              {
-                key: "NOTES",
-                label: "Catatan"
               }
             ],
             {
@@ -2424,7 +2089,7 @@ window.App = (() => {
 
                 <button
                   type="button"
-                  class="btn btn-small"
+                  class="btn btn-light"
                   data-edit-billing="${esc(
                     row.BILLING_ID
                   )}"
@@ -2437,88 +2102,57 @@ window.App = (() => {
           )}
 
         </div>
-
       `;
 
-
-      const addButton =
-        qs(
-          "#btn-add-billing"
-        );
-
-      if (addButton) {
-
-        addButton.addEventListener(
-          "click",
-          () => {
-
-            openFormModal(
-              "billing"
-            );
-
-          }
-        );
-
-      }
-
+      qs(
+        "#btn-add-billing"
+      )?.addEventListener(
+        "click",
+        () =>
+          openFormModal(
+            "billing"
+          )
+      );
 
       qsa(
         "[data-edit-billing]"
-      ).forEach(
-        button => {
+      ).forEach(button => {
 
-          button.addEventListener(
-            "click",
-            () => {
+        button.addEventListener(
+          "click",
+          () => {
 
-              const id =
-                button.dataset
-                  .editBilling;
+            const id =
+              button.dataset
+                .editBilling;
 
-              const row =
-                rows.find(
-                  item =>
-                    String(
-                      item.BILLING_ID
-                    ) === String(id)
-                );
+            const row =
+              rows.find(item =>
+                String(
+                  item.BILLING_ID
+                ) === String(id)
+              );
 
-              if (row) {
-
-                openFormModal(
-                  "billing",
-                  row
-                );
-
-              }
-
+            if (row) {
+              openFormModal(
+                "billing",
+                row
+              );
             }
-          );
-
-        }
-      );
+          }
+        );
+      });
 
     } catch (error) {
-
-      renderError(
-        el,
-        error
-      );
-
+      renderError(el, error);
     }
-
   }
 
+  /* =========================================================
+     PAYMENTS
+     ========================================================= */
 
-  /*
-   * =========================================================
-   * PAYMENTS
-   * =========================================================
-   */
-
-  async function renderPayments(
-    el
-  ) {
+  async function renderPayments(el) {
 
     try {
 
@@ -2527,7 +2161,6 @@ window.App = (() => {
 
       const rows =
         response?.data || [];
-
 
       el.innerHTML = `
 
@@ -2538,7 +2171,6 @@ window.App = (() => {
           "btn-add-payment"
         )}
 
-
         <div class="card">
 
           ${renderTable(
@@ -2548,42 +2180,31 @@ window.App = (() => {
                 key: "PAYMENT_ID",
                 label: "ID"
               },
-
               {
                 key: "BILLING_ID",
                 label: "ID Tagihan"
               },
-
               {
                 key: "ID_SISWA",
                 label: "ID Siswa"
               },
-
               {
                 key: "PAYMENT_DATE",
                 label: "Tanggal"
               },
-
               {
                 key: "AMOUNT",
                 label: "Jumlah",
                 render: value =>
                   formatRupiah(value)
               },
-
               {
                 key: "PAYMENT_METHOD",
                 label: "Metode"
               },
-
               {
                 key: "REFERENCE_NO",
                 label: "Referensi"
-              },
-
-              {
-                key: "NOTES",
-                label: "Catatan"
               }
             ],
             {
@@ -2591,7 +2212,7 @@ window.App = (() => {
 
                 <button
                   type="button"
-                  class="btn btn-small"
+                  class="btn btn-light"
                   data-edit-payment="${esc(
                     row.PAYMENT_ID
                   )}"
@@ -2604,88 +2225,57 @@ window.App = (() => {
           )}
 
         </div>
-
       `;
 
-
-      const addButton =
-        qs(
-          "#btn-add-payment"
-        );
-
-      if (addButton) {
-
-        addButton.addEventListener(
-          "click",
-          () => {
-
-            openFormModal(
-              "payments"
-            );
-
-          }
-        );
-
-      }
-
+      qs(
+        "#btn-add-payment"
+      )?.addEventListener(
+        "click",
+        () =>
+          openFormModal(
+            "payments"
+          )
+      );
 
       qsa(
         "[data-edit-payment]"
-      ).forEach(
-        button => {
+      ).forEach(button => {
 
-          button.addEventListener(
-            "click",
-            () => {
+        button.addEventListener(
+          "click",
+          () => {
 
-              const id =
-                button.dataset
-                  .editPayment;
+            const id =
+              button.dataset
+                .editPayment;
 
-              const row =
-                rows.find(
-                  item =>
-                    String(
-                      item.PAYMENT_ID
-                    ) === String(id)
-                );
+            const row =
+              rows.find(item =>
+                String(
+                  item.PAYMENT_ID
+                ) === String(id)
+              );
 
-              if (row) {
-
-                openFormModal(
-                  "payments",
-                  row
-                );
-
-              }
-
+            if (row) {
+              openFormModal(
+                "payments",
+                row
+              );
             }
-          );
-
-        }
-      );
+          }
+        );
+      });
 
     } catch (error) {
-
-      renderError(
-        el,
-        error
-      );
-
+      renderError(el, error);
     }
-
   }
 
+  /* =========================================================
+     SALARY
+     ========================================================= */
 
-  /*
-   * =========================================================
-   * SALARY
-   * =========================================================
-   */
-
-  async function renderSalary(
-    el
-  ) {
+  async function renderSalary(el) {
 
     try {
 
@@ -2694,7 +2284,6 @@ window.App = (() => {
 
       const rows =
         response?.data || [];
-
 
       el.innerHTML = `
 
@@ -2705,7 +2294,6 @@ window.App = (() => {
           "btn-add-salary"
         )}
 
-
         <div class="card">
 
           ${renderTable(
@@ -2715,55 +2303,46 @@ window.App = (() => {
                 key: "SALARY_ID",
                 label: "ID"
               },
-
               {
                 key: "ID_SENSEI",
                 label: "ID Sensei"
               },
-
               {
                 key: "PERIOD",
                 label: "Periode"
               },
-
               {
                 key: "MEETING_COUNT",
                 label: "Pertemuan"
               },
-
               {
                 key: "HOUR_COUNT",
                 label: "Jam"
               },
-
               {
                 key: "BASE_AMOUNT",
                 label: "Gaji Pokok",
                 render: value =>
                   formatRupiah(value)
               },
-
               {
                 key: "BONUS",
                 label: "Bonus",
                 render: value =>
                   formatRupiah(value)
               },
-
               {
                 key: "DEDUCTION",
                 label: "Potongan",
                 render: value =>
                   formatRupiah(value)
               },
-
               {
                 key: "NET_SALARY",
                 label: "Gaji Bersih",
                 render: value =>
                   formatRupiah(value)
               },
-
               {
                 key: "PAYMENT_STATUS",
                 label: "Status"
@@ -2774,7 +2353,7 @@ window.App = (() => {
 
                 <button
                   type="button"
-                  class="btn btn-small"
+                  class="btn btn-light"
                   data-edit-salary="${esc(
                     row.SALARY_ID
                   )}"
@@ -2787,88 +2366,57 @@ window.App = (() => {
           )}
 
         </div>
-
       `;
 
-
-      const addButton =
-        qs(
-          "#btn-add-salary"
-        );
-
-      if (addButton) {
-
-        addButton.addEventListener(
-          "click",
-          () => {
-
-            openFormModal(
-              "salary"
-            );
-
-          }
-        );
-
-      }
-
+      qs(
+        "#btn-add-salary"
+      )?.addEventListener(
+        "click",
+        () =>
+          openFormModal(
+            "salary"
+          )
+      );
 
       qsa(
         "[data-edit-salary]"
-      ).forEach(
-        button => {
+      ).forEach(button => {
 
-          button.addEventListener(
-            "click",
-            () => {
+        button.addEventListener(
+          "click",
+          () => {
 
-              const id =
-                button.dataset
-                  .editSalary;
+            const id =
+              button.dataset
+                .editSalary;
 
-              const row =
-                rows.find(
-                  item =>
-                    String(
-                      item.SALARY_ID
-                    ) === String(id)
-                );
+            const row =
+              rows.find(item =>
+                String(
+                  item.SALARY_ID
+                ) === String(id)
+              );
 
-              if (row) {
-
-                openFormModal(
-                  "salary",
-                  row
-                );
-
-              }
-
+            if (row) {
+              openFormModal(
+                "salary",
+                row
+              );
             }
-          );
-
-        }
-      );
+          }
+        );
+      });
 
     } catch (error) {
-
-      renderError(
-        el,
-        error
-      );
-
+      renderError(el, error);
     }
-
   }
 
+  /* =========================================================
+     REPORTS
+     ========================================================= */
 
-  /*
-   * =========================================================
-   * REPORTS
-   * =========================================================
-   */
-
-  async function renderReports(
-    el
-  ) {
+  async function renderReports(el) {
 
     try {
 
@@ -2878,7 +2426,6 @@ window.App = (() => {
       const data =
         response?.data || {};
 
-
       el.innerHTML = `
 
         ${pageHeader(
@@ -2886,84 +2433,50 @@ window.App = (() => {
           "Ringkasan data operasional."
         )}
 
-
         <div class="cards">
 
           <div class="card">
-
             <div class="muted">
               Siswa Aktif
             </div>
-
             <div class="metric">
               ${formatNumber(
                 data.students
               )}
             </div>
-
           </div>
 
-
           <div class="card">
-
             <div class="muted">
               Sensei Aktif
             </div>
-
             <div class="metric">
               ${formatNumber(
                 data.sensei
               )}
             </div>
-
           </div>
 
-
           <div class="card">
-
             <div class="muted">
               Kehadiran
             </div>
-
             <div class="metric">
               ${formatNumber(
                 data.attendance
               )}%
             </div>
-
           </div>
 
-
           <div class="card">
-
             <div class="muted">
               Tagihan Pending
             </div>
-
             <div class="metric">
               ${formatNumber(
                 data.pendingBilling
               )}
             </div>
-
-          </div>
-
-        </div>
-
-
-        <div class="section">
-
-          <div class="card">
-
-            <h3>
-              Informasi
-            </h3>
-
-            <p class="muted">
-              Gunakan menu data untuk melihat
-              dan mengelola data secara detail.
-            </p>
-
           </div>
 
         </div>
@@ -2971,26 +2484,15 @@ window.App = (() => {
       `;
 
     } catch (error) {
-
-      renderError(
-        el,
-        error
-      );
-
+      renderError(el, error);
     }
-
   }
 
+  /* =========================================================
+     SETTINGS
+     ========================================================= */
 
-  /*
-   * =========================================================
-   * SETTINGS
-   * =========================================================
-   */
-
-  async function renderSettings(
-    el
-  ) {
+  async function renderSettings(el) {
 
     el.innerHTML = `
 
@@ -2999,75 +2501,57 @@ window.App = (() => {
         "Informasi sistem ARIMA Management System."
       )}
 
-
       <div class="card">
 
-        <div class="setting-row">
+        <div class="section">
 
-          <div>
+          <strong>
+            Nama Aplikasi
+          </strong>
 
-            <strong>
-              Nama Aplikasi
-            </strong>
-
-            <div class="muted">
-              ARIMA MANAGEMENT SYSTEM
-            </div>
-
-          </div>
+          <p class="muted">
+            ARIMA MANAGEMENT SYSTEM
+          </p>
 
         </div>
 
+        <div class="section">
 
-        <div class="setting-row">
+          <strong>
+            Perusahaan
+          </strong>
 
-          <div>
-
-            <strong>
-              Perusahaan
-            </strong>
-
-            <div class="muted">
-              LPKS Arima Persada
-            </div>
-
-          </div>
+          <p class="muted">
+            LPKS Arima Persada
+          </p>
 
         </div>
 
+        <div class="section">
 
-        <div class="setting-row">
+          <strong>
+            User Login
+          </strong>
 
-          <div>
-
-            <strong>
-              User Login
-            </strong>
-
-            <div class="muted">
-              ${esc(
-                user?.name ||
-                user?.NAME ||
-                "-"
-              )}
-            </div>
-
-          </div>
+          <p class="muted">
+            ${esc(
+              user?.name ||
+              user?.NAME ||
+              user?.NAMA ||
+              "-"
+            )}
+          </p>
 
         </div>
 
       </div>
 
     `;
-
   }
 
-
-  /*
-   * =========================================================
-   * FORM MODAL
-   * =========================================================
-   */
+  /* =========================================================
+     FORM MODAL
+     ========================================================= */
 
   function openFormModal(
     type,
@@ -3078,16 +2562,12 @@ window.App = (() => {
       FORM_CONFIG[type];
 
     if (!config) {
-
       showToast(
         "Form belum tersedia.",
         "error"
       );
-
       return;
-
     }
-
 
     const old =
       document.getElementById(
@@ -3098,20 +2578,21 @@ window.App = (() => {
       old.remove();
     }
 
-
     const isEdit =
-      !!existing;
-
+      Boolean(existing);
 
     const fields =
       config.fields.map(
         field => {
 
           const value =
-            existing?.[
-              field.key
-            ] ?? "";
+            existing?.[field.key] ??
+            "";
 
+          const required =
+            field.required
+              ? "required"
+              : "";
 
           if (
             field.type ===
@@ -3119,69 +2600,49 @@ window.App = (() => {
           ) {
 
             return `
-
-              <div class="form-group">
+              <div class="field">
 
                 <label>
-                  ${esc(
-                    field.label
-                  )}
-
+                  ${esc(field.label)}
                   ${
                     field.required
-                      ? "<span>*</span>"
+                      ? " *"
                       : ""
                   }
-
                 </label>
 
-
                 <select
-                  name="${esc(field.key)}"
-                  ${
-                    field.required
-                      ? "required"
-                      : ""
-                  }
+                  name="${esc(
+                    field.key
+                  )}"
+                  ${required}
                 >
 
                   <option value="">
                     Pilih...
                   </option>
 
-                  ${(
-                    field.options ||
-                    []
-                  ).map(
-                    option => `
-
+                  ${(field.options || [])
+                    .map(option => `
                       <option
                         value="${esc(option)}"
                         ${
-                          String(
-                            value
-                          ) ===
-                          String(
-                            option
-                          )
+                          String(value) ===
+                          String(option)
                             ? "selected"
                             : ""
                         }
                       >
                         ${esc(option)}
                       </option>
-
-                    `
-                  ).join("")}
+                    `)
+                    .join("")}
 
                 </select>
 
               </div>
-
             `;
-
           }
-
 
           if (
             field.type ===
@@ -3189,63 +2650,39 @@ window.App = (() => {
           ) {
 
             return `
-
-              <div class="form-group">
+              <div class="field full">
 
                 <label>
-                  ${esc(
-                    field.label
-                  )}
-
+                  ${esc(field.label)}
                   ${
                     field.required
-                      ? "<span>*</span>"
+                      ? " *"
                       : ""
                   }
-
                 </label>
 
-
                 <textarea
-                  name="${esc(field.key)}"
-                  placeholder="${esc(
-                    field.placeholder ||
-                    ""
+                  name="${esc(
+                    field.key
                   )}"
-                  ${
-                    field.required
-                      ? "required"
-                      : ""
-                  }
-                >${esc(
-                  value
-                )}</textarea>
+                  ${required}
+                >${esc(value)}</textarea>
 
               </div>
-
             `;
-
           }
 
-
           return `
-
-            <div class="form-group">
+            <div class="field">
 
               <label>
-
-                ${esc(
-                  field.label
-                )}
-
+                ${esc(field.label)}
                 ${
                   field.required
-                    ? "<span>*</span>"
+                    ? " *"
                     : ""
                 }
-
               </label>
-
 
               <input
                 type="${esc(
@@ -3255,27 +2692,21 @@ window.App = (() => {
                 name="${esc(
                   field.key
                 )}"
-                value="${esc(
-                  value
-                )}"
-                placeholder="${esc(
-                  field.placeholder ||
-                  ""
-                )}"
+                value="${esc(value)}"
                 ${
-                  field.required
-                    ? "required"
+                  field.placeholder
+                    ? `placeholder="${esc(
+                        field.placeholder
+                      )}"`
                     : ""
                 }
-              />
+                ${required}
+              >
 
             </div>
-
           `;
-
         }
       ).join("");
-
 
     const modal =
       document.createElement(
@@ -3286,35 +2717,25 @@ window.App = (() => {
       "arima-form-modal";
 
     modal.className =
-      "modal-overlay";
-
+      "modal-backdrop";
 
     modal.innerHTML = `
 
-      <div
-        class="modal"
-        role="dialog"
-        aria-modal="true"
-      >
+      <div class="modal">
 
-        <div class="modal-header">
+        <div class="section-head">
 
-          <div>
-
-            <h2>
-              ${esc(
-                isEdit
-                  ? config.editTitle
-                  : config.title
-              )}
-            </h2>
-
-          </div>
-
+          <h2>
+            ${esc(
+              isEdit
+                ? config.editTitle
+                : config.title
+            )}
+          </h2>
 
           <button
             type="button"
-            class="modal-close"
+            class="btn btn-light"
             id="modal-close"
           >
             ×
@@ -3322,25 +2743,23 @@ window.App = (() => {
 
         </div>
 
+        <form id="arima-form">
 
-        <form
-          id="arima-form"
-          class="form-grid"
-        >
+          <div class="form-grid">
 
-          ${fields}
+            ${fields}
 
+          </div>
 
-          <div class="modal-footer">
+          <div class="modal-actions">
 
             <button
               type="button"
-              class="btn"
+              class="btn btn-light"
               id="modal-cancel"
             >
               Batal
             </button>
-
 
             <button
               type="submit"
@@ -3362,18 +2781,13 @@ window.App = (() => {
 
     `;
 
-
     document.body.appendChild(
       modal
     );
 
-
-    function close() {
-
+    const close = () => {
       modal.remove();
-
-    }
-
+    };
 
     qs(
       "#modal-close",
@@ -3383,7 +2797,6 @@ window.App = (() => {
       close
     );
 
-
     qs(
       "#modal-cancel",
       modal
@@ -3391,7 +2804,6 @@ window.App = (() => {
       "click",
       close
     );
-
 
     modal.addEventListener(
       "click",
@@ -3401,14 +2813,10 @@ window.App = (() => {
           event.target ===
           modal
         ) {
-
           close();
-
         }
-
       }
     );
-
 
     const form =
       qs(
@@ -3416,13 +2824,11 @@ window.App = (() => {
         modal
       );
 
-
     form?.addEventListener(
       "submit",
       async event => {
 
         event.preventDefault();
-
 
         const submit =
           qs(
@@ -3431,15 +2837,10 @@ window.App = (() => {
           );
 
         if (submit) {
-
-          submit.disabled =
-            true;
-
+          submit.disabled = true;
           submit.textContent =
             "Menyimpan...";
-
         }
-
 
         try {
 
@@ -3448,9 +2849,7 @@ window.App = (() => {
               form
             );
 
-          const payload =
-            {};
-
+          const payload = {};
 
           config.fields.forEach(
             field => {
@@ -3465,9 +2864,7 @@ window.App = (() => {
             }
           );
 
-
           let response;
-
 
           if (isEdit) {
 
@@ -3484,9 +2881,7 @@ window.App = (() => {
                 type,
                 payload
               );
-
           }
-
 
           if (
             response &&
@@ -3497,9 +2892,7 @@ window.App = (() => {
               response.message ||
               "Gagal menyimpan data."
             );
-
           }
-
 
           showToast(
             isEdit
@@ -3507,16 +2900,13 @@ window.App = (() => {
               : "Data berhasil ditambahkan."
           );
 
-
           close();
 
-
-          await load(
-            type
-          );
-
+          await load(type);
 
         } catch (error) {
+
+          console.error(error);
 
           showToast(
             error.message ||
@@ -3524,32 +2914,22 @@ window.App = (() => {
             "error"
           );
 
-
           if (submit) {
-
-            submit.disabled =
-              false;
+            submit.disabled = false;
 
             submit.textContent =
               isEdit
                 ? "Simpan Perubahan"
                 : "Simpan";
-
           }
-
         }
-
       }
     );
-
   }
 
-
-  /*
-   * =========================================================
-   * INIT
-   * =========================================================
-   */
+  /* =========================================================
+     INIT
+     ========================================================= */
 
   async function init() {
 
@@ -3557,58 +2937,41 @@ window.App = (() => {
       "ARIMA MANAGEMENT SYSTEM initializing..."
     );
 
+    /*
+      PENTING:
+      Login sekarang menggunakan arima_session.
+      requireAuth() menerima arima_session,
+      ARIMA_SESSION, maupun ARIMA_USER.
+    */
 
-    if (
-      !requireAuth()
-    ) {
-
+    if (!requireAuth()) {
       return;
-
     }
 
-
     renderLayout();
-
 
     await load(
       "dashboard"
     );
-
   }
 
-
-  /*
-   * =========================================================
-   * PUBLIC API
-   * =========================================================
-   */
+  /* =========================================================
+     PUBLIC API
+     ========================================================= */
 
   return {
-
     init,
-
     load,
-
     logout,
-
     renderDashboard,
-
     renderStudents,
-
     renderSensei,
-
     renderAttendance,
-
     renderBilling,
-
     renderPayments,
-
     renderSalary,
-
     renderReports,
-
     renderSettings
-
   };
 
 })();
