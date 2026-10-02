@@ -835,35 +835,22 @@ window.App = (() => {
   }
 
 
-  function requireAuth() {
+function requireAuth() {
 
-    user =
-      getStoredUser();
+  const currentUser =
+    window.Auth &&
+    typeof window.Auth.require === "function"
+      ? window.Auth.require()
+      : null;
 
-    if (!user) {
-
-      const loginPage =
-        "login.html";
-
-      if (
-        !location.pathname.endsWith(
-          loginPage
-        )
-      ) {
-
-        location.href =
-          loginPage;
-
-        return false;
-
-      }
-
-    }
-
-    return true;
-
+  if (!currentUser) {
+    return null;
   }
 
+  user = currentUser;
+
+  return currentUser;
+}
 
   function logout() {
 
