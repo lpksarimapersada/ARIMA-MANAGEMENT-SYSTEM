@@ -38,7 +38,7 @@ window.API = (() => {
 
     const demoMode =
       window.ARIMA_CONFIG &&
-      window.ARIMA_CONFIG.DEMO_MODE === true;
+      window.ARIMA_CONFIG.DEMO_MODE === false;
 
 
     /* -------------------------------------------------------
