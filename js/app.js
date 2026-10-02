@@ -808,23 +808,52 @@ window.App = (() => {
 
     try {
 
-      const raw =
-        localStorage.getItem(
-          "ARIMA_USER"
-        );
+      // Prefer the shared Auth module.
+      if (
+        window.Auth &&
+        typeof window.Auth.current === "function"
+      ) {
 
-      if (!raw) {
-        return null;
+        const current =
+          window.Auth.current();
+
+        if (current) {
+          return current;
+        }
+
       }
 
-      return JSON.parse(
-        raw
-      );
+      // Fallback for compatibility with older builds.
+      const keys = [
+        "arima_session",
+        "ARIMA_USER",
+        "ARIMA_SESSION"
+      ];
+
+      for (const key of keys) {
+
+        const raw =
+          localStorage.getItem(key);
+
+        if (!raw) {
+          continue;
+        }
+
+        const parsed =
+          JSON.parse(raw);
+
+        if (parsed && typeof parsed === "object") {
+          return parsed;
+        }
+
+      }
+
+      return null;
 
     } catch (error) {
 
       console.warn(
-        "Gagal membaca user:",
+        "Gagal membaca user/session:",
         error
       );
 
@@ -835,26 +864,78 @@ window.App = (() => {
   }
 
 
-function requireAuth() {
+  function requireAuth() {
 
-  const currentUser =
-    window.Auth &&
-    typeof window.Auth.require === "function"
-      ? window.Auth.require()
-      : null;
+    const currentUser =
+      getStoredUser();
 
-  if (!currentUser) {
-    return null;
+    if (!currentUser) {
+
+      console.warn(
+        "ARIMA: session tidak ditemukan. Mengarahkan ke login."
+      );
+
+      window.location.replace(
+        "login.html"
+      );
+
+      return null;
+
+    }
+
+    user =
+      currentUser;
+
+    // Keep both session keys synchronized so an old cached
+    // page cannot accidentally log the user out.
+    try {
+
+      const value =
+        JSON.stringify(
+          currentUser
+        );
+
+      localStorage.setItem(
+        "arima_session",
+        value
+      );
+
+      localStorage.setItem(
+        "ARIMA_USER",
+        value
+      );
+
+    } catch (error) {
+
+      console.warn(
+        "Gagal menyinkronkan session:",
+        error
+      );
+
+    }
+
+    return currentUser;
+
   }
 
-  user = currentUser;
-
-  return currentUser;
-}
 
   function logout() {
 
     try {
+
+      if (
+        window.Auth &&
+        typeof window.Auth.logout === "function"
+      ) {
+
+        window.Auth.logout();
+        return;
+
+      }
+
+      localStorage.removeItem(
+        "arima_session"
+      );
 
       localStorage.removeItem(
         "ARIMA_USER"
@@ -864,16 +945,26 @@ function requireAuth() {
         "ARIMA_SESSION"
       );
 
+      localStorage.removeItem(
+        "ARIMA_TOKEN"
+      );
+
+      sessionStorage.removeItem(
+        "ARIMA_TOKEN"
+      );
+
     } catch (error) {
 
       console.warn(
+        "Logout error:",
         error
       );
 
     }
 
-    location.href =
-      "login.html";
+    window.location.replace(
+      "login.html"
+    );
 
   }
 
