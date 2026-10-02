@@ -3,7 +3,7 @@ window.ARIMA_CONFIG = Object.freeze({
   COMPANY_NAME: "LPKS Arima Persada",
   TAGLINE: "Menjembatani Kompetensi, Membuka Gerbang Karier ke Jepang",
 
-  API_URL: "https://script.google.com/macros/s/AKfycbw05DSVw7O8Y061Cdit8YEMFxHAvqjV4vHatfSLdrGFjNYbgcO5oiD722bciwuWfYKG/exec",
+  API_URL: "https://script.google.com/macros/s/AKfycbx2KUraVjTZcHDDi0PkkSiS7o7IBIdmD0Mg9Y4UhBNt9bZ45Udsm_nE3bmujabtOKmh/exec",
 
   DEMO_MODE: false
 });

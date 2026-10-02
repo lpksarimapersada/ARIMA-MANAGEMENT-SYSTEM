@@ -1372,11 +1372,23 @@ window.App = (() => {
 
     try {
 
-      const response =
-        await API.dashboard();
+      const [response, studentsResponse, senseiResponse] =
+        await Promise.all([
+          API.dashboard(),
+          API.students(),
+          API.sensei()
+        ]);
 
       const data =
         response?.data || {};
+      const students =
+        Array.isArray(studentsResponse?.data)
+          ? studentsResponse.data
+          : [];
+      const sensei =
+        Array.isArray(senseiResponse?.data)
+          ? senseiResponse.data
+          : [];
 
 
       el.innerHTML = `
@@ -1457,6 +1469,59 @@ window.App = (() => {
                 data.pendingBilling
               )}
             </div>
+
+          </div>
+
+        </div>
+
+
+        <div class="section">
+
+          <div class="card">
+
+            <h2>Data Siswa (${formatNumber(students.length)})</h2>
+
+            ${renderTable(
+              students,
+              [
+                { key: "ID_SISWA", label: "ID" },
+                { key: "NAMA", label: "Nama" },
+                { key: "NIK", label: "NIK" },
+                { key: "NO_WA", label: "WhatsApp" },
+                { key: "PROGRAM", label: "Program" },
+                { key: "ASRAMA", label: "Asrama" },
+                { key: "STATUS", label: "Status" }
+              ],
+              { emptyText: "Belum ada data siswa." }
+            )}
+
+          </div>
+
+        </div>
+
+
+        <div class="section">
+
+          <div class="card">
+
+            <h2>Data Sensei (${formatNumber(sensei.length)})</h2>
+
+            ${renderTable(
+              sensei,
+              [
+                { key: "ID_SENSEI", label: "ID" },
+                { key: "NAMA", label: "Nama" },
+                { key: "NO_WA", label: "WhatsApp" },
+                { key: "EMAIL", label: "Email" },
+                {
+                  key: "TARIF_PER_PERTEMUAN",
+                  label: "Tarif / Pertemuan",
+                  render: value => formatRupiah(value)
+                },
+                { key: "STATUS", label: "Status" }
+              ],
+              { emptyText: "Belum ada data sensei." }
+            )}
 
           </div>
 
