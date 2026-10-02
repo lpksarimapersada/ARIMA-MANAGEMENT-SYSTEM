@@ -41,3 +41,20 @@ Backend harus menyediakan action:
 `login`, `dashboard`, `students`, `sensei`, `attendance`, `billing`, `payments`, `salary`.
 
 Jangan menyimpan password plaintext di spreadsheet.
+
+
+## Publish production
+
+This ZIP is the frontend for GitHub Pages and is already configured to use the
+current Google Apps Script Web App URL in `js/config.js`.
+
+Do NOT redeploy the `api/Code.gs` starter over the currently working Apps Script
+deployment unless you intentionally replace the backend. The live frontend
+endpoint is configured in `js/config.js`.
+
+After publishing/updating GitHub Pages:
+1. Open `login.html`.
+2. Log in with the credentials configured in the live Apps Script backend.
+3. If an older cached build is open, use Ctrl+Shift+R once.
+4. The current build synchronizes the login session between `arima_session` and
+   `ARIMA_USER` for compatibility with older frontend builds.
