@@ -302,15 +302,6 @@ window.App = (() => {
       idField: "BILLING_ID",
 
       fields: [
-
-        {
-          key: "BILLING_ID",
-          label: "ID Tagihan",
-          type: "text",
-          required: false,
-          placeholder: "Kosongkan untuk ID otomatis"
-        },
-
         {
           key: "ID_SISWA",
           label: "ID Siswa",
@@ -390,15 +381,6 @@ window.App = (() => {
       idField: "PAYMENT_ID",
 
       fields: [
-
-        {
-          key: "PAYMENT_ID",
-          label: "ID Pembayaran",
-          type: "text",
-          required: false,
-          placeholder: "Kosongkan untuk ID otomatis"
-        },
-
         {
           key: "BILLING_ID",
           label: "ID Tagihan",
@@ -970,12 +952,14 @@ window.App = (() => {
               <img src="assets/logo.webp" alt="Logo LPKS Arima Persada">
             </div>
 
+            <div class="brand-copy">
             <div class="brand-title">
               ARIMA
             </div>
 
             <div class="brand-subtitle">
               MANAGEMENT SYSTEM
+            </div>
             </div>
 
           </div>
@@ -2814,7 +2798,7 @@ window.App = (() => {
 
         ${pageHeader(
           "Payroll Sensei",
-          "Gaji otomatis dari absensi sensei, berdasarkan tarif per JP (45 menit).",
+          "Gaji otomatis dari absensi sensei, berdasarkan tarif per JP (45 menit), di luar waktu istirahat.",
           "Tambah Payroll",
           "btn-add-salary"
         )}
@@ -2824,7 +2808,7 @@ window.App = (() => {
 
           <div class="card">
             <strong>Rumus payroll</strong>
-            <p class="muted">Total menit mengajar ÷ 45 × tarif per JP. Hanya absensi HADIR dan TERLAMBAT yang dihitung.</p>
+            <p class="muted">Total menit mengajar setelah dikurangi istirahat 10.00–10.15 dan 12.00–13.15, dibagi 45 menit, lalu dikali tarif per JP.</p>
           </div>
 
         </div>
@@ -3266,7 +3250,6 @@ window.App = (() => {
     modal.innerHTML = `
       <div class="modal form-modal-shell" role="dialog" aria-modal="true">
         <div class="form-modal-header">
-          <div class="form-modal-mark" aria-hidden="true">${isReset ? "↻" : "A"}</div>
           <div class="form-modal-heading">
             <span class="form-modal-kicker">PENGATURAN AKUN</span>
             <h2>${isReset ? "Reset Password" : "Tambah Akun"}</h2>
@@ -3670,10 +3653,6 @@ window.App = (() => {
       >
 
         <div class="form-modal-header">
-
-          <div class="form-modal-mark" aria-hidden="true">
-            ${type === "students" ? "S" : type === "sensei" ? "T" : "A"}
-          </div>
 
           <div class="form-modal-heading">
 

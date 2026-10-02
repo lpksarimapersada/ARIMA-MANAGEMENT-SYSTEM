@@ -748,6 +748,25 @@ function clockMinutes_(value) {
   return match ? Number(match[1]) * 60 + Number(match[2]) : null;
 }
 
+function paidTeachingMinutes_(start, end) {
+  if (start === null || end === null || start === end) return null;
+
+  const startAt = start;
+  const endAt = end > start ? end : end + 1440;
+  let paidMinutes = endAt - startAt;
+  const breaks = [[600, 615], [720, 795]];
+
+  for (let dayStart = Math.floor(startAt / 1440) * 1440; dayStart < endAt; dayStart += 1440) {
+    breaks.forEach(function (pause) {
+      const overlapStart = Math.max(startAt, dayStart + pause[0]);
+      const overlapEnd = Math.min(endAt, dayStart + pause[1]);
+      paidMinutes -= Math.max(0, overlapEnd - overlapStart);
+    });
+  }
+
+  return Math.max(0, paidMinutes);
+}
+
 function calculateSalaryRecord_(record) {
   const senseiSheet = ss_().getSheetByName('SENSEI');
   const attendanceSheet = ss_().getSheetByName('ATTENDANCE');
@@ -797,13 +816,12 @@ function calculateSalaryRecord_(record) {
     if (status !== 'HADIR' && status !== 'TERLAMBAT') return;
 
     meetingCount += 1;
-    const start = clockMinutes_(row[startIndex]);
-    const end = clockMinutes_(row[endIndex]);
-    if (start === null || end === null || start === end) {
+    const paidMinutes = paidTeachingMinutes_(clockMinutes_(row[startIndex]), clockMinutes_(row[endIndex]));
+    if (paidMinutes === null) {
       incompleteTimes += 1;
       return;
     }
-    totalMinutes += end > start ? end - start : end + 1440 - start;
+    totalMinutes += paidMinutes;
   });
 
   if (incompleteTimes) {

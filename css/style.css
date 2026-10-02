@@ -36,7 +36,6 @@
 .modal-overlay{position:fixed;inset:0;z-index:30;display:grid;place-items:center;padding:20px;background:rgba(16,16,18,.58);overflow-y:auto}
 .form-modal-shell{position:relative;width:min(760px,100%);max-height:min(90vh,900px);padding:0;border:1px solid #e2e2e5;border-radius:12px;box-shadow:0 24px 70px rgba(0,0,0,.24);overflow:auto}
 .form-modal-header{position:sticky;top:0;z-index:2;display:flex;align-items:center;gap:14px;padding:21px 26px;background:#fff;border-bottom:1px solid #ececef}
-.form-modal-mark{display:grid;place-items:center;flex:0 0 44px;width:44px;height:44px;border-radius:10px;background:#fcebed;color:var(--accent);font-size:18px;font-weight:800}
 .form-modal-heading{min-width:0}
 .form-modal-kicker{font-size:10px;font-weight:700;color:var(--accent)}
 .form-modal-heading h2{margin:3px 0 2px;font-size:21px}
@@ -65,7 +64,9 @@
 .sidebar-brand{display:flex;align-items:center;gap:11px;padding:6px 8px 22px}
 .sidebar-logo{flex:0 0 48px;width:48px;height:48px;display:grid;place-items:center;padding:4px;border-radius:9px;background:#fff}
 .sidebar-logo img{display:block;width:100%;height:100%;object-fit:contain}
-.brand-title{line-height:1.15}
+.brand-copy{display:grid;gap:2px;min-width:0}
+.brand-title{font-size:16px;font-weight:800;line-height:1.1;white-space:nowrap}
+.brand-subtitle{font-size:10px;line-height:1.2;color:var(--muted);white-space:nowrap}
 .setting-info{max-width:900px}
 .setting-info .setting-row{padding:13px 0;border-bottom:1px solid #ededf0}
 .setting-info .setting-row:last-child{border-bottom:0}
