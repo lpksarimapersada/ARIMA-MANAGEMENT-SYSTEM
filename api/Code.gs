@@ -26,7 +26,7 @@ function doGet() {
 function route_(action, p) {
   switch (String(action || '')) {
     case 'login': return login_(p);
-    case 'dashboard': return dashboard_(p);
+    case 'dashboard': return dashboard_();
     case 'students': return listSheet_('STUDENTS');
     case 'sensei': return listSheet_('SENSEI');
     case 'attendance': return listSheet_('ATTENDANCE');
