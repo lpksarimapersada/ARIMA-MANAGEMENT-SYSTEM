@@ -1862,6 +1862,7 @@ window.App = (() => {
                   data-edit-student="${esc(
                     row.ID_SISWA
                   )}"
+                  data-row-number="${esc(row.__ROW_NUMBER || '')}"
                 >
                   Edit
                 </button>
@@ -1872,6 +1873,7 @@ window.App = (() => {
                   data-delete-student="${esc(
                     row.ID_SISWA
                   )}"
+                  data-row-number="${esc(row.__ROW_NUMBER || '')}"
                 >
                   Hapus
                 </button>
@@ -1918,9 +1920,13 @@ window.App = (() => {
               const id =
                 button.dataset
                   .editStudent;
+              const rowNumber = button.dataset.rowNumber;
 
               const row =
                 rows.find(
+                  item => rowNumber &&
+                    String(item.__ROW_NUMBER) === String(rowNumber)
+                ) || rows.find(
                   item =>
                     String(
                       item.ID_SISWA
@@ -1966,12 +1972,16 @@ window.App = (() => {
 
               try {
 
-                await API.delete(
+                const response = await API.delete(
                   "students",
                   {
-                    ID_SISWA: id
+                    ID_SISWA: id,
+                    __ROW_NUMBER: button.dataset.rowNumber
                   }
                 );
+                if (response?.success === false) {
+                  throw new Error(response.message || "Gagal menghapus data siswa.");
+                }
 
                 showToast(
                   "Data siswa berhasil dihapus."
@@ -2091,6 +2101,7 @@ window.App = (() => {
                   data-edit-sensei="${esc(
                     row.ID_SENSEI
                   )}"
+                  data-row-number="${esc(row.__ROW_NUMBER || '')}"
                 >
                   Edit
                 </button>
@@ -2101,6 +2112,7 @@ window.App = (() => {
                   data-delete-sensei="${esc(
                     row.ID_SENSEI
                   )}"
+                  data-row-number="${esc(row.__ROW_NUMBER || '')}"
                 >
                   Hapus
                 </button>
@@ -2147,9 +2159,13 @@ window.App = (() => {
               const id =
                 button.dataset
                   .editSensei;
+              const rowNumber = button.dataset.rowNumber;
 
               const row =
                 rows.find(
+                  item => rowNumber &&
+                    String(item.__ROW_NUMBER) === String(rowNumber)
+                ) || rows.find(
                   item =>
                     String(
                       item.ID_SENSEI
@@ -2195,12 +2211,16 @@ window.App = (() => {
 
               try {
 
-                await API.delete(
+                const response = await API.delete(
                   "sensei",
                   {
-                    ID_SENSEI: id
+                    ID_SENSEI: id,
+                    __ROW_NUMBER: button.dataset.rowNumber
                   }
                 );
+                if (response?.success === false) {
+                  throw new Error(response.message || "Gagal menghapus data sensei.");
+                }
 
                 showToast(
                   "Data sensei berhasil dihapus."
@@ -3172,10 +3192,12 @@ window.App = (() => {
       config.fields.map(
         field => {
 
-          const value =
-            existing?.[
-              field.key
-            ] ?? "";
+          const rawValue = existing?.[field.key] ?? "";
+          const value = field.type === "date"
+            ? String(rawValue || "").slice(0, 10)
+            : field.type === "month"
+              ? String(rawValue || "").slice(0, 7)
+              : rawValue;
 
 
           if (
@@ -3529,6 +3551,10 @@ window.App = (() => {
 
             }
           );
+
+          if (existing?.__ROW_NUMBER) {
+            payload.__ROW_NUMBER = existing.__ROW_NUMBER;
+          }
 
 
           let response;

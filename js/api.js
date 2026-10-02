@@ -1,6 +1,20 @@
 window.API = (() => {
   "use strict";
 
+  const saveActions = {
+    students: "studentSave",
+    sensei: "senseiSave",
+    attendance: "attendanceSave",
+    billing: "billingSave",
+    payments: "paymentSave",
+    salary: "salarySave"
+  };
+
+  const deleteActions = {
+    students: "studentDelete",
+    sensei: "senseiDelete"
+  };
+
   function getToken() {
     return (
       localStorage.getItem("ARIMA_TOKEN") ||
@@ -187,6 +201,24 @@ window.API = (() => {
     return call("salarySave", payload);
   }
 
+  async function create(type, payload = {}) {
+    const action = saveActions[String(type || "").toLowerCase()];
+    if (!action) throw new Error("Aksi tambah tidak tersedia untuk " + type + ".");
+    return call(action, { ...payload, __MODE: "create" });
+  }
+
+  async function update(type, payload = {}) {
+    const action = saveActions[String(type || "").toLowerCase()];
+    if (!action) throw new Error("Aksi edit tidak tersedia untuk " + type + ".");
+    return call(action, { ...payload, __MODE: "update" });
+  }
+
+  async function deleteRecord(type, payload = {}) {
+    const action = deleteActions[String(type || "").toLowerCase()];
+    if (!action) throw new Error("Aksi hapus tidak tersedia untuk " + type + ".");
+    return call(action, payload);
+  }
+
   return {
 
     call,
@@ -228,6 +260,12 @@ window.API = (() => {
     paymentSave,
 
     salarySave,
+
+    create,
+
+    update,
+
+    delete: deleteRecord,
 
     getToken,
 

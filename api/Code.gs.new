@@ -590,10 +590,7 @@ function findColumnIndex_(headers, candidates) {
   });
 
   for (let i = 0; i < headers.length; i += 1) {
-    const header = normalizeHeaderName_(headers[i]);
-    if (normalizedCandidates.indexOf(header) >= 0) {
-      return i;
-    }
+    if (normalizedCandidates.indexOf(normalizeHeaderName_(headers[i])) >= 0) return i;
   }
 
   return -1;
@@ -606,18 +603,11 @@ function countActive_(sheetName, statusCol, statusValue) {
   const values = sh.getDataRange().getValues();
   if (values.length < 2) return 0;
 
-  const headers = values[0].map(String);
-  const index = findColumnIndex_(headers, [statusCol, 'STATUS', 'STATUS_SISWA', 'STATUS_SENSEI']);
-  if (index < 0) {
-    return values.slice(1).filter(function (row) {
-      return row.some(function (cell) {
-        return String(cell || '').trim() !== '';
-      });
-    }).length;
-  }
+  const index = findColumnIndex_(values[0].map(String), [statusCol]);
+  if (index < 0) return values.length - 1;
 
   return values.slice(1).filter(function (row) {
-    return String(row[index] || '').trim().toUpperCase() === String(statusValue || '').trim().toUpperCase();
+    return String(row[index] || '').toUpperCase() === String(statusValue || '').toUpperCase();
   }).length;
 }
 
