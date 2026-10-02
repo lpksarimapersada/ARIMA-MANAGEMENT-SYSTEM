@@ -21,9 +21,9 @@
   </form>
   <p class="tiny">LPKS Arima Persada · Menjembatani Kompetensi, Membuka Gerbang Karier ke Jepang</p>
 </main>
-<script src="js/config.js"></script>
-<script src="js/api.js"></script>
-<script src="js/auth.js"></script>
+<script src="js/config.js?v=20261002.1"></script>
+<script src="js/api.js?v=20261002.1"></script>
+<script src="js/auth.js?v=20261002.1"></script>
 <script>
 document.getElementById('loginForm').addEventListener('submit', async e => {
   e.preventDefault();
@@ -31,8 +31,27 @@ document.getElementById('loginForm').addEventListener('submit', async e => {
   try {
     const result = await API.login(document.getElementById('userId').value.trim(), document.getElementById('password').value);
     if (!result || !result.success) throw new Error(result?.message || 'Login gagal.');
-    localStorage.setItem('arima_session', JSON.stringify(result.user));
-    location.href = 'dashboard.html';
+    if (!result.user) {
+      throw new Error('Login berhasil tetapi data pengguna tidak diterima dari server.');
+    }
+
+    if (
+      window.Auth &&
+      typeof window.Auth.setSession === 'function'
+    ) {
+      Auth.setSession(result.user);
+    } else {
+      localStorage.setItem(
+        'arima_session',
+        JSON.stringify(result.user)
+      );
+      localStorage.setItem(
+        'ARIMA_USER',
+        JSON.stringify(result.user)
+      );
+    }
+
+    location.replace('dashboard.html?v=20261002.1');
   } catch (ex) { err.textContent = ex.message; err.classList.remove('hidden'); }
 });
 </script>
