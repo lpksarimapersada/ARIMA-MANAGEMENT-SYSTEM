@@ -1,212 +1,97 @@
-/* =========================================================
-   ARIMA MANAGEMENT SYSTEM
-   APP.JS
-   LPKS ARIMA PERSADA
-   ========================================================= */
-
 (function () {
     "use strict";
 
-    /* =====================================================
-       GLOBAL APP
-       ===================================================== */
-
-    window.App = {
+    const App = {
 
         user: null,
-        initialized: false,
+        root: null,
 
-        /* =================================================
-           INIT
-           ================================================= */
+        async init() {
+            this.root = document.getElementById("app");
 
-        init: async function () {
+            if (!this.root) return;
 
-            if (this.initialized) {
+            this.user = this.getUser();
+
+            if (!this.user) {
+                location.href = "login.html";
                 return;
             }
 
-            this.initialized = true;
-
-            try {
-
-                /* Check login session */
-                if (window.Auth && typeof Auth.require === "function") {
-                    this.user = Auth.require();
-
-                    if (!this.user) {
-                        return;
-                    }
-                } else {
-                    this.user = this.getSession();
-
-                    if (!this.user) {
-                        window.location.href = "login.html";
-                        return;
-                    }
-                }
-
-                /* Render application */
-                this.render();
-
-                /* Load dashboard data */
-                await this.loadDashboard();
-
-            } catch (error) {
-
-                console.error("ARIMA APP ERROR:", error);
-
-                this.showError(
-                    "Aplikasi gagal dimuat. Silakan refresh halaman."
-                );
-            }
+            this.renderShell();
+            await this.showDashboard();
         },
 
-
-        /* =================================================
-           SESSION
-           ================================================= */
-
-        getSession: function () {
-
+        getUser() {
             try {
+                const a = localStorage.getItem("arima_session");
+                if (a) return JSON.parse(a);
 
-                var session = localStorage.getItem("arima_session");
+                const b = localStorage.getItem("ARIMA_USER");
+                if (b) return JSON.parse(b);
 
-                if (!session) {
-                    return null;
-                }
-
-                return JSON.parse(session);
-
-            } catch (error) {
-
-                console.error("Session error:", error);
-
+                return null;
+            } catch (e) {
+                console.error(e);
                 return null;
             }
         },
 
+        renderShell() {
+            const name =
+                this.user?.name ||
+                this.user?.NAMA ||
+                this.user?.userId ||
+                "Administrator";
 
-        /* =================================================
-           RENDER MAIN APPLICATION
-           ================================================= */
-
-        render: function () {
-
-            var root = document.getElementById("app");
-
-            if (!root) {
-                console.error("Element #app tidak ditemukan.");
-                return;
-            }
-
-            var userName =
-                this.user && (
-                    this.user.NAME ||
-                    this.user.name ||
-                    this.user.NAMA ||
-                    this.user.USER_ID ||
-                    this.user.userId
-                );
-
-            if (!userName) {
-                userName = "Administrator";
-            }
-
-            root.innerHTML = `
-
+            this.root.innerHTML = `
                 <div class="shell">
 
-                    <!-- SIDEBAR -->
                     <aside class="sidebar">
 
                         <div class="side-brand">
-
-                            <img
-                                src="assets/logo.webp"
-                                alt="LPKS Arima Persada"
-                            >
-
+                            <img src="assets/logo.webp">
                             <strong>
                                 ARIMA<br>
                                 MANAGEMENT SYSTEM
                             </strong>
-
                         </div>
 
                         <nav class="nav">
 
-                            <a
-                                href="#"
-                                class="active"
-                                data-page="dashboard"
-                                onclick="App.navigate('dashboard'); return false;"
-                            >
+                            <a href="#" data-page="dashboard">
                                 ▦ Dashboard
                             </a>
 
-                            <a
-                                href="#"
-                                data-page="students"
-                                onclick="App.navigate('students'); return false;"
-                            >
+                            <a href="#" data-page="students">
                                 ♙ Siswa
                             </a>
 
-                            <a
-                                href="#"
-                                data-page="sensei"
-                                onclick="App.navigate('sensei'); return false;"
-                            >
+                            <a href="#" data-page="sensei">
                                 ◎ Sensei
                             </a>
 
-                            <a
-                                href="#"
-                                data-page="attendance"
-                                onclick="App.navigate('attendance'); return false;"
-                            >
+                            <a href="#" data-page="attendance">
                                 ✓ Absensi
                             </a>
 
-                            <a
-                                href="#"
-                                data-page="billing"
-                                onclick="App.navigate('billing'); return false;"
-                            >
+                            <a href="#" data-page="billing">
                                 Rp Tagihan
                             </a>
 
-                            <a
-                                href="#"
-                                data-page="payments"
-                                onclick="App.navigate('payments'); return false;"
-                            >
+                            <a href="#" data-page="payments">
                                 ↔ Pembayaran
                             </a>
 
-                            <a
-                                href="#"
-                                data-page="payroll"
-                                onclick="App.navigate('payroll'); return false;"
-                            >
+                            <a href="#" data-page="salary">
                                 ¥ Payroll Sensei
                             </a>
 
-                            <a
-                                href="#"
-                                data-page="reports"
-                                onclick="App.navigate('reports'); return false;"
-                            >
+                            <a href="#" data-page="reports">
                                 ▤ Laporan
                             </a>
 
-                            <a
-                                href="#"
-                                data-page="settings"
-                                onclick="App.navigate('settings'); return false;"
-                            >
+                            <a href="#" data-page="settings">
                                 ⚙ Pengaturan
                             </a>
 
@@ -214,943 +99,756 @@
 
                     </aside>
 
-
-                    <!-- MAIN -->
                     <main class="main">
 
-                        <!-- TOPBAR -->
                         <header class="topbar">
 
-                            <div>
-                                <strong>Dashboard</strong>
-                            </div>
+                            <strong id="topTitle">
+                                Dashboard
+                            </strong>
 
                             <div class="toolbar">
-
                                 <span class="muted">
-                                    ${this.escapeHtml(userName)}
+                                    ${this.escape(name)}
                                 </span>
 
                                 <button
                                     class="btn btn-danger"
-                                    onclick="App.logout()"
-                                >
+                                    id="logoutBtn">
                                     Keluar
                                 </button>
-
                             </div>
 
                         </header>
 
-
-                        <!-- CONTENT -->
                         <section
                             class="content"
-                            id="pageContent"
-                        >
-
-                            <div class="page-title">
-
-                                <div>
-                                    <h1>Dashboard</h1>
-
-                                    <p>
-                                        Ringkasan ARIMA MANAGEMENT SYSTEM
-                                    </p>
-                                </div>
-
-                            </div>
-
-
-                            <!-- METRIC CARDS -->
-                            <div class="cards">
-
-                                <div class="card">
-
-                                    <div class="muted">
-                                        SISWA AKTIF
-                                    </div>
-
-                                    <div
-                                        class="metric"
-                                        id="activeStudents"
-                                    >
-                                        0
-                                    </div>
-
-                                </div>
-
-
-                                <div class="card">
-
-                                    <div class="muted">
-                                        SENSEI AKTIF
-                                    </div>
-
-                                    <div
-                                        class="metric"
-                                        id="activeSensei"
-                                    >
-                                        0
-                                    </div>
-
-                                </div>
-
-
-                                <div class="card">
-
-                                    <div class="muted">
-                                        KEHADIRAN
-                                    </div>
-
-                                    <div
-                                        class="metric"
-                                        id="attendanceRate"
-                                    >
-                                        0%
-                                    </div>
-
-                                </div>
-
-
-                                <div class="card">
-
-                                    <div class="muted">
-                                        TAGIHAN PENDING
-                                    </div>
-
-                                    <div
-                                        class="metric"
-                                        id="pendingBilling"
-                                    >
-                                        0
-                                    </div>
-
-                                </div>
-
-                            </div>
-
-
-                            <!-- TOTAL DATA -->
-                            <div class="section">
-
-                                <div class="section-head">
-
-                                    <h2>
-                                        TOTAL DATA
-                                    </h2>
-
-                                </div>
-
-
-                                <div class="cards">
-
-                                    <div class="card">
-
-                                        <div class="muted">
-                                            Siswa
-                                        </div>
-
-                                        <div
-                                            class="metric"
-                                            id="totalStudents"
-                                        >
-                                            0
-                                        </div>
-
-                                    </div>
-
-
-                                    <div class="card">
-
-                                        <div class="muted">
-                                            Sensei
-                                        </div>
-
-                                        <div
-                                            class="metric"
-                                            id="totalSensei"
-                                        >
-                                            0
-                                        </div>
-
-                                    </div>
-
-
-                                    <div class="card">
-
-                                        <div class="muted">
-                                            Absensi
-                                        </div>
-
-                                        <div
-                                            class="metric"
-                                            id="totalAttendance"
-                                        >
-                                            0
-                                        </div>
-
-                                    </div>
-
-
-                                    <div class="card">
-
-                                        <div class="muted">
-                                            Tagihan
-                                        </div>
-
-                                        <div
-                                            class="metric"
-                                            id="totalBilling"
-                                        >
-                                            0
-                                        </div>
-
-                                    </div>
-
-
-                                    <div class="card">
-
-                                        <div class="muted">
-                                            Pembayaran
-                                        </div>
-
-                                        <div
-                                            class="metric"
-                                            id="totalPayments"
-                                        >
-                                            0
-                                        </div>
-
-                                    </div>
-
-                                </div>
-
-                            </div>
-
-
-                            <!-- KEUANGAN -->
-                            <div class="section">
-
-                                <div class="section-head">
-
-                                    <h2>
-                                        KEUANGAN
-                                    </h2>
-
-                                </div>
-
-
-                                <div class="cards">
-
-                                    <div class="card">
-
-                                        <div class="muted">
-                                            Tagihan pending
-                                        </div>
-
-                                        <div
-                                            class="metric"
-                                            id="pendingAmount"
-                                        >
-                                            Rp 0
-                                        </div>
-
-                                    </div>
-
-
-                                    <div class="card">
-
-                                        <div class="muted">
-                                            Total pembayaran
-                                        </div>
-
-                                        <div
-                                            class="metric"
-                                            id="paymentAmount"
-                                        >
-                                            Rp 0
-                                        </div>
-
-                                    </div>
-
-                                </div>
-
-                            </div>
-
-
-                            <!-- PAYROLL -->
-                            <div class="section">
-
-                                <div class="section-head">
-
-                                    <h2>
-                                        PAYROLL
-                                    </h2>
-
-                                </div>
-
-
-                                <div class="cards">
-
-                                    <div class="card">
-
-                                        <div class="muted">
-                                            Payroll pending
-                                        </div>
-
-                                        <div
-                                            class="metric"
-                                            id="pendingPayroll"
-                                        >
-                                            0
-                                        </div>
-
-                                    </div>
-
-                                </div>
-
-                            </div>
-
-
-                            <!-- STATUS -->
-                            <div class="section">
-
-                                <div class="card">
-
-                                    <strong>
-                                        Sistem Online
-                                    </strong>
-
-                                    <p class="muted">
-                                        ARIMA MANAGEMENT SYSTEM
-                                        terhubung dengan backend
-                                        ARIMA Apps.
-                                    </p>
-
-                                </div>
-
-                            </div>
-
+                            id="pageContent">
                         </section>
 
                     </main>
 
                 </div>
             `;
+
+            document
+                .querySelectorAll(".nav a")
+                .forEach(link => {
+
+                    link.addEventListener("click", e => {
+                        e.preventDefault();
+
+                        const page =
+                            link.dataset.page;
+
+                        this.navigate(page);
+                    });
+
+                });
+
+            document
+                .getElementById("logoutBtn")
+                .addEventListener(
+                    "click",
+                    () => this.logout()
+                );
         },
 
+        async navigate(page) {
 
-        /* =================================================
-           LOAD DASHBOARD
-           ================================================= */
+            document
+                .querySelectorAll(".nav a")
+                .forEach(a => {
+                    a.classList.toggle(
+                        "active",
+                        a.dataset.page === page
+                    );
+                });
 
-        loadDashboard: async function () {
+            const title = {
+                dashboard: "Dashboard",
+                students: "Siswa",
+                sensei: "Sensei",
+                attendance: "Absensi",
+                billing: "Tagihan",
+                payments: "Pembayaran",
+                salary: "Payroll Sensei",
+                reports: "Laporan",
+                settings: "Pengaturan"
+            }[page] || "Dashboard";
+
+            document.getElementById(
+                "topTitle"
+            ).textContent = title;
+
+            if (page === "dashboard")
+                return this.showDashboard();
+
+            if (page === "students")
+                return this.showStudents();
+
+            if (page === "sensei")
+                return this.showSensei();
+
+            if (page === "attendance")
+                return this.showAttendance();
+
+            if (page === "billing")
+                return this.showBilling();
+
+            if (page === "payments")
+                return this.showPayments();
+
+            if (page === "salary")
+                return this.showSalary();
+
+            if (page === "reports")
+                return this.showReports();
+
+            if (page === "settings")
+                return this.showSettings();
+        },
+
+        async showDashboard() {
+
+            this.loading();
 
             try {
 
-                var data = null;
+                const result =
+                    await API.dashboard();
 
+                if (!result || result.success === false) {
+                    throw new Error(
+                        result?.message ||
+                        "Gagal mengambil data dashboard."
+                    );
+                }
 
-                /*
-                 * Coba menggunakan API.dashboard()
-                 */
+                const d =
+                    result.data ||
+                    result;
+
+                const students =
+                    this.num(
+                        d.students ??
+                        d.totalStudents ??
+                        d.siswa ??
+                        0
+                    );
+
+                const sensei =
+                    this.num(
+                        d.sensei ??
+                        d.totalSensei ??
+                        0
+                    );
+
+                const attendance =
+                    this.num(
+                        d.attendance ??
+                        d.attendanceRate ??
+                        d.kehadiran ??
+                        0
+                    );
+
+                const pendingBilling =
+                    this.num(
+                        d.pendingBilling ??
+                        d.pending_billing ??
+                        d.tagihanPending ??
+                        0
+                    );
+
+                const totalStudents =
+                    this.num(
+                        d.totalStudents ??
+                        d.studentsTotal ??
+                        d.siswa ??
+                        students
+                    );
+
+                const totalSensei =
+                    this.num(
+                        d.totalSensei ??
+                        d.senseiTotal ??
+                        d.sensei ??
+                        sensei
+                    );
+
+                const totalAttendance =
+                    this.num(
+                        d.totalAttendance ??
+                        d.absensi ??
+                        d.attendanceTotal ??
+                        0
+                    );
+
+                const totalBilling =
+                    this.num(
+                        d.totalBilling ??
+                        d.tagihan ??
+                        d.billing ??
+                        0
+                    );
+
+                const totalPayments =
+                    this.num(
+                        d.totalPayments ??
+                        d.pembayaran ??
+                        d.payments ??
+                        0
+                    );
+
+                const pendingAmount =
+                    d.pendingAmount ??
+                    d.pendingBillingAmount ??
+                    d.tagihanPendingAmount ??
+                    0;
+
+                const paymentAmount =
+                    d.paymentAmount ??
+                    d.totalPaymentAmount ??
+                    d.totalPaymentsAmount ??
+                    0;
+
+                const payroll =
+                    this.num(
+                        d.pendingPayroll ??
+                        d.payrollPending ??
+                        0
+                    );
+
+                this.root
+                    .querySelector("#pageContent")
+                    .innerHTML = `
+
+                    <div class="page-title">
+                        <div>
+                            <h1>Dashboard</h1>
+                            <p>
+                                Ringkasan data ARIMA MANAGEMENT SYSTEM
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="cards">
+
+                        ${this.metric(
+                            "SISWA AKTIF",
+                            students
+                        )}
+
+                        ${this.metric(
+                            "SENSEI AKTIF",
+                            sensei
+                        )}
+
+                        ${this.metric(
+                            "KEHADIRAN",
+                            attendance + "%"
+                        )}
+
+                        ${this.metric(
+                            "TAGIHAN PENDING",
+                            pendingBilling
+                        )}
+
+                    </div>
+
+                    <div class="section">
+
+                        <div class="section-head">
+                            <h2>TOTAL DATA</h2>
+                        </div>
+
+                        <div class="cards">
+
+                            ${this.metric(
+                                "Siswa",
+                                totalStudents
+                            )}
+
+                            ${this.metric(
+                                "Sensei",
+                                totalSensei
+                            )}
+
+                            ${this.metric(
+                                "Absensi",
+                                totalAttendance
+                            )}
+
+                            ${this.metric(
+                                "Tagihan",
+                                totalBilling
+                            )}
+
+                            ${this.metric(
+                                "Pembayaran",
+                                totalPayments
+                            )}
+
+                        </div>
+
+                    </div>
+
+                    <div class="section">
+
+                        <div class="section-head">
+                            <h2>KEUANGAN</h2>
+                        </div>
+
+                        <div class="cards">
+
+                            ${this.metric(
+                                "Tagihan pending",
+                                this.rupiah(pendingAmount)
+                            )}
+
+                            ${this.metric(
+                                "Total pembayaran",
+                                this.rupiah(paymentAmount)
+                            )}
+
+                        </div>
+
+                    </div>
+
+                    <div class="section">
+
+                        <div class="section-head">
+                            <h2>PAYROLL</h2>
+                        </div>
+
+                        <div class="cards">
+
+                            ${this.metric(
+                                "Payroll pending",
+                                payroll
+                            )}
+
+                        </div>
+
+                    </div>
+
+                `;
+
+            } catch (error) {
+
+                this.error(error);
+
+            }
+        },
+
+        async showStudents() {
+
+            await this.showTable(
+                "Siswa",
+                API.students,
+                [
+                    "ID_SISWA",
+                    "NAMA",
+                    "PROGRAM",
+                    "STATUS",
+                    "NO_WA"
+                ]
+            );
+        },
+
+        async showSensei() {
+
+            await this.showTable(
+                "Sensei",
+                API.sensei,
+                [
+                    "ID_SENSEI",
+                    "NAMA",
+                    "STATUS",
+                    "NO_WA"
+                ]
+            );
+        },
+
+        async showAttendance() {
+
+            await this.showTable(
+                "Absensi",
+                API.attendance,
+                null
+            );
+        },
+
+        async showBilling() {
+
+            await this.showTable(
+                "Tagihan",
+                API.billing,
+                null
+            );
+        },
+
+        async showPayments() {
+
+            await this.showTable(
+                "Pembayaran",
+                API.payments,
+                null
+            );
+        },
+
+        async showSalary() {
+
+            await this.showTable(
+                "Payroll Sensei",
+                API.salary,
+                null
+            );
+        },
+
+        async showReports() {
+
+            await this.showTable(
+                "Laporan",
+                API.reports,
+                null
+            );
+        },
+
+        async showSettings() {
+
+            await this.showTable(
+                "Pengaturan",
+                API.settings,
+                null
+            );
+        },
+
+        async showTable(title, apiFunction, preferredColumns) {
+
+            this.loading();
+
+            try {
+
+                const result =
+                    await apiFunction();
 
                 if (
-                    window.API &&
-                    typeof API.dashboard === "function"
+                    !result ||
+                    result.success === false
                 ) {
-
-                    data = await API.dashboard();
-
-                }
-
-
-                /*
-                 * Coba menggunakan API.getDashboard()
-                 */
-
-                else if (
-                    window.API &&
-                    typeof API.getDashboard === "function"
-                ) {
-
-                    data = await API.getDashboard();
-
-                }
-
-
-                /*
-                 * Coba menggunakan API.getStats()
-                 */
-
-                else if (
-                    window.API &&
-                    typeof API.getStats === "function"
-                ) {
-
-                    data = await API.getStats();
-
-                }
-
-
-                /*
-                 * Kalau API belum mempunyai fungsi dashboard,
-                 * gunakan data kosong supaya tampilan tetap hidup.
-                 */
-
-                if (!data) {
-
-                    data = {
-                        success: true,
-                        data: {}
-                    };
-
-                }
-
-
-                if (data.success === false) {
-
-                    console.warn(
-                        "Dashboard API:",
-                        data.message || "Gagal mengambil data."
+                    throw new Error(
+                        result?.message ||
+                        "Gagal mengambil data " +
+                        title
                     );
+                }
+
+                let rows =
+                    result.data || [];
+
+                if (!Array.isArray(rows)) {
+
+                    if (
+                        rows &&
+                        typeof rows === "object"
+                    ) {
+                        rows = [rows];
+                    } else {
+                        rows = [];
+                    }
+                }
+
+                if (!rows.length) {
+
+                    this.root
+                        .querySelector("#pageContent")
+                        .innerHTML = `
+
+                        <div class="page-title">
+                            <div>
+                                <h1>${this.escape(title)}</h1>
+                                <p>Data dari ARIMA Apps</p>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <h2>Belum ada data</h2>
+                            <p class="muted">
+                                Tidak ada data yang dikembalikan
+                                oleh ARIMA Apps.
+                            </p>
+                        </div>
+                    `;
 
                     return;
                 }
 
+                let columns =
+                    preferredColumns ||
+                    Object.keys(rows[0]);
 
-                var source = data.data || data;
-
-
-                this.setDashboardValue(
-                    "activeStudents",
-                    this.pick(
-                        source,
-                        [
-                            "activeStudents",
-                            "active_students",
-                            "siswaAktif",
-                            "siswa_aktif"
-                        ],
-                        0
-                    )
-                );
-
-
-                this.setDashboardValue(
-                    "activeSensei",
-                    this.pick(
-                        source,
-                        [
-                            "activeSensei",
-                            "active_sensei",
-                            "senseiAktif",
-                            "sensei_aktif"
-                        ],
-                        0
-                    )
-                );
-
-
-                this.setDashboardValue(
-                    "attendanceRate",
-                    this.formatPercent(
-                        this.pick(
-                            source,
-                            [
-                                "attendanceRate",
-                                "attendance_rate",
-                                "kehadiran"
-                            ],
-                            0
+                columns =
+                    columns.filter(
+                        c => rows.some(
+                            r =>
+                                r[c] !== undefined &&
+                                r[c] !== null
                         )
-                    )
-                );
+                    );
 
+                if (!columns.length) {
+                    columns =
+                        Object.keys(rows[0]);
+                }
 
-                this.setDashboardValue(
-                    "pendingBilling",
-                    this.pick(
-                        source,
-                        [
-                            "pendingBilling",
-                            "pending_billing",
-                            "tagihanPending",
-                            "tagihan_pending"
-                        ],
-                        0
-                    )
-                );
+                let html = `
 
+                    <div class="page-title">
+                        <div>
+                            <h1>${this.escape(title)}</h1>
+                            <p>
+                                Data langsung dari ARIMA Apps
+                            </p>
+                        </div>
 
-                this.setDashboardValue(
-                    "totalStudents",
-                    this.pick(
-                        source,
-                        [
-                            "totalStudents",
-                            "total_students",
-                            "siswa"
-                        ],
-                        0
-                    )
-                );
+                        <div class="toolbar">
 
+                            <span class="badge">
+                                ${rows.length} data
+                            </span>
 
-                this.setDashboardValue(
-                    "totalSensei",
-                    this.pick(
-                        source,
-                        [
-                            "totalSensei",
-                            "total_sensei",
-                            "sensei"
-                        ],
-                        0
-                    )
-                );
+                        </div>
+                    </div>
 
+                    <div class="table-wrap">
 
-                this.setDashboardValue(
-                    "totalAttendance",
-                    this.pick(
-                        source,
-                        [
-                            "totalAttendance",
-                            "total_attendance",
-                            "absensi"
-                        ],
-                        0
-                    )
-                );
+                        <table class="table">
 
+                            <thead>
+                                <tr>
+                `;
 
-                this.setDashboardValue(
-                    "totalBilling",
-                    this.pick(
-                        source,
-                        [
-                            "totalBilling",
-                            "total_billing",
-                            "tagihan"
-                        ],
-                        0
-                    )
-                );
+                columns.forEach(col => {
+                    html += `
+                        <th>${this.escape(col)}</th>
+                    `;
+                });
 
+                html += `
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
 
-                this.setDashboardValue(
-                    "totalPayments",
-                    this.pick(
-                        source,
-                        [
-                            "totalPayments",
-                            "total_payments",
-                            "pembayaran"
-                        ],
-                        0
-                    )
-                );
+                rows.forEach(row => {
 
+                    html += "<tr>";
 
-                this.setDashboardValue(
-                    "pendingAmount",
-                    this.formatCurrency(
-                        this.pick(
-                            source,
-                            [
-                                "pendingAmount",
-                                "pending_amount",
-                                "tagihanPendingAmount"
-                            ],
-                            0
-                        )
-                    )
-                );
+                    columns.forEach(col => {
 
+                        let value =
+                            row[col] ?? "";
 
-                this.setDashboardValue(
-                    "paymentAmount",
-                    this.formatCurrency(
-                        this.pick(
-                            source,
-                            [
-                                "paymentAmount",
-                                "payment_amount",
-                                "totalPaymentAmount"
-                            ],
-                            0
-                        )
-                    )
-                );
+                        if (
+                            typeof value === "object"
+                        ) {
+                            value =
+                                JSON.stringify(value);
+                        }
 
+                        html += `
+                            <td>
+                                ${this.escape(value)}
+                            </td>
+                        `;
+                    });
 
-                this.setDashboardValue(
-                    "pendingPayroll",
-                    this.pick(
-                        source,
-                        [
-                            "pendingPayroll",
-                            "pending_payroll",
-                            "payrollPending"
-                        ],
-                        0
-                    )
-                );
+                    html += "</tr>";
+                });
 
+                html += `
+                            </tbody>
+                        </table>
+
+                    </div>
+                `;
+
+                this.root
+                    .querySelector("#pageContent")
+                    .innerHTML = html;
 
             } catch (error) {
 
-                console.error(
-                    "Dashboard data error:",
-                    error
-                );
+                this.error(error);
 
             }
         },
 
+        metric(label, value) {
 
-        /* =================================================
-           PICK VALUE
-           ================================================= */
+            return `
+                <div class="card">
 
-        pick: function (obj, keys, fallback) {
+                    <div class="muted">
+                        ${this.escape(label)}
+                    </div>
 
-            if (!obj) {
-                return fallback;
-            }
-
-            for (var i = 0; i < keys.length; i++) {
-
-                var key = keys[i];
-
-                if (
-                    Object.prototype.hasOwnProperty.call(
-                        obj,
-                        key
-                    )
-                ) {
-
-                    var value = obj[key];
-
-                    if (
-                        value !== null &&
-                        value !== undefined &&
-                        value !== ""
-                    ) {
-
-                        return value;
-                    }
-                }
-            }
-
-            return fallback;
-        },
-
-
-        /* =================================================
-           SET DASHBOARD VALUE
-           ================================================= */
-
-        setDashboardValue: function (id, value) {
-
-            var element = document.getElementById(id);
-
-            if (!element) {
-                return;
-            }
-
-            element.textContent = value;
-        },
-
-
-        /* =================================================
-           CURRENCY
-           ================================================= */
-
-        formatCurrency: function (value) {
-
-            var number = Number(value);
-
-            if (!Number.isFinite(number)) {
-                number = 0;
-            }
-
-            return "Rp " + number.toLocaleString(
-                "id-ID"
-            );
-        },
-
-
-        /* =================================================
-           PERCENT
-           ================================================= */
-
-        formatPercent: function (value) {
-
-            if (
-                typeof value === "string" &&
-                value.indexOf("%") !== -1
-            ) {
-
-                return value;
-            }
-
-            var number = Number(value);
-
-            if (!Number.isFinite(number)) {
-                number = 0;
-            }
-
-            return number + "%";
-        },
-
-
-        /* =================================================
-           NAVIGATION
-           ================================================= */
-
-        navigate: function (page) {
-
-            var content =
-                document.getElementById("pageContent");
-
-            if (!content) {
-                return;
-            }
-
-
-            /* Active menu */
-
-            var links =
-                document.querySelectorAll(".nav a");
-
-            links.forEach(function (link) {
-
-                link.classList.remove("active");
-
-                if (
-                    link.getAttribute("data-page") === page
-                ) {
-
-                    link.classList.add("active");
-                }
-
-            });
-
-
-            /*
-             * Dashboard
-             */
-
-            if (page === "dashboard") {
-
-                location.reload();
-
-                return;
-            }
-
-
-            /*
-             * Halaman sementara
-             */
-
-            var titles = {
-
-                students: "Data Siswa",
-
-                sensei: "Data Sensei",
-
-                attendance: "Absensi",
-
-                billing: "Tagihan",
-
-                payments: "Pembayaran",
-
-                payroll: "Payroll Sensei",
-
-                reports: "Laporan",
-
-                settings: "Pengaturan"
-
-            };
-
-
-            var title =
-                titles[page] || "ARIMA MANAGEMENT SYSTEM";
-
-
-            content.innerHTML = `
-
-                <div class="page-title">
-
-                    <div>
-
-                        <h1>
-                            ${this.escapeHtml(title)}
-                        </h1>
-
-                        <p>
-                            Modul ${this.escapeHtml(title)}
-                            ARIMA MANAGEMENT SYSTEM
-                        </p>
-
+                    <div class="metric">
+                        ${this.escape(value)}
                     </div>
 
                 </div>
+            `;
+        },
 
+        loading() {
 
+            const content =
+                this.root.querySelector(
+                    "#pageContent"
+                );
+
+            if (!content) return;
+
+            content.innerHTML = `
+                <div class="card">
+                    <p class="muted">
+                        Mengambil data dari ARIMA Apps...
+                    </p>
+                </div>
+            `;
+        },
+
+        error(error) {
+
+            console.error(
+                "ARIMA APP ERROR:",
+                error
+            );
+
+            const content =
+                this.root.querySelector(
+                    "#pageContent"
+                );
+
+            if (!content) return;
+
+            content.innerHTML = `
                 <div class="card">
 
                     <h2>
-                        ${this.escapeHtml(title)}
+                        Gagal mengambil data
                     </h2>
 
                     <p class="muted">
-                        Modul ini siap dihubungkan
-                        dengan data ARIMA Apps.
+                        ${this.escape(
+                            error?.message ||
+                            "Terjadi kesalahan."
+                        )}
                     </p>
 
                     <button
                         class="btn btn-dark"
-                        onclick="App.navigate('dashboard')"
-                    >
-                        Kembali ke Dashboard
+                        onclick="location.reload()">
+                        Coba Lagi
                     </button>
 
                 </div>
-
             `;
         },
 
+        num(value) {
 
-        /* =================================================
-           LOGOUT
-           ================================================= */
+            if (
+                typeof value === "number"
+            ) return value;
 
-        logout: function () {
-
-            try {
-
-                if (
-                    window.Auth &&
-                    typeof Auth.logout === "function"
-                ) {
-
-                    Auth.logout();
-
-                    return;
-                }
-
-            } catch (error) {
-
-                console.error(
-                    "Auth logout error:",
-                    error
+            const n =
+                Number(
+                    String(value)
+                        .replace(/[^\d.-]/g, "")
                 );
-            }
 
-
-            localStorage.removeItem(
-                "arima_session"
-            );
-
-            window.location.href =
-                "login.html";
+            return Number.isFinite(n)
+                ? n
+                : 0;
         },
 
+        rupiah(value) {
 
-        /* =================================================
-           ERROR
-           ================================================= */
-
-        showError: function (message) {
-
-            var root =
-                document.getElementById("app");
-
-            if (!root) {
-                return;
+            if (
+                value === null ||
+                value === undefined ||
+                value === ""
+            ) {
+                return "Rp 0";
             }
 
-            root.innerHTML = `
+            if (
+                typeof value === "string" &&
+                value.includes("Rp")
+            ) {
+                return value;
+            }
 
-                <div style="
-                    min-height:100vh;
-                    display:flex;
-                    align-items:center;
-                    justify-content:center;
-                    padding:30px;
-                    background:#f5f5f5;
-                ">
-
-                    <div class="card"
-                         style="
-                            max-width:600px;
-                            width:100%;
-                            text-align:center;
-                         ">
-
-                        <h1>
-                            ARIMA MANAGEMENT SYSTEM
-                        </h1>
-
-                        <p class="muted">
-                            ${this.escapeHtml(message)}
-                        </p>
-
-                        <button
-                            class="btn btn-dark"
-                            onclick="location.reload()"
-                        >
-                            Muat Ulang
-                        </button>
-
-                    </div>
-
-                </div>
-
-            `;
+            return "Rp " +
+                this.num(value)
+                    .toLocaleString("id-ID");
         },
 
+        escape(value) {
 
-        /* =================================================
-           ESCAPE HTML
-           ================================================= */
-
-        escapeHtml: function (value) {
-
-            return String(value)
+            return String(value ?? "")
                 .replace(/&/g, "&amp;")
                 .replace(/</g, "&lt;")
                 .replace(/>/g, "&gt;")
                 .replace(/"/g, "&quot;")
                 .replace(/'/g, "&#039;");
-        }
+        },
 
+        async logout() {
+
+            try {
+
+                if (
+                    window.API &&
+                    typeof API.logout === "function"
+                ) {
+                    await API.logout();
+                }
+
+            } catch (e) {
+                console.warn(e);
+            }
+
+            localStorage.removeItem(
+                "arima_session"
+            );
+
+            localStorage.removeItem(
+                "ARIMA_USER"
+            );
+
+            localStorage.removeItem(
+                "ARIMA_TOKEN"
+            );
+
+            sessionStorage.removeItem(
+                "ARIMA_TOKEN"
+            );
+
+            location.href = "login.html";
+        }
     };
 
-
-    /* =====================================================
-       AUTO INIT
-       ===================================================== */
+    window.App = App;
 
     document.addEventListener(
         "DOMContentLoaded",
         function () {
-
-            if (
-                window.App &&
-                typeof window.App.init === "function"
-            ) {
-
-                window.App.init();
-
-            }
-
+            App.init();
         }
     );
 
-
-})();
+})();.
