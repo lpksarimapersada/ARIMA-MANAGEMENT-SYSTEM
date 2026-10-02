@@ -49,8 +49,12 @@ function route_(action, p, token) {
     case 'attendance':
       return listSheet_('ATTENDANCE');
     case 'billing':
+      const billingAccessError = accountAccessError_(token);
+      if (billingAccessError) return billingAccessError;
       return listSheet_('BILLING');
     case 'payments':
+      const paymentsAccessError = accountAccessError_(token);
+      if (paymentsAccessError) return paymentsAccessError;
       return listSheet_('PAYMENTS');
     case 'salary':
       const salaryAccessError = salaryAccessError_(token);
@@ -60,6 +64,22 @@ function route_(action, p, token) {
       const salaryPreviewAccessError = salaryAccessError_(token);
       if (salaryPreviewAccessError) return salaryPreviewAccessError;
       return calculateSalaryRecord_(p || {});
+    case 'users':
+      const usersAccessError = accountAccessError_(token);
+      if (usersAccessError) return usersAccessError;
+      return listAccounts_();
+    case 'userCreate':
+      const userCreateAccessError = accountAccessError_(token);
+      if (userCreateAccessError) return userCreateAccessError;
+      return createAccount_(p);
+    case 'userReset':
+      const userResetAccessError = accountAccessError_(token);
+      if (userResetAccessError) return userResetAccessError;
+      return resetAccountPassword_(p);
+    case 'userDelete':
+      const userDeleteAccessError = accountAccessError_(token);
+      if (userDeleteAccessError) return userDeleteAccessError;
+      return deleteAccount_(p, token);
     case 'studentSave':
       return saveSheetRecord_('STUDENTS', 'ID_SISWA', p);
     case 'studentDelete':
@@ -71,8 +91,12 @@ function route_(action, p, token) {
     case 'attendanceSave':
       return saveSheetRecord_('ATTENDANCE', 'ATTENDANCE_ID', p);
     case 'billingSave':
+      const billingSaveAccessError = accountAccessError_(token);
+      if (billingSaveAccessError) return billingSaveAccessError;
       return saveSheetRecord_('BILLING', 'BILLING_ID', p);
     case 'paymentSave':
+      const paymentSaveAccessError = accountAccessError_(token);
+      if (paymentSaveAccessError) return paymentSaveAccessError;
       return saveSheetRecord_('PAYMENTS', 'PAYMENT_ID', p);
     case 'salarySave':
       const salarySaveAccessError = salaryAccessError_(token);
@@ -127,6 +151,176 @@ function isAdminToken_(token) {
 
 function adminOnlyResponse_() {
   return { success: false, code: 'FORBIDDEN', message: 'Data payroll hanya dapat diakses oleh admin.' };
+}
+
+function accountAccessError_(token) {
+  const user = tokenUser_(token);
+  if (!user) {
+    return { success: false, code: 'AUTH_REQUIRED', message: 'Sesi login perlu diperbarui. Silakan login kembali.' };
+  }
+  if (String(user.role || '').trim().toUpperCase() !== 'ADMIN') {
+    return { success: false, code: 'FORBIDDEN', message: 'Pengelolaan akun hanya dapat dilakukan admin.' };
+  }
+  return null;
+}
+
+function accountSheetMeta_() {
+  const workbook = ss_();
+  let sheet = workbook.getSheetByName('USERS');
+  if (!sheet) sheet = workbook.insertSheet('USERS');
+
+  let values = sheet.getDataRange().getValues();
+  if (!values.length || !values[0].some(function (cell) { return String(cell || '').trim(); })) {
+    const headers = ['ID', 'NAMA', 'ROLE', 'SALT', 'PASSWORD_HASH', 'CREATED_AT', 'UPDATED_AT'];
+    sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+    values = sheet.getDataRange().getValues();
+  }
+
+  const headers = values[0].map(function (header) { return String(header || '').trim(); });
+  const columns = {
+    id: findColumnIndex_(headers, ['USER_ID', 'ID_USER', 'ID']),
+    name: findColumnIndex_(headers, ['NAME', 'NAMA']),
+    role: findColumnIndex_(headers, ['ROLE']),
+    salt: findColumnIndex_(headers, ['PASSWORD_SALT', 'SALT']),
+    hash: findColumnIndex_(headers, ['PASSWORD_HASH', 'PASSWORDHASH'])
+  };
+  if (Object.keys(columns).some(function (key) { return columns[key] < 0; })) {
+    return { success: false, message: 'Header USERS harus memiliki ID, NAMA, ROLE, SALT, dan PASSWORD_HASH.' };
+  }
+
+  return { success: true, sheet: sheet, values: values, headers: headers, columns: columns };
+}
+
+function listAccounts_() {
+  const meta = accountSheetMeta_();
+  if (!meta.success) return meta;
+
+  const data = meta.values.slice(1).map(function (row, index) {
+    const id = String(row[meta.columns.id] || '').trim();
+    if (!id) return null;
+    return {
+      USER_ID: id,
+      NAMA: String(row[meta.columns.name] || id),
+      ROLE: String(row[meta.columns.role] || 'USER'),
+      __ROW_NUMBER: index + 2
+    };
+  }).filter(function (user) { return !!user; });
+
+  return { success: true, data: data };
+}
+
+function linkedAccountPerson_(role, userId) {
+  const sheetName = role === 'SISWA' ? 'STUDENTS' : role === 'SENSEI' ? 'SENSEI' : '';
+  if (!sheetName) return { success: true, person: null };
+
+  const sheet = ss_().getSheetByName(sheetName);
+  if (!sheet) return { success: false, message: 'Sheet ' + sheetName + ' tidak ditemukan.' };
+  const values = sheet.getDataRange().getValues();
+  const headers = values[0].map(String);
+  const idIndex = findColumnIndex_(headers, [role === 'SISWA' ? 'ID_SISWA' : 'ID_SENSEI']);
+  const nameIndex = findColumnIndex_(headers, ['NAMA', 'NAME']);
+  if (idIndex < 0) return { success: false, message: 'Kolom ID untuk ' + role + ' tidak ditemukan.' };
+
+  const row = values.slice(1).find(function (item) {
+    return String(item[idIndex] || '').trim().toUpperCase() === String(userId || '').trim().toUpperCase();
+  });
+  if (!row) return { success: false, message: 'ID tersebut belum terdaftar pada data ' + (role === 'SISWA' ? 'siswa.' : 'sensei.') };
+  return { success: true, person: { id: row[idIndex], name: nameIndex < 0 ? String(userId) : String(row[nameIndex] || userId) } };
+}
+
+function accountRowById_(meta, userId) {
+  const normalized = String(userId || '').trim().toUpperCase();
+  for (let index = 1; index < meta.values.length; index += 1) {
+    if (String(meta.values[index][meta.columns.id] || '').trim().toUpperCase() === normalized) {
+      return { row: meta.values[index], rowNumber: index + 1 };
+    }
+  }
+  return null;
+}
+
+function accountPasswordValues_(password) {
+  const value = String(password || '');
+  if (value.length < 8) return { success: false, message: 'Password minimal 8 karakter.' };
+  const salt = Utilities.getUuid();
+  return { success: true, salt: salt, hash: hashPassword_(value, salt, buildAuthSecret_()) };
+}
+
+function createAccount_(payload) {
+  const record = payload && typeof payload === 'object' ? payload : {};
+  const userId = String(record.userId || record.USER_ID || '').trim();
+  const role = String(record.role || record.ROLE || '').trim().toUpperCase();
+  if (!userId) return { success: false, message: 'ID akun wajib diisi.' };
+  if (['ADMIN', 'SENSEI', 'SISWA'].indexOf(role) < 0) return { success: false, message: 'Role akun tidak valid.' };
+
+  const password = accountPasswordValues_(record.password);
+  if (!password.success) return password;
+
+  let name = String(record.name || record.NAMA || '').trim();
+  if (role !== 'ADMIN') {
+    const linked = linkedAccountPerson_(role, userId);
+    if (!linked.success) return linked;
+    name = linked.person.name;
+  }
+  if (!name) return { success: false, message: 'Nama admin wajib diisi.' };
+
+  const meta = accountSheetMeta_();
+  if (!meta.success) return meta;
+  if (accountRowById_(meta, userId)) return { success: false, message: 'ID akun sudah terdaftar.' };
+
+  const row = new Array(meta.headers.length).fill('');
+  row[meta.columns.id] = userId;
+  row[meta.columns.name] = name;
+  row[meta.columns.role] = role;
+  row[meta.columns.salt] = password.salt;
+  row[meta.columns.hash] = password.hash;
+  const createdIndex = findColumnIndex_(meta.headers, ['CREATED_AT']);
+  if (createdIndex >= 0) row[createdIndex] = new Date();
+  meta.sheet.appendRow(row);
+
+  return { success: true, message: 'Akun berhasil dibuat.', data: { USER_ID: userId, NAMA: name, ROLE: role } };
+}
+
+function resetAccountPassword_(payload) {
+  const record = payload && typeof payload === 'object' ? payload : {};
+  const userId = String(record.userId || record.USER_ID || '').trim();
+  const meta = accountSheetMeta_();
+  if (!meta.success) return meta;
+  const found = accountRowById_(meta, userId);
+  if (!found) return { success: false, message: 'Akun tidak ditemukan.' };
+
+  const password = accountPasswordValues_(record.password);
+  if (!password.success) return password;
+  meta.sheet.getRange(found.rowNumber, meta.columns.salt + 1).setValue(password.salt);
+  meta.sheet.getRange(found.rowNumber, meta.columns.hash + 1).setValue(password.hash);
+  const updatedIndex = findColumnIndex_(meta.headers, ['UPDATED_AT']);
+  if (updatedIndex >= 0) meta.sheet.getRange(found.rowNumber, updatedIndex + 1).setValue(new Date());
+
+  return { success: true, message: 'Password akun berhasil direset.', data: { USER_ID: userId } };
+}
+
+function deleteAccount_(payload, token) {
+  const record = payload && typeof payload === 'object' ? payload : {};
+  const userId = String(record.userId || record.USER_ID || '').trim();
+  const actor = tokenUser_(token);
+  if (String(actor && actor.id || '').trim().toUpperCase() === userId.toUpperCase()) {
+    return { success: false, message: 'Akun yang sedang digunakan tidak dapat dihapus.' };
+  }
+
+  const meta = accountSheetMeta_();
+  if (!meta.success) return meta;
+  const found = accountRowById_(meta, userId);
+  if (!found) return { success: false, message: 'Akun tidak ditemukan.' };
+
+  const role = String(found.row[meta.columns.role] || '').trim().toUpperCase();
+  if (role === 'ADMIN') {
+    const admins = meta.values.slice(1).filter(function (row) {
+      return String(row[meta.columns.role] || '').trim().toUpperCase() === 'ADMIN';
+    });
+    if (admins.length <= 1) return { success: false, message: 'Akun admin terakhir tidak dapat dihapus.' };
+  }
+
+  meta.sheet.deleteRow(found.rowNumber);
+  return { success: true, message: 'Akun berhasil dihapus.' };
 }
 
 function salaryAccessError_(token) {

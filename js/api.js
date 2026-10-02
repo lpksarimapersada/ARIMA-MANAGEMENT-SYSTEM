@@ -173,6 +173,22 @@ window.API = (() => {
     return call("salaryPreview", payload);
   }
 
+  async function users() {
+    return call("users", {});
+  }
+
+  async function userCreate(payload) {
+    return call("userCreate", payload);
+  }
+
+  async function userReset(payload) {
+    return call("userReset", payload);
+  }
+
+  async function userDelete(payload) {
+    return call("userDelete", payload);
+  }
+
   async function reports(payload = {}) {
     return call("reports", payload);
   }
@@ -254,6 +270,14 @@ window.API = (() => {
     salary,
 
     salaryPreview,
+
+    users,
+
+    userCreate,
+
+    userReset,
+
+    userDelete,
 
     reports,
 

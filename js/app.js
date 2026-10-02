@@ -950,8 +950,9 @@ window.App = (() => {
       return;
     }
 
+    const adminMenus = ["billing", "payments", "salary", "reports", "settings"];
     const visibleMenus = menus.filter(
-      menu => menu[0] !== "salary" || isAdminUser()
+      menu => !adminMenus.includes(menu[0]) || isAdminUser()
     );
 
     root.innerHTML = `
@@ -964,6 +965,10 @@ window.App = (() => {
         >
 
           <div class="sidebar-brand">
+
+            <div class="sidebar-logo">
+              <img src="assets/logo.webp" alt="Logo LPKS Arima Persada">
+            </div>
 
             <div class="brand-title">
               ARIMA
@@ -2997,105 +3002,150 @@ window.App = (() => {
     el
   ) {
 
+    if (!isAdminUser()) {
+      el.innerHTML = `
+        <div class="card">
+          <h2>Akses Ditolak</h2>
+          <p class="muted">Laporan keuangan hanya dapat dibuka oleh admin.</p>
+        </div>
+      `;
+      return;
+    }
+
     try {
 
-      const response =
-        await API.dashboard();
+      const [billingResponse, paymentResponse, salaryResponse, senseiResponse] = await Promise.all([
+        API.billing(),
+        API.payments(),
+        API.salary(),
+        API.sensei()
+      ]);
+      const billings = Array.isArray(billingResponse?.data) ? billingResponse.data : [];
+      const payments = Array.isArray(paymentResponse?.data) ? paymentResponse.data : [];
+      const salaries = Array.isArray(salaryResponse?.data) ? salaryResponse.data : [];
+      const senseiRows = Array.isArray(senseiResponse?.data) ? senseiResponse.data : [];
+      const selectedMonth = new URLSearchParams(window.location.search).get("reportMonth")
+        || new Date().toISOString().slice(0, 7);
 
-      const data =
-        response?.data || {};
-
+      const monthOf = value => {
+        if (value instanceof Date && !Number.isNaN(value.getTime())) {
+          return `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, "0")}`;
+        }
+        const text = String(value || "").trim();
+        const iso = text.match(/^(\d{4})-(\d{2})/);
+        if (iso) return `${iso[1]}-${iso[2]}`;
+        const local = text.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})/);
+        if (local) return `${local[3]}-${String(local[2]).padStart(2, "0")}`;
+        return "";
+      };
+      const amountOf = value => {
+        const amount = Number(String(value || 0).replace(/[^\d.-]/g, ""));
+        return Number.isFinite(amount) ? amount : 0;
+      };
+      const sum = (rows, field) => rows.reduce((total, row) => total + amountOf(row[field]), 0);
+      const monthlyBillings = billings.filter(row => monthOf(row.DUE_DATE) === selectedMonth);
+      const monthlyPayments = payments.filter(row => monthOf(row.PAYMENT_DATE) === selectedMonth);
+      const monthlySalaries = salaries.filter(row => monthOf(row.PERIOD) === selectedMonth);
+      const paidSalaries = monthlySalaries.filter(row => ["DIBAYAR", "LUNAS", "PAID"].includes(String(row.PAYMENT_STATUS || "").trim().toUpperCase()));
+      const pendingSalaries = monthlySalaries.filter(row => !["DIBAYAR", "LUNAS", "PAID"].includes(String(row.PAYMENT_STATUS || "").trim().toUpperCase()));
+      const amountBilled = sum(monthlyBillings, "AMOUNT");
+      const amountCollected = sum(monthlyPayments, "AMOUNT");
+      const amountOutstanding = monthlyBillings.reduce((total, billing) => {
+        const paidToMonth = payments
+          .filter(payment => String(payment.BILLING_ID || "") === String(billing.BILLING_ID || ""))
+          .filter(payment => !monthOf(payment.PAYMENT_DATE) || monthOf(payment.PAYMENT_DATE) <= selectedMonth)
+          .reduce((paid, payment) => paid + amountOf(payment.AMOUNT), 0);
+        return total + Math.max(0, amountOf(billing.AMOUNT) - paidToMonth);
+      }, 0);
+      const payrollPaid = sum(paidSalaries, "NET_SALARY");
+      const payrollPending = sum(pendingSalaries, "NET_SALARY");
+      const netCashFlow = amountCollected - payrollPaid;
+      const senseiName = id => senseiRows.find(row => String(row.ID_SENSEI) === String(id))?.NAMA || "Sensei tidak ditemukan";
 
       el.innerHTML = `
+        ${pageHeader("Laporan Keuangan", "Rekap tagihan, penerimaan, piutang, dan payroll per bulan.")}
 
-        ${pageHeader(
-          "Laporan",
-          "Ringkasan data operasional."
-        )}
-
-
-        <div class="cards">
-
-          <div class="card">
-
-            <div class="muted">
-              Siswa Aktif
-            </div>
-
-            <div class="metric">
-              ${formatNumber(
-                data.students
-              )}
-            </div>
-
-          </div>
-
-
-          <div class="card">
-
-            <div class="muted">
-              Sensei Aktif
-            </div>
-
-            <div class="metric">
-              ${formatNumber(
-                data.sensei
-              )}
-            </div>
-
-          </div>
-
-
-          <div class="card">
-
-            <div class="muted">
-              Kehadiran
-            </div>
-
-            <div class="metric">
-              ${formatNumber(
-                data.attendance
-              )}%
-            </div>
-
-          </div>
-
-
-          <div class="card">
-
-            <div class="muted">
-              Tagihan Pending
-            </div>
-
-            <div class="metric">
-              ${formatNumber(
-                data.pendingBilling
-              )}
-            </div>
-
-          </div>
-
+        <div class="report-toolbar">
+          <label for="report-month">Periode laporan</label>
+          <input type="month" id="report-month" value="${esc(selectedMonth)}">
+          <button type="button" class="btn btn-light" id="export-finance-csv">↓ Unduh CSV</button>
         </div>
 
-
-        <div class="section">
-
-          <div class="card">
-
-            <h3>
-              Informasi
-            </h3>
-
-            <p class="muted">
-              Gunakan menu data untuk melihat
-              dan mengelola data secara detail.
-            </p>
-
-          </div>
-
+        <div class="cards report-metrics">
+          <div class="card"><div class="muted">Tagihan jatuh tempo</div><div class="metric">${formatRupiah(amountBilled)}</div><div class="tiny">${formatNumber(monthlyBillings.length)} tagihan</div></div>
+          <div class="card"><div class="muted">Pembayaran masuk</div><div class="metric">${formatRupiah(amountCollected)}</div><div class="tiny">${formatNumber(monthlyPayments.length)} transaksi</div></div>
+          <div class="card"><div class="muted">Sisa piutang</div><div class="metric">${formatRupiah(amountOutstanding)}</div><div class="tiny">Dari tagihan jatuh tempo bulan ini</div></div>
+          <div class="card"><div class="muted">Payroll dibayar</div><div class="metric">${formatRupiah(payrollPaid)}</div><div class="tiny">${formatNumber(paidSalaries.length)} payroll lunas</div></div>
         </div>
 
+        <div class="section report-cashflow">
+          <div class="card report-cashflow-row">
+            <div><span class="muted">Payroll belum dibayar</span><strong>${formatRupiah(payrollPending)}</strong></div>
+            <div><span class="muted">Arus kas bersih</span><strong class="${netCashFlow < 0 ? "report-negative" : "report-positive"}">${formatRupiah(netCashFlow)}</strong></div>
+          </div>
+        </div>
+
+        <section class="section report-ledger">
+          <div class="section-head"><h2>Tagihan jatuh tempo</h2></div>
+          <div class="card">${renderTable(monthlyBillings,[
+            {key:"BILLING_ID",label:"ID Tagihan",render:value=>esc(value||"")},
+            {key:"ID_SISWA",label:"ID Siswa",render:value=>esc(value||"")},
+            {key:"DESCRIPTION",label:"Deskripsi",render:value=>esc(value||"")},
+            {key:"DUE_DATE",label:"Jatuh Tempo",render:value=>esc(String(value||"").slice(0,10))},
+            {key:"STATUS",label:"Status",render:value=>esc(value||"")},
+            {key:"AMOUNT",label:"Nominal",render:value=>formatRupiah(value)}
+          ],{emptyText:"Tidak ada tagihan jatuh tempo pada periode ini."})}</div>
+        </section>
+
+        <section class="section report-ledger">
+          <div class="section-head"><h2>Pembayaran diterima</h2></div>
+          <div class="card">${renderTable(monthlyPayments,[
+            {key:"PAYMENT_DATE",label:"Tanggal",render:value=>esc(String(value||"").slice(0,10))},
+            {key:"PAYMENT_ID",label:"ID Pembayaran",render:value=>esc(value||"")},
+            {key:"ID_SISWA",label:"ID Siswa",render:value=>esc(value||"")},
+            {key:"BILLING_ID",label:"ID Tagihan",render:value=>esc(value||"")},
+            {key:"PAYMENT_METHOD",label:"Metode",render:value=>esc(value||"")},
+            {key:"AMOUNT",label:"Nominal",render:value=>formatRupiah(value)}
+          ],{emptyText:"Tidak ada pembayaran pada periode ini."})}</div>
+        </section>
+
+        <section class="section report-ledger">
+          <div class="section-head"><h2>Payroll sensei</h2></div>
+          <div class="card">${renderTable(monthlySalaries,[
+            {key:"ID_SENSEI",label:"ID Sensei",render:value=>esc(value||"")},
+            {key:"NAMA",label:"Nama",render:(value,row)=>esc(senseiName(row.ID_SENSEI))},
+            {key:"HOUR_COUNT",label:"JP",render:value=>formatNumber(value)},
+            {key:"NET_SALARY",label:"Gaji Bersih",render:value=>formatRupiah(value)},
+            {key:"PAYMENT_STATUS",label:"Status",render:value=>esc(value||"")},
+            {key:"PAYMENT_DATE",label:"Tanggal Bayar",render:value=>esc(String(value||"").slice(0,10))}
+          ],{emptyText:"Belum ada payroll pada periode ini."})}</div>
+        </section>
       `;
+
+      qs("#report-month", el)?.addEventListener("change", event => {
+        const url = new URL(window.location.href);
+        url.searchParams.set("reportMonth", event.target.value);
+        window.history.replaceState({}, "", url);
+        renderReports(el);
+      });
+
+      qs("#export-finance-csv", el)?.addEventListener("click", () => {
+        const records = [
+          ["Jenis", "Tanggal/Periode", "ID", "Pihak", "Keterangan", "Status", "Nominal"],
+          ...monthlyBillings.map(row => ["TAGIHAN", row.DUE_DATE, row.BILLING_ID, row.ID_SISWA, row.DESCRIPTION, row.STATUS, row.AMOUNT]),
+          ...monthlyPayments.map(row => ["PEMBAYARAN", row.PAYMENT_DATE, row.PAYMENT_ID, row.ID_SISWA, row.PAYMENT_METHOD, "DITERIMA", row.AMOUNT]),
+          ...monthlySalaries.map(row => ["PAYROLL", row.PERIOD, row.SALARY_ID, senseiName(row.ID_SENSEI), row.ID_SENSEI, row.PAYMENT_STATUS, row.NET_SALARY])
+        ];
+        const csv = "\uFEFF" + records.map(row => row.map(value => `"${String(value ?? "").replace(/"/g, '""')}"`).join(",")).join("\r\n");
+        const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `laporan-keuangan-${selectedMonth}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(link.href);
+      });
 
     } catch (error) {
 
@@ -3119,74 +3169,233 @@ window.App = (() => {
     el
   ) {
 
-    el.innerHTML = `
+    if (!isAdminUser()) {
+      el.innerHTML = `
+        ${pageHeader("Pengaturan", "Informasi sistem ARIMA Management System.")}
+        <div class="card setting-info">
+          <div class="setting-row"><div><strong>Nama Aplikasi</strong><div class="muted">ARIMA MANAGEMENT SYSTEM</div></div></div>
+          <div class="setting-row"><div><strong>Perusahaan</strong><div class="muted">LPKS Arima Persada</div></div></div>
+          <div class="setting-row"><div><strong>User Login</strong><div class="muted">${esc(user?.name || user?.NAME || "-")}</div></div></div>
+        </div>
+      `;
+      return;
+    }
 
-      ${pageHeader(
-        "Pengaturan",
-        "Informasi sistem ARIMA Management System."
-      )}
+    try {
+      const [usersResponse, studentsResponse, senseiResponse] = await Promise.all([
+        API.users(),
+        API.students(),
+        API.sensei()
+      ]);
+      const users = Array.isArray(usersResponse?.data) ? usersResponse.data : [];
+      const students = Array.isArray(studentsResponse?.data) ? studentsResponse.data : [];
+      const sensei = Array.isArray(senseiResponse?.data) ? senseiResponse.data : [];
+      const directories = { students, sensei };
 
+      el.innerHTML = `
+        ${pageHeader("Pengaturan", "Informasi sistem dan akun akses pengguna.")}
 
-      <div class="card">
-
-        <div class="setting-row">
-
-          <div>
-
-            <strong>
-              Nama Aplikasi
-            </strong>
-
-            <div class="muted">
-              ARIMA MANAGEMENT SYSTEM
-            </div>
-
-          </div>
-
+        <div class="card setting-info">
+          <div class="setting-row"><div><strong>Nama Aplikasi</strong><div class="muted">ARIMA MANAGEMENT SYSTEM</div></div></div>
+          <div class="setting-row"><div><strong>Perusahaan</strong><div class="muted">LPKS Arima Persada</div></div></div>
+          <div class="setting-row"><div><strong>Admin Login</strong><div class="muted">${esc(user?.name || user?.NAME || "-")}</div></div></div>
         </div>
 
-
-        <div class="setting-row">
-
-          <div>
-
-            <strong>
-              Perusahaan
-            </strong>
-
-            <div class="muted">
-              LPKS Arima Persada
-            </div>
-
+        <section class="section account-management">
+          <div class="section-head">
+            <div><h2>Akun Pengguna</h2><p class="muted">Akun siswa dan sensei menggunakan ID pada data master.</p></div>
+            <button type="button" class="btn btn-primary" id="btn-add-account">+ Tambah Akun</button>
           </div>
-
-        </div>
-
-
-        <div class="setting-row">
-
-          <div>
-
-            <strong>
-              User Login
-            </strong>
-
-            <div class="muted">
-              ${esc(
-                user?.name ||
-                user?.NAME ||
-                "-"
-              )}
-            </div>
-
+          <div class="card">
+            ${renderTable(users,[
+              {key:"USER_ID",label:"ID Akun",render:value=>esc(value||"")},
+              {key:"NAMA",label:"Nama",render:value=>esc(value||"")},
+              {key:"ROLE",label:"Role",render:value=>esc(value||"")}
+            ],{
+              emptyText:"Belum ada akun yang terdaftar.",
+              actions:account=>`
+                <button type="button" class="btn btn-small" data-reset-account="${esc(account.USER_ID)}">Reset Password</button>
+                ${String(account.USER_ID).toUpperCase()===String(user?.id||user?.ID||"").toUpperCase()?"":`<button type="button" class="btn btn-small btn-danger" data-delete-account="${esc(account.USER_ID)}">Hapus</button>`}
+              `
+            })}
           </div>
+        </section>
+      `;
 
+      qs("#btn-add-account", el)?.addEventListener("click", () => openAccountModal("create", null, directories));
+      qsa("[data-reset-account]", el).forEach(button => {
+        button.addEventListener("click", () => {
+          const account = users.find(item => String(item.USER_ID) === String(button.dataset.resetAccount));
+          if (account) openAccountModal("reset", account, directories);
+        });
+      });
+      qsa("[data-delete-account]", el).forEach(button => {
+        button.addEventListener("click", async () => {
+          const accountId = button.dataset.deleteAccount;
+          if (!confirm(`Hapus akun ${accountId}? Data master siswa/sensei tidak akan dihapus.`)) return;
+          button.disabled = true;
+          try {
+            const response = await API.userDelete({ userId: accountId });
+            if (response?.success === false) throw new Error(response.message || "Gagal menghapus akun.");
+            showToast(response?.message || "Akun berhasil dihapus.");
+            await renderSettings(el);
+          } catch (error) {
+            button.disabled = false;
+            showToast(error.message || "Gagal menghapus akun.", "error");
+          }
+        });
+      });
+    } catch (error) {
+      renderError(el, error);
+    }
+
+  }
+
+
+  function openAccountModal(mode, account, directories) {
+    if (!isAdminUser()) {
+      showToast("Pengelolaan akun hanya tersedia untuk admin.", "error");
+      return;
+    }
+
+    document.getElementById("arima-account-modal")?.remove();
+    const isReset = mode === "reset";
+    const modal = document.createElement("div");
+    modal.id = "arima-account-modal";
+    modal.className = "modal-overlay form-modal account-form-modal";
+    modal.innerHTML = `
+      <div class="modal form-modal-shell" role="dialog" aria-modal="true">
+        <div class="form-modal-header">
+          <div class="form-modal-mark" aria-hidden="true">${isReset ? "↻" : "A"}</div>
+          <div class="form-modal-heading">
+            <span class="form-modal-kicker">PENGATURAN AKUN</span>
+            <h2>${isReset ? "Reset Password" : "Tambah Akun"}</h2>
+            <p>${isReset ? "Tentukan password baru untuk akun ini." : "Hubungkan akun ke ID pada data master siswa atau sensei."}</p>
+          </div>
+          <button type="button" class="modal-close" id="account-modal-close" aria-label="Tutup">×</button>
         </div>
-
+        <form id="account-form" class="form-grid form-modal-fields">
+          ${isReset ? `
+            <div class="form-group form-group-wide">
+              <label>ID Akun</label>
+              <input type="text" value="${esc(account?.USER_ID || "")}" disabled>
+              <input type="hidden" name="userId" value="${esc(account?.USER_ID || "")}">
+            </div>
+          ` : `
+            <div class="form-group form-group-wide">
+              <label for="account-role">Jenis Akun</label>
+              <select id="account-role" name="role" required>
+                <option value="SISWA">Siswa</option>
+                <option value="SENSEI">Sensei</option>
+                <option value="ADMIN">Admin</option>
+              </select>
+            </div>
+            <div class="form-group form-group-wide" id="account-linked-id-group">
+              <label for="account-linked-id">Pilih ID Master</label>
+              <select id="account-linked-id" name="linkedId" required></select>
+              <span class="tiny">Nama akun diambil otomatis dari data master.</span>
+            </div>
+            <div class="form-group" id="account-admin-id-group">
+              <label for="account-admin-id">ID Admin</label>
+              <input type="text" id="account-admin-id" name="adminId" placeholder="Contoh: ADMIN002">
+            </div>
+            <div class="form-group" id="account-admin-name-group">
+              <label for="account-admin-name">Nama Admin</label>
+              <input type="text" id="account-admin-name" name="adminName" placeholder="Nama lengkap">
+            </div>
+            <div class="account-person-preview hidden" id="account-person-preview"></div>
+          `}
+          <div class="form-group form-group-wide">
+            <label for="account-password">${isReset ? "Password Baru" : "Password Awal"}</label>
+            <input type="password" id="account-password" name="password" minlength="8" autocomplete="new-password" required>
+            <span class="tiny">Minimal 8 karakter. Password disimpan dalam bentuk hash.</span>
+          </div>
+          <div class="modal-footer form-modal-footer">
+            <button type="button" class="btn btn-light" id="account-modal-cancel">Batal</button>
+            <button type="submit" class="btn btn-primary" id="account-modal-submit">${isReset ? "Simpan Password Baru" : "Buat Akun"}</button>
+          </div>
+        </form>
       </div>
-
     `;
+    document.body.appendChild(modal);
 
+    const close = () => modal.remove();
+    qs("#account-modal-close", modal).addEventListener("click", close);
+    qs("#account-modal-cancel", modal).addEventListener("click", close);
+    modal.addEventListener("click", event => { if (event.target === modal) close(); });
+
+    if (!isReset) {
+      const roleSelect = qs("#account-role", modal);
+      const linkedGroup = qs("#account-linked-id-group", modal);
+      const linkedSelect = qs("#account-linked-id", modal);
+      const adminIdGroup = qs("#account-admin-id-group", modal);
+      const adminNameGroup = qs("#account-admin-name-group", modal);
+      const adminId = qs("#account-admin-id", modal);
+      const adminName = qs("#account-admin-name", modal);
+      const preview = qs("#account-person-preview", modal);
+
+      const populateLinkedIds = () => {
+        const role = roleSelect.value;
+        const people = role === "SISWA" ? directories.students : directories.sensei;
+        const idKey = role === "SISWA" ? "ID_SISWA" : "ID_SENSEI";
+        const identified = people.filter(person => String(person[idKey] || "").trim());
+        linkedSelect.innerHTML = identified.length
+          ? `<option value="">Pilih ID...</option>${identified.map(person => `<option value="${esc(person[idKey])}">${esc(person[idKey])} · ${esc(person.NAMA || "Tanpa nama")}</option>`).join("")}`
+          : `<option value="">${role === "SISWA" ? "Belum ada ID siswa" : "Belum ada ID sensei"}</option>`;
+        preview.classList.toggle("hidden", role === "ADMIN");
+        preview.innerHTML = identified.length ? "Pilih ID untuk melihat nama akun." : "Tidak ada ID master tersedia untuk role ini.";
+      };
+
+      const updateRoleFields = () => {
+        const isAdmin = roleSelect.value === "ADMIN";
+        linkedGroup.classList.toggle("hidden", isAdmin);
+        adminIdGroup.classList.toggle("hidden", !isAdmin);
+        adminNameGroup.classList.toggle("hidden", !isAdmin);
+        linkedSelect.required = !isAdmin;
+        adminId.required = isAdmin;
+        adminName.required = isAdmin;
+        if (!isAdmin) populateLinkedIds();
+      };
+
+      roleSelect.addEventListener("change", updateRoleFields);
+      linkedSelect.addEventListener("change", () => {
+        const role = roleSelect.value;
+        const people = role === "SISWA" ? directories.students : directories.sensei;
+        const idKey = role === "SISWA" ? "ID_SISWA" : "ID_SENSEI";
+        const person = people.find(item => String(item[idKey]) === String(linkedSelect.value));
+        preview.innerHTML = person ? `<strong>${esc(person.NAMA || "Tanpa nama")}</strong><span>ID: ${esc(linkedSelect.value)}</span>` : "Pilih ID untuk melihat nama akun.";
+      });
+      updateRoleFields();
+    }
+
+    qs("#account-form", modal).addEventListener("submit", async event => {
+      event.preventDefault();
+      const form = event.currentTarget;
+      const submit = qs("#account-modal-submit", modal);
+      const values = new FormData(form);
+      const payload = { password: values.get("password") };
+      if (isReset) {
+        payload.userId = values.get("userId");
+      } else {
+        payload.role = values.get("role");
+        payload.userId = payload.role === "ADMIN" ? values.get("adminId") : values.get("linkedId");
+        payload.name = payload.role === "ADMIN" ? values.get("adminName") : "";
+      }
+
+      submit.disabled = true;
+      submit.textContent = isReset ? "Mereset..." : "Membuat...";
+      try {
+        const response = isReset ? await API.userReset(payload) : await API.userCreate(payload);
+        if (response?.success === false) throw new Error(response.message || "Aksi akun gagal.");
+        showToast(response?.message || "Akun berhasil diproses.");
+        close();
+        await renderSettings(document.getElementById("page-content") || getAppRoot());
+      } catch (error) {
+        submit.disabled = false;
+        submit.textContent = isReset ? "Simpan Password Baru" : "Buat Akun";
+        showToast(error.message || "Aksi akun gagal.", "error");
+      }
+    });
   }
 
 
