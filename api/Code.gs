@@ -240,7 +240,7 @@ function listAccounts_() {
 
   const migration = migrateLinkedAccountIds_(meta);
   if (!migration.success) return migration;
-  if (migration.changed) meta.values = meta.sheet.getDataRange().getValues();
+  if (migration.updated) meta.values = meta.sheet.getDataRange().getValues();
 
   const data = meta.values.slice(1).map(function (row, index) {
     const id = String(row[meta.columns.id] || '').trim();
@@ -329,25 +329,28 @@ function migrateLinkedAccountIds_(meta) {
     let masterId = String(row[meta.columns.masterId] || '').trim();
 
     if (linkedRoles.indexOf(role) >= 0) {
-      const lookupId = masterId || currentId;
-      const linked = masterPerson_(role, lookupId);
-      if (!linked.success) {
-        collisionIds['INVALID ' + currentId] = linked.message;
-        return;
+      if (masterId) {
+        nextId = currentId;
+      } else {
+        const linked = masterPerson_(role, currentId);
+        if (!linked.success) {
+          collisionIds['INVALID ' + currentId] = linked.message;
+          return;
+        }
+        masterId = String(linked.person.id || '').trim();
+        const generated = generatedAccountId_(linked.person.name, linked.person.phone);
+        if (!generated.success) {
+          collisionIds['INVALID ' + currentId] = generated.message + ' (' + currentId + ')';
+          return;
+        }
+        nextId = generated.id;
+        updates.push({
+          rowNumber: index + 2,
+          id: nextId,
+          masterId: masterId,
+          previousId: currentId
+        });
       }
-      masterId = String(linked.person.id || '').trim();
-      const generated = generatedAccountId_(linked.person.name, linked.person.phone);
-      if (!generated.success) {
-        collisionIds['INVALID ' + currentId] = generated.message + ' (' + currentId + ')';
-        return;
-      }
-      nextId = generated.id;
-      updates.push({
-        rowNumber: index + 2,
-        id: nextId,
-        masterId: masterId,
-        previousId: currentId
-      });
     }
 
     const normalizedId = nextId.toUpperCase();
@@ -377,7 +380,8 @@ function migrateLinkedAccountIds_(meta) {
   });
   return {
     success: true,
-    changed: updates.filter(function (update) { return update.id !== update.previousId; }).length
+    changed: updates.filter(function (update) { return update.id !== update.previousId; }).length,
+    updated: updates.length
   };
 }
 

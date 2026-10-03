@@ -3330,10 +3330,14 @@ window.App = (() => {
         API.students(),
         API.sensei()
       ]);
+      if (usersResponse?.success === false) throw new Error(usersResponse.message || "Data akun gagal dimuat.");
+      if (studentsResponse?.success === false) throw new Error(studentsResponse.message || "Data siswa gagal dimuat.");
+      if (senseiResponse?.success === false) throw new Error(senseiResponse.message || "Data sensei gagal dimuat.");
       const users = Array.isArray(usersResponse?.data) ? usersResponse.data : [];
       const students = Array.isArray(studentsResponse?.data) ? studentsResponse.data : [];
       const sensei = Array.isArray(senseiResponse?.data) ? senseiResponse.data : [];
       const directories = { students, sensei };
+      if (usersResponse?.message) showToast(usersResponse.message);
 
       el.innerHTML = `
         ${pageHeader("Pengaturan", "Informasi sistem dan akun akses pengguna.")}
@@ -3346,12 +3350,13 @@ window.App = (() => {
 
         <section class="section account-management">
           <div class="section-head">
-            <div><h2>Akun Pengguna</h2><p class="muted">Akun siswa dan sensei menggunakan ID pada data master.</p></div>
+            <div><h2>Akun Pengguna</h2><p class="muted">ID login siswa/sensei memakai 3 huruf awal nama + 4 angka terakhir WhatsApp; ID master tetap ditautkan.</p></div>
             <button type="button" class="btn btn-primary" id="btn-add-account">+ Tambah Akun</button>
           </div>
           <div class="card">
             ${renderTable(users,[
               {key:"USER_ID",label:"ID Akun",render:value=>esc(value||"")},
+              {key:"MASTER_ID",label:"ID Master",render:value=>esc(value||"-")},
               {key:"NAMA",label:"Nama",render:value=>esc(value||"")},
               {key:"ROLE",label:"Role",render:value=>esc(value||"")}
             ],{
@@ -3412,7 +3417,7 @@ window.App = (() => {
           <div class="form-modal-heading">
             <span class="form-modal-kicker">PENGATURAN AKUN</span>
             <h2>${isReset ? "Reset Password" : "Tambah Akun"}</h2>
-            <p>${isReset ? "Tentukan password baru untuk akun ini." : "Hubungkan akun ke ID pada data master siswa atau sensei."}</p>
+            <p>${isReset ? "Tentukan password baru untuk akun ini." : "ID akun siswa/sensei dibuat dari 3 huruf awal nama dan 4 angka terakhir nomor WhatsApp."}</p>
           </div>
           <button type="button" class="modal-close" id="account-modal-close" aria-label="Tutup">×</button>
         </div>
@@ -3435,7 +3440,7 @@ window.App = (() => {
             <div class="form-group form-group-wide" id="account-linked-id-group">
               <label for="account-linked-id">Pilih ID Master</label>
               <select id="account-linked-id" name="linkedId" required></select>
-              <span class="tiny">Nama akun diambil otomatis dari data master.</span>
+              <span class="tiny">ID login mengikuti format 3 huruf awal nama + 4 angka terakhir WhatsApp.</span>
             </div>
             <div class="form-group" id="account-admin-id-group">
               <label for="account-admin-id">ID Admin</label>
@@ -3476,6 +3481,13 @@ window.App = (() => {
       const adminName = qs("#account-admin-name", modal);
       const preview = qs("#account-person-preview", modal);
 
+      const generatedAccountId = person => {
+        const name = String(person?.NAMA || "").trim().match(/[A-Za-z]+/);
+        const phone = String(person?.NO_WA || "").replace(/\D/g, "");
+        if (!name || name[0].length < 3 || phone.length < 4) return "";
+        return name[0].slice(0, 3).toUpperCase() + phone.slice(-4);
+      };
+
       const populateLinkedIds = () => {
         const role = roleSelect.value;
         const people = role === "SISWA" ? directories.students : directories.sensei;
@@ -3486,6 +3498,7 @@ window.App = (() => {
           : `<option value="">${role === "SISWA" ? "Belum ada ID siswa" : "Belum ada ID sensei"}</option>`;
         preview.classList.toggle("hidden", role === "ADMIN");
         preview.innerHTML = identified.length ? "Pilih ID untuk melihat nama akun." : "Tidak ada ID master tersedia untuk role ini.";
+        updateLinkedPreview();
       };
 
       const updateRoleFields = () => {
@@ -3500,13 +3513,23 @@ window.App = (() => {
       };
 
       roleSelect.addEventListener("change", updateRoleFields);
-      linkedSelect.addEventListener("change", () => {
+      const updateLinkedPreview = () => {
         const role = roleSelect.value;
         const people = role === "SISWA" ? directories.students : directories.sensei;
         const idKey = role === "SISWA" ? "ID_SISWA" : "ID_SENSEI";
         const person = people.find(item => String(item[idKey]) === String(linkedSelect.value));
-        preview.innerHTML = person ? `<strong>${esc(person.NAMA || "Tanpa nama")}</strong><span>ID: ${esc(linkedSelect.value)}</span>` : "Pilih ID untuk melihat nama akun.";
-      });
+        if (!person) {
+          preview.innerHTML = "Pilih ID untuk melihat nama akun dan ID login.";
+          return;
+        }
+        const generatedId = generatedAccountId(person);
+        preview.innerHTML = `
+          <strong>${esc(person.NAMA || "Tanpa nama")}</strong>
+          <span>ID Master: ${esc(linkedSelect.value)}</span>
+          <span>ID Login: <strong>${esc(generatedId || "Tidak dapat dibuat: lengkapi nama dan nomor WhatsApp")}</strong></span>
+        `;
+      };
+      linkedSelect.addEventListener("change", updateLinkedPreview);
       updateRoleFields();
     }
 
@@ -3520,7 +3543,8 @@ window.App = (() => {
         payload.userId = values.get("userId");
       } else {
         payload.role = values.get("role");
-        payload.userId = payload.role === "ADMIN" ? values.get("adminId") : values.get("linkedId");
+        if (payload.role === "ADMIN") payload.userId = values.get("adminId");
+        else payload.linkedId = values.get("linkedId");
         payload.name = payload.role === "ADMIN" ? values.get("adminName") : "";
       }
 

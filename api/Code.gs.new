@@ -210,13 +210,22 @@ function accountSheetMeta_() {
     values = sheet.getDataRange().getValues();
   }
 
-  const headers = values[0].map(function (header) { return String(header || '').trim(); });
+  let headers = values[0].map(function (header) { return String(header || '').trim(); });
+  let masterIdIndex = findColumnIndex_(headers, ['MASTER_ID', 'ID_MASTER', 'LINKED_ID']);
+  if (masterIdIndex < 0) {
+    masterIdIndex = sheet.getLastColumn() + 1;
+    sheet.getRange(1, masterIdIndex).setValue('MASTER_ID');
+    values = sheet.getDataRange().getValues();
+    headers = values[0].map(function (header) { return String(header || '').trim(); });
+  }
+
   const columns = {
     id: findColumnIndex_(headers, ['USER_ID', 'ID_USER', 'ID']),
     name: findColumnIndex_(headers, ['NAME', 'NAMA']),
     role: findColumnIndex_(headers, ['ROLE']),
     salt: findColumnIndex_(headers, ['PASSWORD_SALT', 'SALT']),
-    hash: findColumnIndex_(headers, ['PASSWORD_HASH', 'PASSWORDHASH'])
+    hash: findColumnIndex_(headers, ['PASSWORD_HASH', 'PASSWORDHASH']),
+    masterId: findColumnIndex_(headers, ['MASTER_ID', 'ID_MASTER', 'LINKED_ID'])
   };
   if (Object.keys(columns).some(function (key) { return columns[key] < 0; })) {
     return { success: false, message: 'Header USERS harus memiliki ID, NAMA, ROLE, SALT, dan PASSWORD_HASH.' };
@@ -229,6 +238,10 @@ function listAccounts_() {
   const meta = accountSheetMeta_();
   if (!meta.success) return meta;
 
+  const migration = migrateLinkedAccountIds_(meta);
+  if (!migration.success) return migration;
+  if (migration.updated) meta.values = meta.sheet.getDataRange().getValues();
+
   const data = meta.values.slice(1).map(function (row, index) {
     const id = String(row[meta.columns.id] || '').trim();
     if (!id) return null;
@@ -236,40 +249,134 @@ function listAccounts_() {
       USER_ID: id,
       NAMA: String(row[meta.columns.name] || id),
       ROLE: String(row[meta.columns.role] || 'USER'),
+      MASTER_ID: String(row[meta.columns.masterId] || ''),
       __ROW_NUMBER: index + 2
     };
   }).filter(function (user) { return !!user; });
 
-  return { success: true, data: data };
+  return {
+    success: true,
+    message: migration.changed ? migration.changed + ' ID akun siswa/sensei diperbarui ke format baru.' : '',
+    data: data
+  };
 }
 
-function linkedAccountPerson_(role, userId) {
+function generatedAccountId_(name, phone) {
+  const namePart = String(name || '').trim().match(/[A-Za-z]+/);
+  const phoneDigits = String(phone || '').replace(/\D/g, '');
+  if (!namePart || namePart[0].length < 3) {
+    return { success: false, message: 'Nama harus memiliki minimal 3 huruf untuk membuat ID akun.' };
+  }
+  if (phoneDigits.length < 4) {
+    return { success: false, message: 'Nomor WhatsApp harus memiliki minimal 4 angka untuk membuat ID akun.' };
+  }
+  return { success: true, id: namePart[0].slice(0, 3).toUpperCase() + phoneDigits.slice(-4) };
+}
+
+function masterPerson_(role, masterId) {
   const sheetName = role === 'SISWA' ? 'STUDENTS' : role === 'SENSEI' ? 'SENSEI' : '';
   if (!sheetName) return { success: true, person: null };
 
   const sheet = ss_().getSheetByName(sheetName);
   if (!sheet) return { success: false, message: 'Sheet ' + sheetName + ' tidak ditemukan.' };
   const values = sheet.getDataRange().getValues();
+  if (!values.length) return { success: false, message: 'Header sheet ' + sheetName + ' belum tersedia.' };
   const headers = values[0].map(String);
   const idIndex = findColumnIndex_(headers, [role === 'SISWA' ? 'ID_SISWA' : 'ID_SENSEI']);
   const nameIndex = findColumnIndex_(headers, ['NAMA', 'NAME']);
   if (idIndex < 0) return { success: false, message: 'Kolom ID untuk ' + role + ' tidak ditemukan.' };
 
   const row = values.slice(1).find(function (item) {
-    return String(item[idIndex] || '').trim().toUpperCase() === String(userId || '').trim().toUpperCase();
+    return String(item[idIndex] || '').trim().toUpperCase() === String(masterId || '').trim().toUpperCase();
   });
-  if (!row) return { success: false, message: 'ID tersebut belum terdaftar pada data ' + (role === 'SISWA' ? 'siswa.' : 'sensei.') };
+  if (!row) return { success: false, message: 'ID master tersebut belum terdaftar pada data ' + (role === 'SISWA' ? 'siswa.' : 'sensei.') };
   const phoneIndex = findColumnIndex_(headers, ['NO_WA', 'NO_HP', 'PHONE']);
   return {
     success: true,
     person: {
       id: row[idIndex],
-      name: nameIndex < 0 ? String(userId) : String(row[nameIndex] || userId),
+      name: nameIndex < 0 ? String(masterId) : String(row[nameIndex] || masterId),
       phone: phoneIndex < 0 ? '' : String(row[phoneIndex] || '')
     }
   };
 }
 
+function linkedAccountPerson_(role, userId) {
+  if (role !== 'SISWA' && role !== 'SENSEI') return { success: true, person: null };
+  let masterId = String(userId || '').trim();
+  const meta = accountSheetMeta_();
+  if (!meta.success) return meta;
+  const account = accountRowById_(meta, userId);
+  if (account &&
+      String(account.row[meta.columns.role] || '').trim().toUpperCase() === role &&
+      String(account.row[meta.columns.masterId] || '').trim()) {
+    masterId = String(account.row[meta.columns.masterId]).trim();
+  }
+  return masterPerson_(role, masterId);
+}
+
+function migrateLinkedAccountIds_(meta) {
+  const updates = [];
+  const finalIds = {};
+  const collisionIds = {};
+  const linkedRoles = ['SISWA', 'SENSEI'];
+
+  meta.values.slice(1).forEach(function (row, index) {
+    const currentId = String(row[meta.columns.id] || '').trim();
+    if (!currentId) return;
+    const role = String(row[meta.columns.role] || '').trim().toUpperCase();
+    let nextId = currentId;
+    let masterId = String(row[meta.columns.masterId] || '').trim();
+
+    if (linkedRoles.indexOf(role) >= 0) {
+      if (masterId) {
+        nextId = currentId;
+      } else {
+        const linked = masterPerson_(role, currentId);
+        if (!linked.success) {
+          collisionIds['INVALID ' + currentId] = linked.message;
+          return;
+        }
+        masterId = String(linked.person.id || '').trim();
+        const generated = generatedAccountId_(linked.person.name, linked.person.phone);
+        if (!generated.success) {
+          collisionIds['INVALID ' + currentId] = generated.message + ' (' + currentId + ')';
+          return;
+        }
+        nextId = generated.id;
+        updates.push({ rowNumber: index + 2, id: nextId, masterId: masterId, previousId: currentId });
+      }
+    }
+
+    const normalizedId = nextId.toUpperCase();
+    if (!finalIds[normalizedId]) finalIds[normalizedId] = [];
+    finalIds[normalizedId].push(currentId);
+  });
+
+  Object.keys(finalIds).forEach(function (id) {
+    if (finalIds[id].length > 1) {
+      collisionIds[id] = 'ID hasil format bertabrakan untuk akun: ' + finalIds[id].join(', ');
+    }
+  });
+  if (Object.keys(collisionIds).length) {
+    return {
+      success: false,
+      message: 'ID akun belum dapat diperbarui. ' + Object.keys(collisionIds).map(function (id) {
+        return collisionIds[id];
+      }).join(' ')
+    };
+  }
+
+  updates.forEach(function (update) {
+    if (update.id !== update.previousId) meta.sheet.getRange(update.rowNumber, meta.columns.id + 1).setValue(update.id);
+    meta.sheet.getRange(update.rowNumber, meta.columns.masterId + 1).setValue(update.masterId);
+  });
+  return {
+    success: true,
+    changed: updates.filter(function (update) { return update.id !== update.previousId; }).length,
+    updated: updates.length
+  };
+}
 function attendanceProfile_(token) {
   const user = tokenUser_(token);
   const role = String(user.role || '').trim().toUpperCase();
@@ -418,25 +525,42 @@ function accountPasswordValues_(password) {
 
 function createAccount_(payload) {
   const record = payload && typeof payload === 'object' ? payload : {};
-  const userId = String(record.userId || record.USER_ID || '').trim();
   const role = String(record.role || record.ROLE || '').trim().toUpperCase();
-  if (!userId) return { success: false, message: 'ID akun wajib diisi.' };
   if (['ADMIN', 'SENSEI', 'SISWA'].indexOf(role) < 0) return { success: false, message: 'Role akun tidak valid.' };
 
-  const password = accountPasswordValues_(record.password);
-  if (!password.success) return password;
-
+  let userId = '';
+  let masterId = '';
   let name = String(record.name || record.NAMA || '').trim();
   if (role !== 'ADMIN') {
-    const linked = linkedAccountPerson_(role, userId);
+    masterId = String(record.masterId || record.linkedId || record.MASTER_ID || record.userId || record.USER_ID || '').trim();
+    if (!masterId) return { success: false, message: 'Pilih data master siswa atau sensei.' };
+    const linked = masterPerson_(role, masterId);
     if (!linked.success) return linked;
     name = linked.person.name;
+    const generated = generatedAccountId_(linked.person.name, linked.person.phone);
+    if (!generated.success) return generated;
+    userId = generated.id;
+    masterId = String(linked.person.id);
+  } else {
+    userId = String(record.userId || record.USER_ID || '').trim().toUpperCase();
+    if (!userId) return { success: false, message: 'ID akun admin wajib diisi.' };
   }
   if (!name) return { success: false, message: 'Nama admin wajib diisi.' };
 
   const meta = accountSheetMeta_();
   if (!meta.success) return meta;
-  if (accountRowById_(meta, userId)) return { success: false, message: 'ID akun sudah terdaftar.' };
+  if (accountRowById_(meta, userId)) return { success: false, message: 'ID akun ' + userId + ' sudah terdaftar. Pastikan nama dan nomor WhatsApp menghasilkan ID yang berbeda.' };
+  if (role !== 'ADMIN') {
+    const linkedAccountExists = meta.values.slice(1).some(function (row) {
+      const existingMasterId = String(row[meta.columns.masterId] || row[meta.columns.id] || '').trim();
+      return String(row[meta.columns.role] || '').trim().toUpperCase() === role &&
+        existingMasterId.toUpperCase() === masterId.toUpperCase();
+    });
+    if (linkedAccountExists) return { success: false, message: 'Data master tersebut sudah memiliki akun.' };
+  }
+
+  const password = accountPasswordValues_(record.password);
+  if (!password.success) return password;
 
   const row = new Array(meta.headers.length).fill('');
   row[meta.columns.id] = userId;
@@ -444,11 +568,12 @@ function createAccount_(payload) {
   row[meta.columns.role] = role;
   row[meta.columns.salt] = password.salt;
   row[meta.columns.hash] = password.hash;
+  row[meta.columns.masterId] = masterId;
   const createdIndex = findColumnIndex_(meta.headers, ['CREATED_AT']);
   if (createdIndex >= 0) row[createdIndex] = new Date();
   meta.sheet.appendRow(row);
 
-  return { success: true, message: 'Akun berhasil dibuat.', data: { USER_ID: userId, NAMA: name, ROLE: role } };
+  return { success: true, message: 'Akun berhasil dibuat dengan ID ' + userId + '.', data: { USER_ID: userId, MASTER_ID: masterId, NAMA: name, ROLE: role } };
 }
 
 function resetAccountPassword_(payload) {
