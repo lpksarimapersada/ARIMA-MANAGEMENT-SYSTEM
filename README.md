@@ -48,13 +48,14 @@ Jangan menyimpan password plaintext di spreadsheet.
 ## ID login siswa dan sensei
 
 ID akun baru dibuat dari tiga huruf pertama nama dan empat angka terakhir nomor
-WhatsApp, misalnya `RIFQI` dengan `087748705194` menjadi `RIF5194`. Saat admin
-membuka menu **Pengaturan → Akun Pengguna** setelah backend terbaru diterapkan,
-akun siswa/sensei yang sudah ada dimigrasikan ke format tersebut. ID master
-tetap disimpan di kolom `MASTER_ID` pada sheet `USERS`, sehingga absensi dan
-relasi data tetap terhubung. Jika ada ID yang bentrok atau data master tidak
-memiliki nama/nomor WhatsApp yang cukup, migrasi ditolak tanpa mengubah akun;
-perbaiki data terkait lalu coba kembali. Beri tahu pengguna ID login barunya.
+WhatsApp, misalnya `RIFQI` dengan `087748705194` menjadi `RIF5194`. Admin dapat
+membuat ID untuk akun siswa/sensei yang sudah ada dengan tombol **Generate USER
+ID** pada **Pengaturan → Akun Pengguna**. Perubahan ID login hanya dilakukan
+setelah tombol tersebut dipilih dan dikonfirmasi. ID master tetap disimpan di
+kolom `MASTER_ID` pada sheet `USERS`, sehingga absensi dan relasi data tetap
+terhubung. Jika ada ID yang bentrok atau data master tidak memiliki nama/nomor
+WhatsApp yang cukup, migrasi ditolak tanpa mengubah akun; perbaiki data terkait
+lalu coba kembali. Beri tahu pengguna ID login barunya.
 
 
 ## Publish production

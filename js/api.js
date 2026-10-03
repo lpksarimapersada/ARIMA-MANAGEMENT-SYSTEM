@@ -194,6 +194,10 @@ window.API = (() => {
     return call("users", {});
   }
 
+  async function generateUserIds() {
+    return call("generateUserIds", {});
+  }
+
   async function userCreate(payload) {
     return call("userCreate", payload);
   }
@@ -299,6 +303,8 @@ window.API = (() => {
     salaryPreview,
 
     users,
+
+    generateUserIds,
 
     userCreate,
 

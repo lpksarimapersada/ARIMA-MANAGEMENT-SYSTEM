@@ -3351,7 +3351,10 @@ window.App = (() => {
         <section class="section account-management">
           <div class="section-head">
             <div><h2>Akun Pengguna</h2><p class="muted">ID login siswa/sensei memakai 3 huruf awal nama + 4 angka terakhir WhatsApp; ID master tetap ditautkan.</p></div>
-            <button type="button" class="btn btn-primary" id="btn-add-account">+ Tambah Akun</button>
+            <div class="toolbar">
+              <button type="button" class="btn btn-light" id="btn-generate-user-ids">Generate USER ID</button>
+              <button type="button" class="btn btn-primary" id="btn-add-account">+ Tambah Akun</button>
+            </div>
           </div>
           <div class="card">
             ${renderTable(users,[
@@ -3371,6 +3374,22 @@ window.App = (() => {
       `;
 
       qs("#btn-add-account", el)?.addEventListener("click", () => openAccountModal("create", null, directories));
+      qs("#btn-generate-user-ids", el)?.addEventListener("click", async event => {
+        if (!confirm("Generate USER ID untuk akun siswa dan sensei yang belum memakai format baru? ID login akun yang diperbarui akan berubah.")) return;
+        const button = event.currentTarget;
+        button.disabled = true;
+        button.textContent = "Memproses...";
+        try {
+          const response = await API.generateUserIds();
+          if (response?.success === false) throw new Error(response.message || "USER ID gagal dibuat.");
+          showToast(response?.message || "USER ID berhasil dibuat.");
+          await renderSettings(el);
+        } catch (error) {
+          button.disabled = false;
+          button.textContent = "Generate USER ID";
+          showToast(error.message || "USER ID gagal dibuat.", "error");
+        }
+      });
       qsa("[data-reset-account]", el).forEach(button => {
         button.addEventListener("click", () => {
           const account = users.find(item => String(item.USER_ID) === String(button.dataset.resetAccount));

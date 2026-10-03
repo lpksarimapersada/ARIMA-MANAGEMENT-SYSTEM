@@ -84,6 +84,10 @@ function route_(action, p, token) {
       const usersAccessError = accountAccessError_(token);
       if (usersAccessError) return usersAccessError;
       return listAccounts_();
+    case 'generateUserIds':
+      const generateUserIdsAccessError = accountAccessError_(token);
+      if (generateUserIdsAccessError) return generateUserIdsAccessError;
+      return generateUserIds_();
     case 'userCreate':
       const userCreateAccessError = accountAccessError_(token);
       if (userCreateAccessError) return userCreateAccessError;
@@ -238,10 +242,6 @@ function listAccounts_() {
   const meta = accountSheetMeta_();
   if (!meta.success) return meta;
 
-  const migration = migrateLinkedAccountIds_(meta);
-  if (!migration.success) return migration;
-  if (migration.updated) meta.values = meta.sheet.getDataRange().getValues();
-
   const data = meta.values.slice(1).map(function (row, index) {
     const id = String(row[meta.columns.id] || '').trim();
     if (!id) return null;
@@ -254,11 +254,18 @@ function listAccounts_() {
     };
   }).filter(function (user) { return !!user; });
 
-  return {
-    success: true,
-    message: migration.changed ? migration.changed + ' ID akun siswa/sensei diperbarui ke format baru.' : '',
-    data: data
-  };
+  return { success: true, data: data };
+}
+
+function generateUserIds_() {
+  const meta = accountSheetMeta_();
+  if (!meta.success) return meta;
+  const result = migrateLinkedAccountIds_(meta);
+  if (!result.success) return result;
+  const message = result.changed
+    ? result.changed + ' USER ID siswa/sensei berhasil dibuat atau diperbarui.'
+    : 'Tidak ada USER ID yang perlu dibuat. Akun yang sudah memiliki ID format baru tetap sama.';
+  return { success: true, message: message, data: listAccounts_().data };
 }
 
 function generatedAccountId_(name, phone) {
