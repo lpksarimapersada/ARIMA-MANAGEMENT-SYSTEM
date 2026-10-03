@@ -7,7 +7,7 @@ window.App = (() => {
     ["sensei", "Sensei", "◎"],
     ["attendance", "Absensi", "✓"],
     ["billing", "Tagihan", "Rp"],
-    ["payments", "Pembayaran", "↔"],
+    ["finance", "Mutasi Keuangan", "↔"],
     ["salary", "Payroll Sensei", "¥"],
     ["reports", "Laporan", "▤"],
     ["settings", "Pengaturan", "⚙"]
@@ -371,6 +371,79 @@ window.App = (() => {
 
     },
 
+    finance: {
+      title: "Tambah Mutasi Keuangan",
+      editTitle: "Edit Mutasi Keuangan",
+      description: "Catat pemasukan atau pengeluaran harian.",
+      idField: "TRANSACTION_ID",
+      fields: [
+        {
+          key: "DATE",
+          label: "Tanggal",
+          type: "date",
+          required: true
+        },
+        {
+          key: "TYPE",
+          label: "Jenis Mutasi",
+          type: "select",
+          required: true,
+          options: ["PEMASUKAN", "PENGELUARAN"]
+        },
+        {
+          key: "CATEGORY",
+          label: "Kategori",
+          type: "select",
+          required: true,
+          options: [
+            "SPP",
+            "Pendaftaran",
+            "Seragam",
+            "Donasi",
+            "Gaji",
+            "Operasional",
+            "Utilitas",
+            "Transportasi",
+            "Konsumsi",
+            "Perlengkapan",
+            "Lainnya"
+          ]
+        },
+        {
+          key: "DESCRIPTION",
+          label: "Keterangan",
+          type: "text",
+          required: true,
+          placeholder: "Contoh: pembayaran SPP bulan Oktober"
+        },
+        {
+          key: "AMOUNT",
+          label: "Nominal",
+          type: "number",
+          required: true,
+          placeholder: "0"
+        },
+        {
+          key: "PAYMENT_METHOD",
+          label: "Metode",
+          type: "select",
+          required: true,
+          options: ["CASH", "TRANSFER", "QRIS", "LAINNYA"]
+        },
+        {
+          key: "REFERENCE_NO",
+          label: "No. Referensi",
+          type: "text",
+          required: false
+        },
+        {
+          key: "NOTES",
+          label: "Catatan",
+          type: "textarea",
+          required: false
+        }
+      ]
+    },
 
     payments: {
 
@@ -932,7 +1005,7 @@ window.App = (() => {
       return;
     }
 
-    const adminMenus = ["attendance", "billing", "payments", "salary", "reports", "settings"];
+    const adminMenus = ["attendance", "billing", "finance", "salary", "reports", "settings"];
     const visibleMenus = menus.filter(
       menu => !adminMenus.includes(menu[0]) || isAdminUser()
     );
@@ -1271,9 +1344,9 @@ window.App = (() => {
           break;
 
 
-        case "payments":
+        case "finance":
 
-          await renderPayments(
+          await renderFinance(
             el
           );
 
@@ -2328,8 +2401,11 @@ window.App = (() => {
 
       function updateAttendanceTimeFields() {
         const senseiSelected = actorType.value === "SENSEI";
+        const countsForPayroll = senseiSelected && ["HADIR", "TERLAMBAT"].includes(qs("#attendance-status", el).value);
         qs("#attendance-check-in-label", el).textContent = senseiSelected ? "Jam Mengajar Mulai" : "Jam Masuk";
         qs("#attendance-check-out-label", el).textContent = senseiSelected ? "Jam Mengajar Selesai" : "Jam Keluar";
+        qs("#attendance-check-in", el).required = countsForPayroll;
+        qs("#attendance-check-out", el).required = countsForPayroll;
         qs("#attendance-session-group", el).classList.toggle("hidden", senseiSelected);
         qs("#attendance-jp-note", el).classList.toggle("hidden", !senseiSelected);
         if (senseiSelected) qs("#attendance-session", el).value = "";
@@ -2348,6 +2424,7 @@ window.App = (() => {
 
       actorType.addEventListener("change", () => populateActors());
       actorSelect.addEventListener("change", updateActorDetails);
+      qs("#attendance-status", el).addEventListener("change", updateAttendanceTimeFields);
       cancelEdit.addEventListener("click", resetAttendanceForm);
 
       form.addEventListener("submit", async event => {
@@ -2455,6 +2532,8 @@ window.App = (() => {
         API.billing(),
         API.students()
       ]);
+      if (billingResponse?.success === false) throw new Error(billingResponse.message || "Data tagihan gagal dimuat.");
+      if (studentsResponse?.success === false) throw new Error(studentsResponse.message || "Data siswa gagal dimuat.");
       const billings = Array.isArray(billingResponse?.data) ? billingResponse.data : [];
       const students = Array.isArray(studentsResponse?.data) ? studentsResponse.data : [];
       const params = new URLSearchParams(window.location.search);
@@ -2477,7 +2556,6 @@ window.App = (() => {
       const addButton = qs("#btn-add-billing", el);
       const resultRoot = qs("#billing-student-result", el);
       let selectedStudent = null;
-      if (addButton) addButton.disabled = true;
 
       async function ensurePdfLibrary() {
         if (window.jspdf?.jsPDF) return window.jspdf.jsPDF;
@@ -2492,76 +2570,165 @@ window.App = (() => {
         return window.jspdf.jsPDF;
       }
 
+      let invoiceLogoPromise = null;
+      function invoiceLogoData() {
+        if (!invoiceLogoPromise) {
+          invoiceLogoPromise = new Promise((resolve, reject) => {
+            const image = new Image();
+            image.onload = () => {
+              const canvas = document.createElement("canvas");
+              canvas.width = image.naturalWidth;
+              canvas.height = image.naturalHeight;
+              const context = canvas.getContext("2d");
+              if (!context) {
+                reject(new Error("Logo tidak dapat disiapkan untuk PDF."));
+                return;
+              }
+              context.drawImage(image, 0, 0);
+              resolve(canvas.toDataURL("image/png"));
+            };
+            image.onerror = () => reject(new Error("Logo LPKS Arima Persada tidak dapat dimuat."));
+            image.src = new URL("assets/logo.webp", document.baseURI).href;
+          });
+        }
+        return invoiceLogoPromise;
+      }
+
       function invoiceDate(value) {
         const text = String(value || "");
         if (/^\d{4}-\d{2}-\d{2}/.test(text)) return text.slice(0, 10);
         return text;
       }
 
-      function createInvoicePdf(student, invoice) {
+      function createInvoicePdf(student, invoice, logoData) {
         const JsPDF = window.jspdf?.jsPDF;
         if (!JsPDF) throw new Error("Library PDF belum siap.");
         const pdf = new JsPDF({ unit: "mm", format: "a4" });
+        const pageWidth = pdf.internal.pageSize.getWidth();
+        const margin = 18;
+        const contentWidth = pageWidth - margin * 2;
+
+        pdf.setFillColor(248, 249, 251);
+        pdf.rect(0, 0, pageWidth, 52, "F");
+        pdf.addImage(logoData, "PNG", margin, 12, 27, 27);
         pdf.setTextColor(34, 34, 38);
         pdf.setFont("helvetica", "bold");
-        pdf.setFontSize(17);
-        pdf.text("LPKS ARIMA PERSADA", 20, 22);
-        pdf.setFontSize(11);
+        pdf.setFontSize(16);
+        pdf.text("LPKS ARIMA PERSADA", 51, 19);
+        pdf.setFont("helvetica", "normal");
         pdf.setTextColor(112, 112, 118);
-        pdf.text("SURAT TAGIHAN SISWA", 20, 30);
+        pdf.setFontSize(8.5);
+        pdf.text(pdf.splitTextToSize("Jl. Sidoharjo 1, Desa Negara Ratu, Kecamatan Natar, Kabupaten Lampung Selatan", 140), 51, 26);
+        pdf.text("Konfirmasi: 0813-7908-7768 · 0812-8267-4707 · 0823-7512-8230", 51, 36);
+        pdf.text("Email: arimapersada@gmail.com", 51, 42);
         pdf.setDrawColor(215, 25, 32);
-        pdf.setLineWidth(1.2);
-        pdf.line(20, 36, 190, 36);
+        pdf.setLineWidth(1);
+        pdf.line(margin, 52, pageWidth - margin, 52);
 
-        pdf.setFont("helvetica", "normal");
-        pdf.setTextColor(55, 55, 60);
-        pdf.setFontSize(10);
-        pdf.text(`No. Tagihan: ${invoice.BILLING_ID || "-"}`, 20, 48);
-        pdf.text(`Tanggal cetak: ${new Date().toLocaleDateString("id-ID")}`, 20, 55);
-        pdf.text(`ID Siswa: ${student.ID_SISWA}`, 20, 69);
-        pdf.text(`Nama: ${student.NAMA || "-"}`, 20, 76);
-        pdf.text(`No. WhatsApp: ${student.NO_WA || "-"}`, 20, 83);
-
+        pdf.setTextColor(180, 20, 27);
         pdf.setFont("helvetica", "bold");
-        pdf.text("Rincian tagihan", 20, 101);
+        pdf.setFontSize(14);
+        pdf.text("SURAT TAGIHAN SISWA", margin, 64);
+        pdf.setTextColor(75, 75, 80);
         pdf.setFont("helvetica", "normal");
-        pdf.text(`Deskripsi: ${invoice.DESCRIPTION || "-"}`, 20, 111, { maxWidth: 165 });
-        pdf.text(`Kategori: ${invoice.CATEGORY || "-"}`, 20, 124);
-        pdf.text(`Jatuh tempo: ${invoiceDate(invoice.DUE_DATE) || "-"}`, 20, 132);
-        pdf.text(`Status: ${invoice.STATUS || "-"}`, 20, 140);
+        pdf.setFontSize(9);
+        pdf.text(`No. Tagihan: ${invoice.BILLING_ID || "-"}`, margin, 72);
+        pdf.text(`Tanggal cetak: ${new Date().toLocaleDateString("id-ID")}`, pageWidth - margin, 72, { align: "right" });
 
         pdf.setFillColor(248, 248, 249);
-        pdf.roundedRect(20, 153, 170, 25, 3, 3, "F");
+        pdf.roundedRect(margin, 80, contentWidth, 32, 2, 2, "F");
+        pdf.setTextColor(112, 112, 118);
         pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(8);
+        pdf.text("DITAGIHKAN KEPADA", margin + 6, 88);
+        pdf.setTextColor(34, 34, 38);
         pdf.setFontSize(12);
-        pdf.text("TOTAL TAGIHAN", 28, 169);
-        pdf.setTextColor(180, 20, 27);
-        pdf.setFontSize(16);
-        pdf.text(formatRupiah(invoice.AMOUNT), 182, 169, { align: "right" });
-
-        if (invoice.NOTES) {
-          pdf.setTextColor(75, 75, 80);
-          pdf.setFont("helvetica", "normal");
-          pdf.setFontSize(10);
-          pdf.text("Catatan:", 20, 194);
-          pdf.text(pdf.splitTextToSize(String(invoice.NOTES), 165), 20, 201);
-        }
-        pdf.setTextColor(120, 120, 125);
+        pdf.text(String(student.NAMA || "-"), margin + 6, 96);
+        pdf.setFont("helvetica", "normal");
         pdf.setFontSize(9);
-        pdf.text("Mohon melakukan pembayaran sebelum tanggal jatuh tempo.", 20, 270);
+        pdf.setTextColor(75, 75, 80);
+        pdf.text(`ID Siswa: ${student.ID_SISWA || "-"}`, margin + 6, 104);
+        pdf.text(`WhatsApp: ${student.NO_WA || "-"}`, pageWidth - margin - 6, 104, { align: "right" });
+
+        pdf.setTextColor(34, 34, 38);
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(10);
+        pdf.text("RINCIAN TAGIHAN", margin, 124);
+        pdf.setDrawColor(225, 226, 229);
+        pdf.setLineWidth(0.3);
+        pdf.line(margin, 128, pageWidth - margin, 128);
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(9);
+        pdf.setTextColor(75, 75, 80);
+        const descriptionLines = pdf.splitTextToSize(String(invoice.DESCRIPTION || "-"), contentWidth - 4);
+        pdf.text("Deskripsi", margin, 137);
+        pdf.setTextColor(34, 34, 38);
+        pdf.text(descriptionLines, margin + 32, 137);
+        let detailsY = 137 + Math.max(1, descriptionLines.length) * 4.5;
+        pdf.setTextColor(75, 75, 80);
+        pdf.text("Kategori", margin, detailsY);
+        pdf.setTextColor(34, 34, 38);
+        pdf.text(String(invoice.CATEGORY || "-"), margin + 32, detailsY);
+        detailsY += 7;
+        pdf.setTextColor(75, 75, 80);
+        pdf.text("Jatuh tempo", margin, detailsY);
+        pdf.setTextColor(34, 34, 38);
+        pdf.text(invoiceDate(invoice.DUE_DATE) || "-", margin + 32, detailsY);
+        pdf.setTextColor(75, 75, 80);
+        pdf.text("Status", pageWidth / 2 + 10, detailsY);
+        pdf.setTextColor(34, 34, 38);
+        pdf.text(String(invoice.STATUS || "-"), pageWidth / 2 + 32, detailsY);
+
+        const totalY = detailsY + 12;
+        pdf.setFillColor(248, 248, 249);
+        pdf.roundedRect(margin, totalY, contentWidth, 24, 2, 2, "F");
+        pdf.setTextColor(34, 34, 38);
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(10);
+        pdf.text("TOTAL TAGIHAN", margin + 7, totalY + 15);
+        pdf.setTextColor(180, 20, 27);
+        pdf.setFontSize(15);
+        pdf.text(formatRupiah(invoice.AMOUNT), pageWidth - margin - 7, totalY + 15, { align: "right" });
+
+        let footerY = 250;
+        if (invoice.NOTES) {
+          pdf.setTextColor(112, 112, 118);
+          pdf.setFont("helvetica", "normal");
+          pdf.setFontSize(8);
+          pdf.text("Catatan:", margin, totalY + 34);
+          const noteLines = pdf.splitTextToSize(String(invoice.NOTES), contentWidth);
+          const visibleNoteLines = noteLines.slice(0, 3);
+          pdf.text(visibleNoteLines, margin, totalY + 39);
+          footerY = Math.max(230, totalY + 45 + visibleNoteLines.length * 3.5);
+        }
+        const footerText = "Mohon melakukan pembayaran sebelum tanggal jatuh tempo. Apabila terdapat kendala dalam pembayaran atau membutuhkan pembicaraan terkait mekanisme penyelesaian pembayaran dapat menghubungi Pak Suwardi (0813-7908-7768), Sensei Rachmat (0812-8267-4707), Admin LPKS Arima Persada (0823-7512-8230)";
+        const footerLines = pdf.splitTextToSize(footerText, contentWidth);
+        const footerHeight = footerLines.length * 4;
+        if (footerY + footerHeight > 289) {
+          pdf.addPage();
+          footerY = 24;
+        }
+        pdf.setDrawColor(225, 226, 229);
+        pdf.line(margin, footerY - 5, pageWidth - margin, footerY - 5);
+        pdf.setTextColor(92, 92, 98);
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(8);
+        pdf.text(footerLines, margin, footerY);
         const fileId = String(invoice.BILLING_ID || student.ID_SISWA).replace(/[^A-Za-z0-9_-]/g, "-");
         return { pdf, fileName: `tagihan-${fileId}.pdf` };
       }
 
       async function downloadInvoice(student, invoice) {
         await ensurePdfLibrary();
-        const { pdf, fileName } = createInvoicePdf(student, invoice);
+        const logoData = await invoiceLogoData();
+        const { pdf, fileName } = createInvoicePdf(student, invoice, logoData);
         pdf.save(fileName);
       }
 
       function sendInvoiceWhatsApp(student, invoice, targetWindow = null) {
         let phone = String(student.NO_WA || "").replace(/\D/g, "");
         if (phone.startsWith("0")) phone = `62${phone.slice(1)}`;
+        else if (!phone.startsWith("62")) phone = `62${phone}`;
         if (!phone) throw new Error("Nomor WhatsApp siswa belum tersedia.");
         const message = [
           `LPKS Arima Persada - Surat Tagihan`,
@@ -2572,49 +2739,14 @@ window.App = (() => {
           `Jumlah: ${formatRupiah(invoice.AMOUNT)}`,
           `Jatuh tempo: ${invoiceDate(invoice.DUE_DATE) || "-"}`,
           `Status: ${invoice.STATUS || "-"}`,
-          "Silakan hubungi LPKS Arima Persada untuk informasi pembayaran.",
-          "Surat tagihan PDF terlampir jika dikirim melalui aplikasi yang mendukung berbagi file."
+          "Silakan hubungi LPKS Arima Persada untuk informasi pembayaran."
         ].join("\n");
         const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
-        if (targetWindow && !targetWindow.closed) targetWindow.location.href = url;
-        else window.open(url, "_blank", "noopener");
-      }
-
-      async function shareInvoice(student, invoice) {
-        const whatsappWindow = window.open("about:blank", "_blank");
-        try {
-          await ensurePdfLibrary();
-          const { pdf, fileName } = createInvoicePdf(student, invoice);
-          const file = new File([pdf.output("blob")], fileName, { type: "application/pdf" });
-          let canShareFile = false;
-          try {
-            canShareFile = Boolean(navigator.share && navigator.canShare && navigator.canShare({ files: [file] }));
-          } catch (_) {
-            canShareFile = false;
-          }
-
-          if (canShareFile) {
-            whatsappWindow?.close();
-            await navigator.share({
-              title: `Tagihan ${invoice.BILLING_ID || student.ID_SISWA}`,
-              text: `Surat tagihan untuk ${student.NAMA || student.ID_SISWA}`,
-              files: [file]
-            });
-            return;
-          }
-
-          pdf.save(fileName);
-          sendInvoiceWhatsApp(student, invoice, whatsappWindow);
-          showToast("PDF diunduh; WhatsApp dibuka dengan rincian tagihan.");
-        } catch (error) {
-          whatsappWindow?.close();
-          throw error;
-        }
+        window.open(url, "_blank", "noopener,noreferrer");
       }
 
       function renderStudentInvoices(student) {
         selectedStudent = student;
-        addButton.disabled = !student;
         if (!student) {
           resultRoot.innerHTML = `<div class="card billing-empty-state"><strong>ID siswa tidak ditemukan.</strong><span>Periksa kembali ID yang dimasukkan.</span></div>`;
           return;
@@ -2660,8 +2792,8 @@ window.App = (() => {
         qsa("[data-send-invoice]", resultRoot).forEach(button => button.addEventListener("click", async () => {
           const invoice = studentInvoices.find(row => String(row.BILLING_ID) === String(button.dataset.sendInvoice));
           if (!invoice) return;
-          try { await shareInvoice(student, invoice); }
-          catch (error) { showToast(error.message || "Berbagi PDF dibatalkan atau gagal.", "error"); }
+          try { sendInvoiceWhatsApp(student, invoice); }
+          catch (error) { showToast(error.message || "WhatsApp tidak dapat dibuka.", "error"); }
         }));
       }
 
@@ -2677,8 +2809,10 @@ window.App = (() => {
       });
 
       addButton.addEventListener("click", () => {
-        if (!selectedStudent) return;
-        openFormModal("billing", null, { defaults: { ID_SISWA: selectedStudent.ID_SISWA } });
+        openFormModal("billing", null, {
+          studentRows: students,
+          defaults: { ID_SISWA: selectedStudent?.ID_SISWA || "" }
+        });
       });
 
       if (initialId) {
@@ -2703,158 +2837,73 @@ window.App = (() => {
 
   /*
    * =========================================================
-   * PAYMENTS
+   * FINANCE
    * =========================================================
    */
 
-  async function renderPayments(
+  async function renderFinance(
     el
   ) {
 
     try {
 
       const response =
-        await API.payments();
+        await API.finance();
+      if (response?.success === false) throw new Error(response.message || "Data mutasi keuangan gagal dimuat.");
 
-      const rows =
-        response?.data || [];
-
+      const rows = Array.isArray(response?.data) ? response.data : [];
+      const selectedMonth = new URLSearchParams(window.location.search).get("financeMonth")
+        || `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`;
+      const monthRows = rows.filter(row => String(row.DATE || "").slice(0, 7) === selectedMonth);
+      const amount = value => {
+        const number = Number(String(value || 0).replace(/[^\d.-]/g, ""));
+        return Number.isFinite(number) ? number : 0;
+      };
+      const incomeRows = monthRows.filter(row => String(row.TYPE || "").trim().toUpperCase() === "PEMASUKAN");
+      const expenseRows = monthRows.filter(row => String(row.TYPE || "").trim().toUpperCase() === "PENGELUARAN");
+      const totalIncome = incomeRows.reduce((sum, row) => sum + amount(row.AMOUNT), 0);
+      const totalExpense = expenseRows.reduce((sum, row) => sum + amount(row.AMOUNT), 0);
+      const netCashFlow = totalIncome - totalExpense;
 
       el.innerHTML = `
-
-        ${pageHeader(
-          "Pembayaran",
-          "Kelola pembayaran siswa.",
-          "Tambah Pembayaran",
-          "btn-add-payment"
-        )}
-
-
-        <div class="card">
-
-          ${renderTable(
-            rows,
-            [
-              {
-                key: "PAYMENT_ID",
-                label: "ID"
-              },
-
-              {
-                key: "BILLING_ID",
-                label: "ID Tagihan"
-              },
-
-              {
-                key: "ID_SISWA",
-                label: "ID Siswa"
-              },
-
-              {
-                key: "PAYMENT_DATE",
-                label: "Tanggal"
-              },
-
-              {
-                key: "AMOUNT",
-                label: "Jumlah",
-                render: value =>
-                  formatRupiah(value)
-              },
-
-              {
-                key: "PAYMENT_METHOD",
-                label: "Metode"
-              },
-
-              {
-                key: "REFERENCE_NO",
-                label: "Referensi"
-              },
-
-              {
-                key: "NOTES",
-                label: "Catatan"
-              }
-            ],
-            {
-              actions: row => `
-
-                <button
-                  type="button"
-                  class="btn btn-small"
-                  data-edit-payment="${esc(
-                    row.PAYMENT_ID
-                  )}"
-                >
-                  Edit
-                </button>
-
-              `
-            }
-          )}
-
+        ${pageHeader("Mutasi Keuangan", "Catat pemasukan dan pengeluaran harian serta pantau rekap setiap bulan.", "Tambah Mutasi", "btn-add-finance")}
+        <section class="report-toolbar finance-toolbar">
+          <label for="finance-month">Periode rekap</label>
+          <input type="month" id="finance-month" value="${esc(selectedMonth)}">
+        </section>
+        <div class="cards finance-summary">
+          <div class="card"><div class="muted">Total pemasukan</div><div class="metric finance-income">${formatRupiah(totalIncome)}</div><div class="tiny">${formatNumber(incomeRows.length)} transaksi</div></div>
+          <div class="card"><div class="muted">Total pengeluaran</div><div class="metric finance-expense">${formatRupiah(totalExpense)}</div><div class="tiny">${formatNumber(expenseRows.length)} transaksi</div></div>
+          <div class="card"><div class="muted">Selisih bersih</div><div class="metric ${netCashFlow < 0 ? "report-negative" : "report-positive"}">${formatRupiah(netCashFlow)}</div><div class="tiny">Pemasukan dikurangi pengeluaran</div></div>
         </div>
-
+        <section class="section card">
+          <div class="section-head"><h2>Transaksi ${esc(selectedMonth)}</h2></div>
+          ${renderTable(monthRows, [
+            {key:"DATE",label:"Tanggal",render:value=>esc(String(value||"").slice(0,10))},
+            {key:"TYPE",label:"Jenis",render:value=>esc(value||"")},
+            {key:"CATEGORY",label:"Kategori",render:value=>esc(value||"")},
+            {key:"DESCRIPTION",label:"Keterangan",render:value=>esc(value||"")},
+            {key:"AMOUNT",label:"Nominal",render:value=>formatRupiah(value)},
+            {key:"PAYMENT_METHOD",label:"Metode",render:value=>esc(value||"")},
+            {key:"REFERENCE_NO",label:"Referensi",render:value=>esc(value||"")}
+          ], {
+            emptyText:"Belum ada transaksi pada bulan ini.",
+            actions:row=>`<button type="button" class="btn btn-small" data-edit-finance="${esc(row.TRANSACTION_ID||"")}">Edit</button>`
+          })}
+        </section>
       `;
 
-
-      const addButton =
-        qs(
-          "#btn-add-payment"
-        );
-
-      if (addButton) {
-
-        addButton.addEventListener(
-          "click",
-          () => {
-
-            openFormModal(
-              "payments"
-            );
-
-          }
-        );
-
-      }
-
-
-      qsa(
-        "[data-edit-payment]"
-      ).forEach(
-        button => {
-
-          button.addEventListener(
-            "click",
-            () => {
-
-              const id =
-                button.dataset
-                  .editPayment;
-
-              const row =
-                rows.find(
-                  item =>
-                    String(
-                      item.PAYMENT_ID
-                    ) === String(id)
-                );
-
-              if (row) {
-
-                openFormModal(
-                  "payments",
-                  row
-                );
-
-              }
-
-            }
-          );
-
-        }
-      );
+      qs("#finance-month", el)?.addEventListener("change", event => {
+        const url = new URL(window.location.href);
+        url.searchParams.set("financeMonth", event.target.value);
+        window.history.replaceState({}, "", url);
+        renderFinance(el);
+      });
+      qs("#btn-add-finance", el)?.addEventListener("click", () => openFormModal("finance"));
+      qsa("[data-edit-finance]", el).forEach(button => button.addEventListener("click", () => {
+        const row = rows.find(item => String(item.TRANSACTION_ID) === String(button.dataset.editFinance));
+        if (row) openFormModal("finance", row);
+      }));
 
     } catch (error) {
 
@@ -3546,9 +3595,13 @@ window.App = (() => {
       formFields.map(
         field => {
 
-          const currentMonth = new Date().toISOString().slice(0, 7);
+          const now = new Date();
+          const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+          const currentDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
           const defaultValue = type === "salary" && field.key === "PERIOD"
             ? currentMonth
+            : type === "finance" && field.key === "DATE"
+              ? currentDate
             : type === "salary" && field.key === "PAYMENT_STATUS"
               ? "PENDING"
               : "";
@@ -3574,6 +3627,28 @@ window.App = (() => {
                   `).join("")}
                 </select>
                 <div class="payroll-sensei-preview muted" id="payroll-sensei-preview">Pilih sensei untuk melihat tarif dan ringkasan payroll.</div>
+              </div>
+            `;
+          }
+
+          if (type === "billing" && field.key === "ID_SISWA") {
+            const studentRows = Array.isArray(options.studentRows) ? options.studentRows : [];
+            const knownIds = studentRows.map(row => String(row.ID_SISWA || "").trim()).filter(Boolean);
+            const legacyOption = value && !knownIds.includes(String(value))
+              ? `<option value="${esc(value)}" selected>${esc(value)} · Siswa tidak ditemukan</option>`
+              : "";
+            return `
+              <div class="form-group">
+                <label for="billing-student-select">ID Siswa <span>*</span></label>
+                <select id="billing-student-select" name="ID_SISWA" required>
+                  <option value="">Pilih siswa...</option>
+                  ${studentRows.filter(row => String(row.ID_SISWA || "").trim()).map(row => `
+                    <option value="${esc(row.ID_SISWA)}" ${String(value) === String(row.ID_SISWA) ? "selected" : ""}>
+                      ${esc(row.ID_SISWA)} · ${esc(row.NAMA || "Tanpa nama")}
+                    </option>
+                  `).join("")}
+                  ${legacyOption}
+                </select>
               </div>
             `;
           }
@@ -4051,6 +4126,11 @@ window.App = (() => {
 
           close();
 
+          if (type === "billing") {
+            const url = new URL(window.location.href);
+            if (payload.ID_SISWA) url.searchParams.set("studentId", payload.ID_SISWA);
+            window.history.replaceState({}, "", url);
+          }
 
           await load(
             type
@@ -4142,7 +4222,7 @@ window.App = (() => {
 
     renderBilling,
 
-    renderPayments,
+    renderFinance,
 
     renderSalary,
 

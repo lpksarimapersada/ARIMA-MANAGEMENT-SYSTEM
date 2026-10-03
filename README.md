@@ -38,7 +38,10 @@ DEMO_MODE: false
 ```
 
 Backend harus menyediakan action:
-`login`, `dashboard`, `students`, `sensei`, `attendance`, `billing`, `payments`, `salary`.
+`login`, `dashboard`, `students`, `sensei`, `attendance`, `billing`, `payments`,
+`finance`, dan `salary`. Action `finance` membuat sheet `FINANCE` beserta header
+standarnya saat pertama kali digunakan untuk menyimpan mutasi pemasukan dan
+pengeluaran.
 
 Jangan menyimpan password plaintext di spreadsheet.
 
@@ -48,9 +51,11 @@ Jangan menyimpan password plaintext di spreadsheet.
 This ZIP is the frontend for GitHub Pages and is already configured to use the
 current Google Apps Script Web App URL in `js/config.js`.
 
-Do NOT redeploy the `api/Code.gs` starter over the currently working Apps Script
-deployment unless you intentionally replace the backend. The live frontend
-endpoint is configured in `js/config.js`.
+The Apps Script endpoint is configured in `js/config.js`. Backend changes in
+`api/Code.gs` must be copied to the existing Apps Script project and deployed as
+a new version of the existing web app deployment for new actions (including
+`finance`) to become available; keep the deployment URL unchanged. Do not
+replace the production backend with a different project or deployment.
 
 After publishing/updating GitHub Pages:
 1. Open `login.html`.

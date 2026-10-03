@@ -6,6 +6,7 @@ window.API = (() => {
     sensei: "senseiSave",
     attendance: "attendanceSave",
     billing: "billingSave",
+    finance: "financeSave",
     payments: "paymentSave",
     salary: "salarySave"
   };
@@ -177,6 +178,10 @@ window.API = (() => {
     return call("payments", payload);
   }
 
+  async function finance(payload = {}) {
+    return call("finance", payload);
+  }
+
   async function salary(payload = {}) {
     return call("salary", payload);
   }
@@ -233,6 +238,10 @@ window.API = (() => {
     return call("paymentSave", payload);
   }
 
+  async function financeSave(payload) {
+    return call("financeSave", payload);
+  }
+
   async function salarySave(payload) {
     return call("salarySave", payload);
   }
@@ -283,6 +292,8 @@ window.API = (() => {
 
     payments,
 
+    finance,
+
     salary,
 
     salaryPreview,
@@ -310,6 +321,8 @@ window.API = (() => {
     billingSave,
 
     paymentSave,
+
+    financeSave,
 
     salarySave,
 

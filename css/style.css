@@ -135,3 +135,9 @@
 .attendance-footer{margin:0;color:#777;text-align:center;font-size:12px}
 @media(max-width:600px){.attendance-shell{padding:18px 14px 30px}.attendance-login-shell{padding-top:6vh}.attendance-panel{padding:18px}.attendance-form-row{grid-template-columns:1fr}.attendance-section-heading{align-items:flex-start;flex-direction:column}}
 @media(max-width:760px){.report-toolbar{align-items:stretch;flex-direction:column}.report-toolbar .btn{margin-left:0}.report-cashflow-row{align-items:flex-start;flex-direction:column}.account-management .section-head{align-items:flex-start;flex-direction:column}.billing-search-form{grid-template-columns:1fr}.billing-search-form .btn{width:100%}.billing-student-card{align-items:flex-start;flex-direction:column}.billing-contact{text-align:left}}
+.finance-toolbar{margin:0 0 16px;padding:14px 16px;border:1px solid #e5e5e5;border-radius:10px;background:#fff}
+.finance-toolbar input{min-height:40px;padding:8px 10px;border:1px solid #d8d8dd;border-radius:7px;background:#fff}
+.finance-summary{margin-bottom:18px}
+.finance-income,.report-positive{color:#18794e}
+.finance-expense,.report-negative{color:#a71920}
+.finance-summary .metric{font-size:24px}

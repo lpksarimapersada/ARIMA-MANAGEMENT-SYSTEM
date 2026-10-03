@@ -68,6 +68,10 @@ function route_(action, p, token) {
       const paymentsAccessError = accountAccessError_(token);
       if (paymentsAccessError) return paymentsAccessError;
       return listSheet_('PAYMENTS');
+    case 'finance':
+      const financeAccessError = accountAccessError_(token);
+      if (financeAccessError) return financeAccessError;
+      return financeRecords_();
     case 'salary':
       const salaryAccessError = salaryAccessError_(token);
       if (salaryAccessError) return salaryAccessError;
@@ -112,6 +116,12 @@ function route_(action, p, token) {
       const paymentSaveAccessError = accountAccessError_(token);
       if (paymentSaveAccessError) return paymentSaveAccessError;
       return saveSheetRecord_('PAYMENTS', 'PAYMENT_ID', p);
+    case 'financeSave':
+      const financeSaveAccessError = accountAccessError_(token);
+      if (financeSaveAccessError) return financeSaveAccessError;
+      const financeSheetResult = financeSheet_();
+      if (!financeSheetResult.success) return financeSheetResult;
+      return saveSheetRecord_('FINANCE', 'TRANSACTION_ID', p);
     case 'salarySave':
       const salarySaveAccessError = salaryAccessError_(token);
       if (salarySaveAccessError) return salarySaveAccessError;
@@ -814,6 +824,35 @@ function listSheet_(name) {
   return { success: true, data: data };
 }
 
+function financeSheet_() {
+  const workbook = ss_();
+  let sheet = workbook.getSheetByName('FINANCE');
+  if (!sheet) sheet = workbook.insertSheet('FINANCE');
+
+  const headers = [
+    'TRANSACTION_ID', 'DATE', 'TYPE', 'CATEGORY', 'DESCRIPTION', 'AMOUNT',
+    'PAYMENT_METHOD', 'REFERENCE_NO', 'NOTES', 'CREATED_AT', 'UPDATED_AT'
+  ];
+  if (sheet.getLastRow() === 0 || sheet.getLastColumn() === 0) {
+    sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+  }
+
+  const actualHeaders = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0]
+    .map(function (header) { return String(header || '').trim(); });
+  const missing = headers.filter(function (header) {
+    return findColumnIndex_(actualHeaders, [header]) < 0;
+  });
+  if (missing.length) {
+    return { success: false, message: 'Header sheet FINANCE belum lengkap: ' + missing.join(', ') };
+  }
+  return { success: true, sheet: sheet };
+}
+
+function financeRecords_() {
+  const result = financeSheet_();
+  return result.success ? listSheet_('FINANCE') : result;
+}
+
 function requiredFields_(sheetName) {
   const fields = {
     STUDENTS: ['NAMA', 'NO_WA', 'NAMA_ORANG_TUA', 'PROGRAM', 'ASRAMA', 'TANGGAL_MASUK', 'STATUS'],
@@ -821,6 +860,7 @@ function requiredFields_(sheetName) {
     ATTENDANCE: ['ACTOR_ID', 'ACTOR_TYPE', 'TANGGAL', 'STATUS'],
     BILLING: ['ID_SISWA', 'DESCRIPTION', 'CATEGORY', 'AMOUNT', 'DUE_DATE', 'STATUS'],
     PAYMENTS: ['BILLING_ID', 'ID_SISWA', 'PAYMENT_DATE', 'AMOUNT', 'PAYMENT_METHOD'],
+    FINANCE: ['DATE', 'TYPE', 'CATEGORY', 'DESCRIPTION', 'AMOUNT', 'PAYMENT_METHOD'],
     SALARY: ['ID_SENSEI', 'PERIOD', 'PAYMENT_STATUS']
   };
   return fields[sheetName] || [];
@@ -901,12 +941,31 @@ function periodKey_(value) {
 }
 
 function clockMinutes_(value) {
-  if (value instanceof Date) return value.getHours() * 60 + value.getMinutes();
+  if (value instanceof Date) {
+    const localTime = Utilities.formatDate(value, ARIMA.TIMEZONE, 'HH:mm');
+    return clockMinutes_(localTime);
+  }
   if (typeof value === 'number' && value >= 0 && value < 1) return Math.round(value * 1440);
 
   const text = String(value || '').trim();
+  if (/^\d{4}-\d{2}-\d{2}T/.test(text)) {
+    const timestamp = new Date(text);
+    if (!Number.isNaN(timestamp.getTime())) {
+      return clockMinutes_(Utilities.formatDate(timestamp, ARIMA.TIMEZONE, 'HH:mm'));
+    }
+  }
   const match = text.match(/(?:T|^)(\d{1,2}):(\d{2})/);
-  return match ? Number(match[1]) * 60 + Number(match[2]) : null;
+  if (!match) return null;
+  const hour = Number(match[1]);
+  const minute = Number(match[2]);
+  return hour <= 23 && minute <= 59 ? hour * 60 + minute : null;
+}
+
+function attendanceActorType_(value) {
+  const type = String(value || '').trim().toUpperCase();
+  if (['SENSEI', 'TEACHER', 'INSTRUCTOR', 'GURU'].indexOf(type) >= 0) return 'SENSEI';
+  if (['STUDENT', 'SISWA', 'MURID'].indexOf(type) >= 0) return 'STUDENT';
+  return type;
 }
 
 function paidTeachingMinutes_(start, end) {
@@ -936,11 +995,15 @@ function calculateSalaryRecord_(record) {
   }
 
   const senseiValues = senseiSheet.getDataRange().getValues();
+  if (senseiValues.length < 2) return { success: false, message: 'Data sensei belum tersedia.' };
   const senseiHeaders = senseiValues[0].map(String);
   const senseiIdIndex = findColumnIndex_(senseiHeaders, ['ID_SENSEI']);
   const rateIndex = findColumnIndex_(senseiHeaders, ['TARIF_PER_JAM']);
+  if (senseiIdIndex < 0 || rateIndex < 0) {
+    return { success: false, message: 'Kolom ID_SENSEI atau TARIF_PER_JAM tidak ditemukan.' };
+  }
   const sensei = senseiValues.slice(1).find(function (row) {
-    return String(row[senseiIdIndex] || '').trim() === String(record.ID_SENSEI || '').trim();
+    return String(row[senseiIdIndex] || '').trim().toUpperCase() === String(record.ID_SENSEI || '').trim().toUpperCase();
   });
   if (!sensei || rateIndex < 0) return { success: false, message: 'Sensei atau tarif per JP tidak ditemukan.' };
 
@@ -955,6 +1018,7 @@ function calculateSalaryRecord_(record) {
   }
 
   const attendanceValues = attendanceSheet.getDataRange().getValues();
+  if (!attendanceValues.length) return { success: false, message: 'Header sheet ATTENDANCE belum tersedia.' };
   const headers = attendanceValues[0].map(String);
   const actorIdIndex = findColumnIndex_(headers, ['ACTOR_ID']);
   const actorTypeIndex = findColumnIndex_(headers, ['ACTOR_TYPE']);
@@ -971,8 +1035,8 @@ function calculateSalaryRecord_(record) {
   let incompleteTimes = 0;
   attendanceValues.slice(1).forEach(function (row) {
     const status = String(row[statusIndex] || '').trim().toUpperCase();
-    if (String(row[actorIdIndex] || '').trim() !== String(record.ID_SENSEI || '').trim()) return;
-    if (String(row[actorTypeIndex] || '').trim().toUpperCase() !== 'SENSEI') return;
+    if (String(row[actorIdIndex] || '').trim().toUpperCase() !== String(record.ID_SENSEI || '').trim().toUpperCase()) return;
+    if (attendanceActorType_(row[actorTypeIndex]) !== 'SENSEI') return;
     if (periodKey_(row[dateIndex]) !== period) return;
     if (status !== 'HADIR' && status !== 'TERLAMBAT') return;
 
@@ -1026,6 +1090,34 @@ function saveSheetRecord_(sheetName, keyField, payload) {
   });
   if (missing.length) {
     return { success: false, message: 'Kolom wajib belum diisi: ' + missing.join(', ') };
+  }
+
+  if (sheetName === 'FINANCE') {
+    const date = String(record.DATE || '').trim();
+    const amount = Number(record.AMOUNT);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || Number.isNaN(new Date(date + 'T00:00:00').getTime())) {
+      return { success: false, message: 'Tanggal mutasi harus valid.' };
+    }
+    if (['PEMASUKAN', 'PENGELUARAN'].indexOf(String(record.TYPE || '').trim().toUpperCase()) < 0) {
+      return { success: false, message: 'Jenis mutasi harus berupa PEMASUKAN atau PENGELUARAN.' };
+    }
+    if (!Number.isFinite(amount) || amount <= 0) {
+      return { success: false, message: 'Nominal mutasi harus lebih dari 0.' };
+    }
+  }
+
+  if (sheetName === 'ATTENDANCE' && attendanceActorType_(record.ACTOR_TYPE) === 'SENSEI') {
+    const status = String(record.STATUS || '').trim().toUpperCase();
+    if (status === 'HADIR' || status === 'TERLAMBAT') {
+      const start = clockMinutes_(record.JAM_MASUK);
+      const end = clockMinutes_(record.JAM_KELUAR);
+      if (start === null || end === null) {
+        return { success: false, message: 'Absensi hadir sensei wajib memiliki jam mengajar mulai dan selesai yang valid agar dapat dihitung sebagai payroll.' };
+      }
+      if (start === end) {
+        return { success: false, message: 'Jam mengajar mulai dan selesai sensei tidak boleh sama.' };
+      }
+    }
   }
 
   if (sheetName === 'SALARY') {
