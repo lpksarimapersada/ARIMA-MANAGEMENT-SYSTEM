@@ -154,6 +154,10 @@ window.API = (() => {
     return call("assignStudentIds", {});
   }
 
+  async function assignSenseiIds() {
+    return call("assignSenseiIds", {});
+  }
+
   async function sensei(payload = {}) {
     return call("sensei", payload);
   }
@@ -283,6 +287,8 @@ window.API = (() => {
     students,
 
     assignStudentIds,
+
+    assignSenseiIds,
 
     sensei,
 

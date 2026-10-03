@@ -2230,6 +2230,12 @@ window.App = (() => {
           API.sensei()
         ]);
 
+      [attendanceResponse, studentsResponse, senseiResponse].forEach((response, index) => {
+        if (response?.success === false) {
+          const labels = ["Absensi", "siswa", "sensei"];
+          throw new Error((response.message || `Data ${labels[index]} gagal dimuat.`));
+        }
+      });
       const rows = Array.isArray(attendanceResponse?.data)
         ? attendanceResponse.data
         : [];
@@ -2239,7 +2245,14 @@ window.App = (() => {
       const sensei = Array.isArray(senseiResponse?.data)
         ? senseiResponse.data
         : [];
-      const studentsWithoutIds = students.filter(row => !String(row.ID_SISWA || '').trim()).length;
+      const studentsWithoutIds = students.filter(row => {
+        const id = String(row.ID_SISWA || '').trim();
+        return !id || /^SISWA\d+$/i.test(id);
+      }).length;
+      const senseiWithoutIds = sensei.filter(row => {
+        const id = String(row.ID_SENSEI || '').trim();
+        return !id || /^SENSEI\d+$/i.test(id);
+      }).length;
       const now = new Date();
       const today = [
         now.getFullYear(),
@@ -2262,10 +2275,18 @@ window.App = (() => {
           "Pilih ID siswa atau sensei untuk mencatat kehadiran."
         )}
 
-        ${studentsWithoutIds ? `
+        ${(studentsWithoutIds || senseiWithoutIds) ? `
           <div class="alert error attendance-id-warning">
-            <span>${formatNumber(studentsWithoutIds)} siswa belum memiliki ID. Buat ID agar data siswa dapat dipilih saat absensi.</span>
-            <button type="button" class="btn btn-small" id="btn-assign-student-ids">Buat ID Siswa</button>
+            <span>
+              ${studentsWithoutIds ? `${formatNumber(studentsWithoutIds)} siswa` : ""}
+              ${studentsWithoutIds && senseiWithoutIds ? " dan " : ""}
+              ${senseiWithoutIds ? `${formatNumber(senseiWithoutIds)} sensei` : ""}
+              belum memakai format ID baru. ID dibuat dari 3 huruf awal nama + 4 angka terakhir WhatsApp.
+            </span>
+            <div class="toolbar">
+              ${studentsWithoutIds ? `<button type="button" class="btn btn-small" id="btn-assign-student-ids">Buat ID Siswa</button>` : ""}
+              ${senseiWithoutIds ? `<button type="button" class="btn btn-small" id="btn-assign-sensei-ids">Buat ID Sensei</button>` : ""}
+            </div>
           </div>
         ` : ""}
 
@@ -2481,7 +2502,7 @@ window.App = (() => {
       });
 
       qs("#btn-assign-student-ids", el)?.addEventListener("click", async buttonEvent => {
-        if (!window.confirm(`Buat ID untuk ${studentsWithoutIds} siswa yang belum memiliki ID? ID yang sudah ada tidak diubah.`)) return;
+        if (!window.confirm(`Buat/perbarui ID untuk ${studentsWithoutIds} siswa? ID lama seperti SISWA001 akan diganti. Referensi absensi, tagihan, pembayaran, serta USER ID yang terkait juga akan disesuaikan.`)) return;
         const button = buttonEvent.currentTarget;
         button.disabled = true;
         button.textContent = "Membuat ID...";
@@ -2494,6 +2515,23 @@ window.App = (() => {
           button.disabled = false;
           button.textContent = "Buat ID Siswa";
           showToast(error.message || "Gagal membuat ID siswa.", "error");
+        }
+      });
+
+      qs("#btn-assign-sensei-ids", el)?.addEventListener("click", async buttonEvent => {
+        if (!window.confirm(`Buat/perbarui ID untuk ${senseiWithoutIds} sensei? ID lama seperti SENSEI001 akan diganti. Referensi absensi, payroll, serta USER ID yang terkait juga akan disesuaikan.`)) return;
+        const button = buttonEvent.currentTarget;
+        button.disabled = true;
+        button.textContent = "Membuat ID...";
+        try {
+          const result = await API.assignSenseiIds();
+          if (result?.success === false) throw new Error(result.message || "Gagal membuat ID sensei.");
+          showToast(result?.message || "ID sensei berhasil dibuat.");
+          await renderAttendance(el);
+        } catch (error) {
+          button.disabled = false;
+          button.textContent = "Buat ID Sensei";
+          showToast(error.message || "Gagal membuat ID sensei.", "error");
         }
       });
 
@@ -3325,19 +3363,28 @@ window.App = (() => {
     }
 
     try {
-      const [usersResponse, studentsResponse, senseiResponse] = await Promise.all([
+      const [usersResult, studentsResult, senseiResult] = await Promise.allSettled([
         API.users(),
         API.students(),
         API.sensei()
       ]);
-      if (usersResponse?.success === false) throw new Error(usersResponse.message || "Data akun gagal dimuat.");
-      if (studentsResponse?.success === false) throw new Error(studentsResponse.message || "Data siswa gagal dimuat.");
-      if (senseiResponse?.success === false) throw new Error(senseiResponse.message || "Data sensei gagal dimuat.");
+      const responseError = (result, label) => {
+        if (result.status === "rejected") return result.reason?.message || `Data ${label} gagal dimuat.`;
+        if (result.value?.success === false) return result.value.message || `Data ${label} gagal dimuat.`;
+        return "";
+      };
+      const usersResponse = usersResult.status === "fulfilled" ? usersResult.value : null;
+      const usersError = responseError(usersResult, "akun");
+      const directoryErrors = [
+        responseError(studentsResult, "siswa"),
+        responseError(senseiResult, "sensei")
+      ].filter(Boolean);
+      const studentsResponse = studentsResult.status === "fulfilled" ? studentsResult.value : null;
+      const senseiResponse = senseiResult.status === "fulfilled" ? senseiResult.value : null;
       const users = Array.isArray(usersResponse?.data) ? usersResponse.data : [];
       const students = Array.isArray(studentsResponse?.data) ? studentsResponse.data : [];
       const sensei = Array.isArray(senseiResponse?.data) ? senseiResponse.data : [];
       const directories = { students, sensei };
-      if (usersResponse?.message) showToast(usersResponse.message);
 
       el.innerHTML = `
         ${pageHeader("Pengaturan", "Informasi sistem dan akun akses pengguna.")}
@@ -3357,6 +3404,8 @@ window.App = (() => {
             </div>
           </div>
           <div class="card">
+            ${usersError ? `<div class="alert error" role="alert">${esc(usersError)}</div>` : ""}
+            ${directoryErrors.map(message => `<div class="alert error" role="alert">${esc(message)}</div>`).join("")}
             ${renderTable(users,[
               {key:"USER_ID",label:"ID Akun",render:value=>esc(value||"")},
               {key:"MASTER_ID",label:"ID Master",render:value=>esc(value||"-")},

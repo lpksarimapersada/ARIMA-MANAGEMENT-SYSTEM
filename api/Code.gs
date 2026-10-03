@@ -46,6 +46,10 @@ function route_(action, p, token) {
       const assignStudentIdsAccessError = accountAccessError_(token);
       if (assignStudentIdsAccessError) return assignStudentIdsAccessError;
       return assignMissingStudentIds_();
+    case 'assignSenseiIds':
+      const assignSenseiIdsAccessError = accountAccessError_(token);
+      if (assignSenseiIdsAccessError) return assignSenseiIdsAccessError;
+      return assignMissingSenseiIds_();
     case 'sensei':
       return senseiList_(token);
     case 'attendance':
@@ -280,6 +284,17 @@ function generatedAccountId_(name, phone) {
   return { success: true, id: namePart[0].slice(0, 3).toUpperCase() + phoneDigits.slice(-4) };
 }
 
+function normalizedPersonName_(value) {
+  return String(value || '').trim().toUpperCase().replace(/\s+/g, ' ');
+}
+
+function normalizedAccountRole_(value) {
+  const role = String(value || '').trim().toUpperCase();
+  if (['STUDENT', 'MURID'].indexOf(role) >= 0) return 'SISWA';
+  if (['TEACHER', 'INSTRUCTOR', 'GURU'].indexOf(role) >= 0) return 'SENSEI';
+  return role;
+}
+
 function masterPerson_(role, masterId) {
   const sheetName = role === 'SISWA' ? 'STUDENTS' : role === 'SENSEI' ? 'SENSEI' : '';
   if (!sheetName) return { success: true, person: null };
@@ -308,6 +323,40 @@ function masterPerson_(role, masterId) {
   };
 }
 
+function accountMasterPerson_(role, masterId, accountName) {
+  const linked = masterPerson_(role, masterId);
+  if (linked.success || !String(accountName || '').trim()) return linked;
+  const sheetName = role === 'SISWA' ? 'STUDENTS' : 'SENSEI';
+  const sheet = ss_().getSheetByName(sheetName);
+  if (!sheet) return linked;
+  const values = sheet.getDataRange().getValues();
+  if (!values.length) return linked;
+  const headers = values[0].map(String);
+  const idIndex = findColumnIndex_(headers, [role === 'SISWA' ? 'ID_SISWA' : 'ID_SENSEI']);
+  const nameIndex = findColumnIndex_(headers, ['NAMA', 'NAME']);
+  const phoneIndex = findColumnIndex_(headers, ['NO_WA', 'NO_HP', 'PHONE']);
+  if (idIndex < 0 || nameIndex < 0) return linked;
+  const matches = values.slice(1).filter(function (row) {
+    return normalizedPersonName_(row[nameIndex]) === normalizedPersonName_(accountName);
+  });
+  if (matches.length !== 1) {
+    return {
+      success: false,
+      message: matches.length
+        ? 'Nama akun "' + accountName + '" cocok dengan lebih dari satu data master ' + (role === 'SISWA' ? 'siswa.' : 'sensei.') + ' Hubungkan akun ke ID master yang benar.'
+        : linked.message
+    };
+  }
+  return {
+    success: true,
+    person: {
+      id: matches[0][idIndex],
+      name: matches[0][nameIndex],
+      phone: phoneIndex < 0 ? '' : String(matches[0][phoneIndex] || '')
+    }
+  };
+}
+
 function linkedAccountPerson_(role, userId) {
   if (role !== 'SISWA' && role !== 'SENSEI') return { success: true, person: null };
   let masterId = String(userId || '').trim();
@@ -315,7 +364,7 @@ function linkedAccountPerson_(role, userId) {
   if (!meta.success) return meta;
   const account = accountRowById_(meta, userId);
   if (account &&
-      String(account.row[meta.columns.role] || '').trim().toUpperCase() === role &&
+      normalizedAccountRole_(account.row[meta.columns.role]) === role &&
       String(account.row[meta.columns.masterId] || '').trim()) {
     masterId = String(account.row[meta.columns.masterId]).trim();
   }
@@ -331,33 +380,30 @@ function migrateLinkedAccountIds_(meta) {
   meta.values.slice(1).forEach(function (row, index) {
     const currentId = String(row[meta.columns.id] || '').trim();
     if (!currentId) return;
-    const role = String(row[meta.columns.role] || '').trim().toUpperCase();
+    const role = normalizedAccountRole_(row[meta.columns.role]);
     let nextId = currentId;
     let masterId = String(row[meta.columns.masterId] || '').trim();
 
     if (linkedRoles.indexOf(role) >= 0) {
-      if (masterId) {
-        nextId = currentId;
-      } else {
-        const linked = masterPerson_(role, currentId);
-        if (!linked.success) {
-          collisionIds['INVALID ' + currentId] = linked.message;
-          return;
-        }
-        masterId = String(linked.person.id || '').trim();
-        const generated = generatedAccountId_(linked.person.name, linked.person.phone);
-        if (!generated.success) {
-          collisionIds['INVALID ' + currentId] = generated.message + ' (' + currentId + ')';
-          return;
-        }
-        nextId = generated.id;
-        updates.push({
-          rowNumber: index + 2,
-          id: nextId,
-          masterId: masterId,
-          previousId: currentId
-        });
+      const linked = accountMasterPerson_(role, masterId || currentId, row[meta.columns.name]);
+      if (!linked.success) {
+        collisionIds['INVALID ' + currentId] = linked.message;
+        return;
       }
+      masterId = String(linked.person.id || '').trim();
+      const generated = generatedAccountId_(linked.person.name, linked.person.phone);
+      if (!generated.success) {
+        collisionIds['INVALID ' + currentId] = generated.message + ' (' + currentId + ')';
+        return;
+      }
+      nextId = generated.id;
+      updates.push({
+        rowNumber: index + 2,
+        id: nextId,
+        masterId: masterId,
+        role: role,
+        previousId: currentId
+      });
     }
 
     const normalizedId = nextId.toUpperCase();
@@ -384,6 +430,9 @@ function migrateLinkedAccountIds_(meta) {
       meta.sheet.getRange(update.rowNumber, meta.columns.id + 1).setValue(update.id);
     }
     meta.sheet.getRange(update.rowNumber, meta.columns.masterId + 1).setValue(update.masterId);
+    if (normalizedAccountRole_(meta.values[update.rowNumber - 1][meta.columns.role]) !== update.role) {
+      meta.sheet.getRange(update.rowNumber, meta.columns.role + 1).setValue(update.role);
+    }
   });
   return {
     success: true,
@@ -1006,36 +1055,156 @@ function requiredFields_(sheetName) {
 }
 
 function assignMissingStudentIds_() {
-  const sh = ss_().getSheetByName('STUDENTS');
-  if (!sh) return { success: false, message: 'Sheet not found: STUDENTS' };
+  return assignMissingMasterIds_('STUDENTS', 'ID_SISWA', 'SISWA');
+}
 
-  const values = sh.getDataRange().getValues();
-  if (!values.length) return { success: false, message: 'Header sheet STUDENTS belum tersedia.' };
+function assignMissingSenseiIds_() {
+  return assignMissingMasterIds_('SENSEI', 'ID_SENSEI', 'SENSEI');
+}
+
+function assignMissingMasterIds_(sheetName, idField, role) {
+  const sheet = ss_().getSheetByName(sheetName);
+  if (!sheet) return { success: false, message: 'Sheet not found: ' + sheetName };
+  const values = sheet.getDataRange().getValues();
+  if (!values.length) return { success: false, message: 'Header sheet ' + sheetName + ' belum tersedia.' };
 
   const headers = values[0].map(function (header) { return String(header || '').trim(); });
-  const idIndex = findColumnIndex_(headers, ['ID_SISWA']);
-  if (idIndex < 0) return { success: false, message: 'Kolom ID_SISWA tidak ditemukan.' };
-
-  let assigned = 0;
-  for (let i = 1; i < values.length; i += 1) {
-    const row = values[i];
-    if (!row.some(function (cell) { return String(cell || '').trim() !== ''; })) continue;
-    if (String(row[idIndex] || '').trim()) continue;
-
-    row[idIndex] = nextRecordId_('STUDENTS', values, idIndex);
-    assigned += 1;
+  const idIndex = findColumnIndex_(headers, [idField]);
+  const nameIndex = findColumnIndex_(headers, ['NAMA', 'NAME']);
+  const phoneIndex = findColumnIndex_(headers, ['NO_WA', 'NO_HP', 'PHONE']);
+  if (idIndex < 0 || nameIndex < 0 || phoneIndex < 0) {
+    return { success: false, message: 'Kolom ' + idField + ', NAMA, dan NO_WA/NO_HP wajib tersedia pada sheet ' + sheetName + '.' };
   }
 
-  if (values.length > 1 && assigned) {
-    sh.getRange(2, idIndex + 1, values.length - 1, 1).setValues(
-      values.slice(1).map(function (row) { return [row[idIndex]]; })
-    );
+  const legacyPattern = role === 'SISWA' ? /^SISWA\d+$/i : /^SENSEI\d+$/i;
+  const usedIds = Object.create(null);
+  values.slice(1).forEach(function (row) {
+    const currentId = String(row[idIndex] || '').trim();
+    if (currentId && !legacyPattern.test(currentId)) usedIds[currentId.toUpperCase()] = true;
+  });
+
+  const pending = [];
+  const idMap = Object.create(null);
+  const collisions = [];
+  values.slice(1).forEach(function (row, offset) {
+    if (!row.some(function (cell) { return String(cell || '').trim() !== ''; })) return;
+    const currentId = String(row[idIndex] || '').trim();
+    if (currentId && !legacyPattern.test(currentId)) return;
+    const generated = generatedAccountId_(row[nameIndex], row[phoneIndex]);
+    if (!generated.success) {
+      collisions.push(String(row[nameIndex] || 'Baris ' + (offset + 2)) + ': ' + generated.message);
+      return;
+    }
+    const normalizedId = generated.id.toUpperCase();
+    if (usedIds[normalizedId]) {
+      collisions.push(generated.id + ' sudah digunakan atau dihasilkan lebih dari sekali.');
+      return;
+    }
+    usedIds[normalizedId] = true;
+    pending.push({ rowNumber: offset + 2, id: generated.id, oldId: currentId });
+    if (currentId) idMap[currentId.toUpperCase()] = generated.id;
+  });
+
+  if (collisions.length) {
+    return {
+      success: false,
+      message: 'ID tidak dibuat karena ada data yang perlu diperbaiki: ' + collisions.join(' ')
+    };
   }
 
+  const accountMeta = accountSheetMeta_();
+  if (!accountMeta.success) return accountMeta;
+  const accountUpdates = [];
+  const finalAccountIds = Object.create(null);
+  const linkedRoles = ['SISWA', 'SENSEI'];
+  accountMeta.values.slice(1).forEach(function (row, offset) {
+    const currentId = String(row[accountMeta.columns.id] || '').trim();
+    if (!currentId) return;
+    const currentRole = normalizedAccountRole_(row[accountMeta.columns.role]);
+    let nextId = currentId;
+    let nextMasterId = String(row[accountMeta.columns.masterId] || '').trim();
+    if (linkedRoles.indexOf(currentRole) >= 0) {
+      const sourceMasterId = nextMasterId || currentId;
+      const person = accountMasterPerson_(currentRole, sourceMasterId, row[accountMeta.columns.name]);
+      if (person.success) {
+        nextMasterId = idMap[String(person.person.id || '').trim().toUpperCase()] || String(person.person.id || '').trim();
+        const generated = generatedAccountId_(person.person.name, person.person.phone);
+        if (!generated.success) {
+          collisions.push(currentId + ': ' + generated.message);
+          return;
+        }
+        nextId = generated.id;
+      } else if (idMap[String(sourceMasterId).trim().toUpperCase()]) {
+        collisions.push(currentId + ': ' + person.message);
+        return;
+      }
+    }
+    const normalizedId = nextId.toUpperCase();
+    if (finalAccountIds[normalizedId]) {
+      collisions.push('USER ID ' + nextId + ' bertabrakan antara akun ' + finalAccountIds[normalizedId] + ' dan ' + currentId + '.');
+      return;
+    }
+    finalAccountIds[normalizedId] = currentId;
+    accountUpdates.push({
+      rowNumber: offset + 2,
+      id: nextId,
+      masterId: nextMasterId,
+      role: currentRole,
+      previousId: currentId,
+      previousMasterId: String(row[accountMeta.columns.masterId] || '').trim(),
+      previousRole: String(row[accountMeta.columns.role] || '').trim().toUpperCase()
+    });
+  });
+  if (collisions.length) {
+    return { success: false, message: 'ID tidak diperbarui karena ada data yang perlu diperbaiki: ' + collisions.join(' ') };
+  }
+
+  const referenceUpdates = [];
+  const planReferenceUpdates = function (referenceSheetName, referenceField, mapping, actorField) {
+    if (!Object.keys(mapping).length) return;
+    const referenceSheet = ss_().getSheetByName(referenceSheetName);
+    if (!referenceSheet || referenceSheet.getLastRow() < 2) return;
+    const referenceValues = referenceSheet.getDataRange().getValues();
+    if (!referenceValues.length) return;
+    const referenceHeaders = referenceValues[0].map(function (header) { return String(header || '').trim(); });
+    const referenceIndex = findColumnIndex_(referenceHeaders, [referenceField]);
+    const actorIndex = actorField ? findColumnIndex_(referenceHeaders, ['ACTOR_TYPE']) : -1;
+    if (referenceIndex < 0) return;
+    referenceValues.slice(1).forEach(function (referenceRow, rowOffset) {
+      if (actorField && actorIndex >= 0 && attendanceActorType_(referenceRow[actorIndex]) !== actorField) return;
+      const oldReference = String(referenceRow[referenceIndex] || '').trim();
+      const newReference = mapping[oldReference.toUpperCase()];
+      if (newReference) {
+        referenceUpdates.push({ sheet: referenceSheet, rowNumber: rowOffset + 2, column: referenceIndex + 1, value: newReference });
+      }
+    });
+  };
+  planReferenceUpdates('ATTENDANCE', 'ACTOR_ID', idMap, role === 'SISWA' ? 'STUDENT' : 'SENSEI');
+  if (role === 'SISWA') {
+    planReferenceUpdates('BILLING', 'ID_SISWA', idMap);
+    planReferenceUpdates('PAYMENTS', 'ID_SISWA', idMap);
+  } else {
+    planReferenceUpdates('SALARY', 'ID_SENSEI', idMap);
+  }
+
+  pending.forEach(function (entry) {
+    sheet.getRange(entry.rowNumber, idIndex + 1).setValue(entry.id);
+  });
+  referenceUpdates.forEach(function (entry) {
+    entry.sheet.getRange(entry.rowNumber, entry.column).setValue(entry.value);
+  });
+  accountUpdates.forEach(function (entry) {
+    if (entry.id !== entry.previousId) accountMeta.sheet.getRange(entry.rowNumber, accountMeta.columns.id + 1).setValue(entry.id);
+    if (entry.masterId !== entry.previousMasterId) accountMeta.sheet.getRange(entry.rowNumber, accountMeta.columns.masterId + 1).setValue(entry.masterId);
+    if (entry.role !== entry.previousRole) accountMeta.sheet.getRange(entry.rowNumber, accountMeta.columns.role + 1).setValue(entry.role);
+  });
+  const changedIds = pending.filter(function (entry) { return entry.oldId !== entry.id; }).length;
   return {
     success: true,
-    message: assigned ? assigned + ' ID siswa berhasil dibuat.' : 'Semua siswa sudah memiliki ID.',
-    data: { assigned: assigned }
+    message: changedIds
+      ? changedIds + ' ID master ' + (role === 'SISWA' ? 'siswa' : 'sensei') + ' berhasil dibuat/diperbarui. ID akun dan referensi terkait ikut disesuaikan.'
+      : 'Semua ID master ' + (role === 'SISWA' ? 'siswa' : 'sensei') + ' sudah menggunakan format baru.',
+    data: { assigned: pending.length, updated: changedIds, accountIdsUpdated: accountUpdates.filter(function (entry) { return entry.id !== entry.previousId; }).length }
   };
 }
 

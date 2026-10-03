@@ -57,6 +57,11 @@ terhubung. Jika ada ID yang bentrok atau data master tidak memiliki nama/nomor
 WhatsApp yang cukup, migrasi ditolak tanpa mengubah akun; perbaiki data terkait
 lalu coba kembali. Beri tahu pengguna ID login barunya.
 
+Tombol **Buat ID Siswa** dan **Buat ID Sensei** di menu Absensi hanya membuat ID
+master yang masih kosong. ID baru menggunakan format nama/WhatsApp yang sama;
+ID master lama tidak diganti agar riwayat absensi, tagihan, dan payroll tetap
+terhubung.
+
 
 ## Publish production
 
